@@ -67,6 +67,47 @@ void main() {
           ]);
         });
 
+        test('two triggers in a row - emit then emit next value', () async {
+          values.add(1);
+          values.add(2);
+          await new Future(() {});
+          trigger.add(null);
+          trigger.add(null);
+          await new Future(() {});
+          values.add(3);
+          await new Future(() {});
+          expect(emittedValues, [
+            [1, 2],
+            [3]
+          ]);
+        });
+
+        test('pre-emptive trigger then trigger after values', () async {
+          trigger.add(null);
+          await new Future(() {});
+          values.add(1);
+          values.add(2);
+          await new Future(() {});
+          trigger.add(null);
+          await new Future(() {});
+          expect(emittedValues, [
+            [1],
+            [2]
+          ]);
+        });
+
+        test('multiple pre-emptive triggers, only emits first value', () async {
+          trigger.add(null);
+          trigger.add(null);
+          await new Future(() {});
+          values.add(1);
+          values.add(2);
+          await new Future(() {});
+          expect(emittedValues, [
+            [1]
+          ]);
+        });
+
         test('groups values between trigger', () async {
           values.add(1);
           values.add(2);

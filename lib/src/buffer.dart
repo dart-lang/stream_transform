@@ -69,13 +69,13 @@ class _Buffer<T> implements StreamTransformer<T, List<T>> {
     emit() {
       controller.add(currentResults);
       currentResults = null;
+      waitingForTrigger = true;
     }
 
     onValue(T value) {
       currentResults = _collectToList(value, currentResults);
       if (!waitingForTrigger) {
         emit();
-        waitingForTrigger = true;
       }
     }
 
