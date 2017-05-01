@@ -9,8 +9,6 @@ cache:
     - $HOME/.pub-cache
 dart_task:
   - test
-  - dartfmt
-  - dartanalyzer
 matrix:
   include:
     - dart: dev
