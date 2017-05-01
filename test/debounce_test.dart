@@ -46,16 +46,35 @@ void main() {
           values.add(1);
           values.add(2);
           await values.close();
-          await new Future.delayed(const Duration(milliseconds: 6));
+          await new Future.delayed(const Duration(milliseconds: 10));
           expect(emittedValues, [2]);
         });
 
         test('outputs multiple values spaced further than duration', () async {
           values.add(1);
-          await new Future.delayed(const Duration(milliseconds: 6));
+          await new Future.delayed(const Duration(milliseconds: 10));
           values.add(2);
-          await new Future.delayed(const Duration(milliseconds: 6));
+          await new Future.delayed(const Duration(milliseconds: 10));
           expect(emittedValues, [1, 2]);
+        });
+
+        test('waits for pending value to close', () async {
+          values.add(1);
+          await new Future.delayed(const Duration(milliseconds: 10));
+          await values.close();
+          await new Future(() {});
+          expect(isDone, true);
+        });
+
+        test('closes output if there are no pending values', () async {
+          values.add(1);
+          await new Future.delayed(const Duration(milliseconds: 10));
+          values.add(2);
+          await new Future(() {});
+          await values.close();
+          expect(isDone, false);
+          await new Future.delayed(const Duration(milliseconds: 10));
+          expect(isDone, true);
         });
       });
 
@@ -64,26 +83,22 @@ void main() {
           setUpStreams(debounceBuffer(const Duration(milliseconds: 5)));
         });
 
-        test('cancels values', () async {
-          await subscription.cancel();
-          expect(valuesCanceled, true);
-        });
-
-        test('swallows values that come faster than duration', () async {
+        test('Emits all values as a list', () async {
           values.add(1);
           values.add(2);
           await values.close();
-          await new Future.delayed(const Duration(milliseconds: 6));
+          await new Future.delayed(const Duration(milliseconds: 10));
           expect(emittedValues, [
             [1, 2]
           ]);
         });
 
-        test('outputs multiple values spaced further than duration', () async {
+        test('separate lists for multiple values spaced further than duration',
+            () async {
           values.add(1);
-          await new Future.delayed(const Duration(milliseconds: 6));
+          await new Future.delayed(const Duration(milliseconds: 10));
           values.add(2);
-          await new Future.delayed(const Duration(milliseconds: 6));
+          await new Future.delayed(const Duration(milliseconds: 10));
           expect(emittedValues, [
             [1],
             [2]
