@@ -9,12 +9,5 @@ cache:
     - $HOME/.pub-cache
 dart_task:
   - test
-matrix:
-  include:
-    - dart: dev
-      dart_task: dartfmt
-    # Only care about being analyzer clean for dev and stable
-    - dart: dev
-      dart_task: dartanalyzer
-    - dart: stable
-      dart_task: dartanalyzer
+  - dartfmt
+  - dartanalyzer
