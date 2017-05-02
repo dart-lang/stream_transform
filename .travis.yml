@@ -11,3 +11,9 @@ dart_task:
   - test
   - dartfmt
   - dartanalyzer
+matrix:
+  exclude:
+    - dart: 1.22.1
+      dart_task: dartfmt
+    - dart: 1.22.1
+      dart_task: dartanalyzer
