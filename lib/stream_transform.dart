@@ -4,3 +4,4 @@
 
 export 'src/buffer.dart';
 export 'src/debounce.dart';
+export 'src/concat.dart';
