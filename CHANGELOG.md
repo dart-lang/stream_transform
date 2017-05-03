@@ -1,3 +1,7 @@
+## 0.0.2
+
+- Add `concat`: Appends streams in series
+
 ## 0.0.1
 
 - Initial release with the following utilities:
