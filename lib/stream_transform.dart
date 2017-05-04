@@ -3,5 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 export 'src/buffer.dart';
-export 'src/debounce.dart';
 export 'src/concat.dart';
+export 'src/debounce.dart';
+export 'src/merge.dart';
