@@ -1,6 +1,7 @@
 ## 0.0.2
 
 - Add `concat`: Appends streams in series
+- Add `merge` and `mergeAll`: Interleaves streams
 
 ## 0.0.1
 
