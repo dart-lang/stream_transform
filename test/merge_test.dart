@@ -14,6 +14,7 @@ void main() {
       var allValues = await first.transform(merge(second)).toList();
       expect(allValues, containsAllInOrder([1, 2, 3]));
       expect(allValues, containsAllInOrder([4, 5, 6]));
+      expect(allValues, hasLength(6));
     });
 
     test('cancels both sources', () async {
@@ -44,6 +45,7 @@ void main() {
       expect(allValues, containsAllInOrder([1, 2, 3]));
       expect(allValues, containsAllInOrder([4, 5, 6]));
       expect(allValues, containsAllInOrder([7, 8, 9]));
+      expect(allValues, hasLength(9));
     });
 
     test('handles mix of broadcast and single-subscription', () async {
