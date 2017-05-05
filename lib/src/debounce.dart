@@ -47,7 +47,7 @@ StreamTransformer<T, R> _debounceAggregate<T, R>(
       timer = null;
     });
     soFar = collect(value, soFar);
-  }, handleDone: (EventSink<T> sink) {
+  }, handleDone: (EventSink<R> sink) {
     if (soFar != null) {
       shouldClose = true;
     } else {
