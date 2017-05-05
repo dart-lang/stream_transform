@@ -14,3 +14,7 @@ Appends the values of a stream after another stream finishes.
 
 Prevents a source stream from emitting too frequently by dropping or collecting
 values that occur within a given duration.
+
+# merge, mergeAll
+
+Interleaves events from multiple streams into a single stream.
