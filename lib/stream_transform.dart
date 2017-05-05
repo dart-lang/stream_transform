@@ -6,3 +6,4 @@ export 'src/buffer.dart';
 export 'src/concat.dart';
 export 'src/debounce.dart';
 export 'src/merge.dart';
+export 'src/tap.dart';
