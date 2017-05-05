@@ -21,5 +21,5 @@ Interleaves events from multiple streams into a single stream.
 
 # tap
 
-Taps into a single-subscriber stream to react to values as the pass, without
+Taps into a single-subscriber stream to react to values as they pass, without
 being a real subscriber.
