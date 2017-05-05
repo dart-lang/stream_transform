@@ -1,3 +1,7 @@
+## 0.0.3
+
+- Add `tap`: React to values as they pass without being a subscriber on a stream
+
 ## 0.0.2
 
 - Add `concat`: Appends streams in series
