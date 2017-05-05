@@ -4,8 +4,6 @@ import 'package:test/test.dart';
 
 import 'package:stream_transform/stream_transform.dart';
 
-import 'util/matchers.dart';
-
 void main() {
   group('merge', () {
     test('includes all values', () async {
