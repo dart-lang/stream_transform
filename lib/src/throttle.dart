@@ -3,9 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 import 'dart:async';
 
-/// Creates a StreamTransformer which only emits once per [duration],
-/// at the beginning of the period.
-///
+/// Creates a StreamTransformer which only emits once per [duration], at the
+/// beginning of the period.
 StreamTransformer<T, T> throttle<T>(Duration duration) {
   Timer timer;
 
