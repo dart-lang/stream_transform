@@ -6,9 +6,7 @@ import 'dart:async';
 /// Creates a StreamTransformer which only emits once per [duration],
 /// at the beginning of the period.
 ///
-StreamTransformer<T, T> throttle<T>(Duration duration) => _throttler(duration);
-
-StreamTransformer<T, T> _throttler<T>(Duration duration) {
+StreamTransformer<T, T> throttle<T>(Duration duration) {
   Timer timer;
 
   return new StreamTransformer.fromHandlers(handleData: (data, sink) {

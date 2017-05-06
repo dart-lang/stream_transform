@@ -58,14 +58,6 @@ void main() {
           expect(emittedValues, [1, 2]);
         });
 
-        test('waits for pending value to close', () async {
-          values.add(1);
-          await new Future.delayed(const Duration(milliseconds: 10));
-          await values.close();
-          await new Future(() {});
-          expect(isDone, true);
-        });
-
         test('closes output immediately', () async {
           values.add(1);
           await new Future.delayed(const Duration(milliseconds: 10));
