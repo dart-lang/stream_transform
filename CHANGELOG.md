@@ -1,3 +1,8 @@
+## 0.0.4
+- Add `scan`: fold which returns intermediate values
+- Add `throttle`: block events for a duration after emitting a value
+- Add `audit`: emits the last event received after a duration
+
 ## 0.0.3
 
 - Add `tap`: React to values as they pass without being a subscriber on a stream

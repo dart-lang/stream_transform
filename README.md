@@ -1,6 +1,11 @@
 Contains utility methods to create `StreamTransfomer` instances to manipulate
 Streams.
 
+# audit
+
+Audit waits for a period of time after receiving a value and then only emits
+the most recent value.
+
 # buffer
 
 Collects values from a source stream until a `trigger` stream fires and the
@@ -19,6 +24,11 @@ values that occur within a given duration.
 
 Interleaves events from multiple streams into a single stream.
 
+# scan
+
+Scan is like fold, but instead of producing a single value it yields each 
+intermediate accumulation.
+
 # switchMap, switchLatest
 
 Flatten a Stream of Streams into a Stream which forwards values from the most
@@ -28,3 +38,7 @@ recent Stream
 
 Taps into a single-subscriber stream to react to values as they pass, without
 being a real subscriber.
+
+# throttle
+
+Blocks events for a duration after an event is successfully emitted.
