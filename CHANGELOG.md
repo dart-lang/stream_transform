@@ -1,6 +1,8 @@
 ## 0.0.3
 
 - Add `tap`: React to values as they pass without being a subscriber on a stream
+- Add `switchMap` and `switchLatest`: Flatten a Stream of Streams into a Stream
+  which forwards values from the most recent Stream
 
 ## 0.0.2
 
