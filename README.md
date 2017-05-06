@@ -19,6 +19,11 @@ values that occur within a given duration.
 
 Interleaves events from multiple streams into a single stream.
 
+# switchMap, switchLatest
+
+Flatten a Stream of Streams into a Stream which forwards values from the most
+recent Stream
+
 # tap
 
 Taps into a single-subscriber stream to react to values as they pass, without
