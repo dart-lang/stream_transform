@@ -33,7 +33,7 @@ class _SwitchTransformer<T> implements StreamTransformer<Stream<T>, T> {
       controller = new StreamController<T>();
     }
     StreamSubscription<T> innerSubscription;
-    StreamSubscription<T> outerSubscription;
+    StreamSubscription<Stream<T>> outerSubscription;
     controller.onListen = () {
       var outerStreamDone = false;
       var innerStreamDone = false;
