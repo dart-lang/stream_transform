@@ -8,6 +8,9 @@ import 'dart:async';
 ///
 /// When the source emits a value it will be converted to a [Stream] using [map]
 /// and the output will switch to emitting events from that result.
+///
+/// If the source stream is a broadcast stream, the result stream will be as
+/// well, regardless of the types of the streams produced by [map].
 StreamTransformer<S, T> switchMap<S, T>(Stream<T> map(S event)) =>
     new StreamTransformer((stream, cancelOnError) => stream
         .map(map)
@@ -18,6 +21,9 @@ StreamTransformer<S, T> switchMap<S, T>(Stream<T> map(S event)) =>
 ///
 /// When the source emits a stream the output will switch to emitting events
 /// from that stream.
+///
+/// If the source stream is a broadcast stream, the result stream will be as
+/// well, regardless of the types of streams emitted.
 StreamTransformer<Stream<T>, T> switchLatest<T>() =>
     const _SwitchTransformer<T>();
 
