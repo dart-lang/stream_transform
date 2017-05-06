@@ -5,6 +5,8 @@ import 'dart:async';
 
 typedef S Func2<T, S>(T item, S accumulation);
 
+/// Scan is like fold, but instead of producing a single value it yields
+/// each intermediate accumulation.
 StreamTransformer<T, S> scan<T, S>(Func2<T, S> map, S accumulation) =>
     new _Scan(map, accumulation);
 
