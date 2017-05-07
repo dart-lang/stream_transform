@@ -8,3 +8,6 @@ export 'src/debounce.dart';
 export 'src/merge.dart';
 export 'src/switch.dart';
 export 'src/tap.dart';
+export 'src/scan.dart';
+export 'src/throttle.dart';
+export 'src/audit.dart';
