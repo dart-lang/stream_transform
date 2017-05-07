@@ -7,7 +7,7 @@ import 'dart:async';
 /// end of the period.
 ///
 /// Like `throttle`, except it always emits the most recently received event in
-/// a period.  Alwyas introduces a delay of at most [duration].
+/// a period.  Always introduces a delay of at most [duration].
 StreamTransformer<T, T> audit<T>(Duration duration) {
   Timer timer;
   bool shouldClose = false;
