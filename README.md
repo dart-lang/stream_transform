@@ -1,6 +1,10 @@
 Contains utility methods to create `StreamTransfomer` instances to manipulate
 Streams.
 
+# asyncWhere
+
+Like `where` but allows an asynchronous predicate.
+
 # audit
 
 Audit waits for a period of time after receiving a value and then only emits
