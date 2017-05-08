@@ -5,16 +5,17 @@ import 'dart:async';
 
 /// Like [Stream.where] but allows the [test] to return a [Future].
 StreamTransformer<T, T> asyncWhere<T>(FutureOr<bool> test(T element)) {
-  var valueWaiting = false;
+  var valuesWaiting = 0;
   var sourceDone = false;
-  return new StreamTransformer<T, T>.fromHandlers(
-      handleData: (element, sink) async {
-    valueWaiting = true;
-    if (await test(element)) sink.add(element);
-    valueWaiting = false;
-    if (sourceDone) sink.close();
+  return new StreamTransformer<T, T>.fromHandlers(handleData: (element, sink) {
+    valuesWaiting++;
+    () async {
+      if (await test(element)) sink.add(element);
+      valuesWaiting--;
+      if (valuesWaiting <= 0 && sourceDone) sink.close();
+    }();
   }, handleDone: (sink) {
     sourceDone = true;
-    if (!valueWaiting) sink.close();
+    if (valuesWaiting <= 0) sink.close();
   });
 }

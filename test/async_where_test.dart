@@ -14,6 +14,15 @@ void main() {
     expect(await filtered.toList(), [3, 4]);
   });
 
+  test('allows predicates that go through event loop', () async {
+    var values = new Stream.fromIterable([1, 2, 3, 4]);
+    var filtered = values.transform(asyncWhere((e) async {
+      await new Future(() {});
+      return e > 2;
+    }));
+    expect(await filtered.toList(), [3, 4]);
+  });
+
   test('allows synchronous predicate', () async {
     var values = new Stream.fromIterable([1, 2, 3, 4]);
     var filtered = values.transform(asyncWhere((e) => e > 2));
