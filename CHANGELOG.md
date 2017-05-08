@@ -1,3 +1,7 @@
+## 0.0.5
+
+- Bug Fix: Allow compiling switchLatest with Dart2Js.
+
 ## 0.0.4
 - Add `scan`: fold which returns intermediate values
 - Add `throttle`: block events for a duration after emitting a value
