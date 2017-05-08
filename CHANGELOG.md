@@ -1,6 +1,7 @@
 ## 0.0.5
 
 - Bug Fix: Allow compiling switchLatest with Dart2Js.
+- Add `asyncWhere`: Like `where` but allows an asynchronous predicate.
 
 ## 0.0.4
 - Add `scan`: fold which returns intermediate values
