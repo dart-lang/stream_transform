@@ -25,7 +25,7 @@ StreamTransformer<S, T> switchMap<S, T>(Stream<T> map(S event)) =>
 /// If the source stream is a broadcast stream, the result stream will be as
 /// well, regardless of the types of streams emitted.
 StreamTransformer<Stream<T>, T> switchLatest<T>() =>
-    const _SwitchTransformer<T>();
+    new _SwitchTransformer<T>();
 
 class _SwitchTransformer<T> implements StreamTransformer<Stream<T>, T> {
   const _SwitchTransformer();
