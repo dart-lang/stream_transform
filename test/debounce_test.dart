@@ -125,8 +125,12 @@ void main() {
             values.add(1);
             values.add(2);
             await new Future.delayed(const Duration(milliseconds: 10));
-            expect(emittedValues, [[1, 2]]);
-            expect(otherValues, [[1, 2]]);
+            expect(emittedValues, [
+              [1, 2]
+            ]);
+            expect(otherValues, [
+              [1, 2]
+            ]);
           });
         }
       });
