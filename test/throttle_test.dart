@@ -14,6 +14,7 @@ void main() {
       bool valuesCanceled;
       bool isDone;
       List errors;
+      Stream transformed;
       StreamSubscription subscription;
 
       void setUpStreams(StreamTransformer transformer) {
@@ -25,8 +26,8 @@ void main() {
         emittedValues = [];
         errors = [];
         isDone = false;
-        subscription = values.stream
-            .transform(transformer)
+        transformed = values.stream.transform(transformer);
+        subscription = transformed
             .listen(emittedValues.add, onError: errors.add, onDone: () {
           isDone = true;
         });
@@ -64,8 +65,20 @@ void main() {
           values.add(2);
           await new Future(() {});
           await values.close();
+          await new Future(() {});
           expect(isDone, true);
         });
+
+        if (streamType == 'broadcast') {
+          test('multiple listeners all get values', () async {
+            var otherValues = [];
+            transformed.listen(otherValues.add);
+            values.add(1);
+            await new Future(() {});
+            expect(emittedValues, [1]);
+            expect(otherValues, [1]);
+          });
+        }
       });
     });
   }

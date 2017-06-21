@@ -4,6 +4,7 @@
   broadcast streams. Fixed for:
   - `debounce`
   - `audit`
+  - `throttle`
 
 
 ## 0.0.5
