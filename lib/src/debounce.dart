@@ -3,6 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 import 'dart:async';
 
+import 'from_handlers.dart';
+
 /// Creates a StreamTransformer which only emits when the source stream does not
 /// emit for [duration].
 ///
@@ -35,8 +37,7 @@ StreamTransformer<T, R> _debounceAggregate<T, R>(
   Timer timer;
   R soFar;
   bool shouldClose = false;
-  return new StreamTransformer.fromHandlers(
-      handleData: (T value, EventSink<R> sink) {
+  return fromHandlers(handleData: (T value, EventSink<R> sink) {
     timer?.cancel();
     timer = new Timer(duration, () {
       sink.add(soFar);

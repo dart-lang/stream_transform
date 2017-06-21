@@ -1,3 +1,8 @@
+## 0.0.6
+
+- Bug Fix: `debounce` correctly adds data to all listeners on a broadcast
+  stream.
+
 ## 0.0.5
 
 - Bug Fix: Allow compiling switchLatest with Dart2Js.

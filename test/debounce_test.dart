@@ -15,6 +15,7 @@ void main() {
       bool isDone;
       List errors;
       StreamSubscription subscription;
+      Stream transformed;
 
       void setUpStreams(StreamTransformer transformer) {
         valuesCanceled = false;
@@ -25,8 +26,8 @@ void main() {
         emittedValues = [];
         errors = [];
         isDone = false;
-        subscription = values.stream
-            .transform(transformer)
+        transformed = values.stream.transform(transformer);
+        subscription = transformed
             .listen(emittedValues.add, onError: errors.add, onDone: () {
           isDone = true;
         });
@@ -76,6 +77,18 @@ void main() {
           await new Future.delayed(const Duration(milliseconds: 10));
           expect(isDone, true);
         });
+
+        if (streamType == 'broadcast') {
+          test('multiple listeners all get values', () async {
+            var otherValues = [];
+            transformed.listen(otherValues.add);
+            values.add(1);
+            values.add(2);
+            await new Future.delayed(const Duration(milliseconds: 10));
+            expect(emittedValues, [2]);
+            expect(otherValues, [2]);
+          });
+        }
       });
 
       group('debounceBuffer', () {
@@ -104,6 +117,22 @@ void main() {
             [2]
           ]);
         });
+
+        if (streamType == 'broadcast') {
+          test('multiple listeners all get values', () async {
+            var otherValues = [];
+            transformed.listen(otherValues.add);
+            values.add(1);
+            values.add(2);
+            await new Future.delayed(const Duration(milliseconds: 10));
+            expect(emittedValues, [
+              [1, 2]
+            ]);
+            expect(otherValues, [
+              [1, 2]
+            ]);
+          });
+        }
       });
     });
   }
