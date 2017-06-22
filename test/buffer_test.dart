@@ -12,37 +12,49 @@ void main() {
     'single subscription': () => new StreamController(),
     'broadcast': () => new StreamController.broadcast()
   };
+  StreamController trigger;
+  StreamController values;
+  List emittedValues;
+  bool valuesCanceled;
+  bool triggerCanceled;
+  bool triggerPaused;
+  bool isDone;
+  List errors;
+  Stream transformed;
+  StreamSubscription subscription;
+
+  void setUpForStreamTypes(String triggerType, String valuesType) {
+    valuesCanceled = false;
+    triggerCanceled = false;
+    triggerPaused = false;
+    trigger = streamTypes[triggerType]()
+      ..onCancel = () {
+        triggerCanceled = true;
+      };
+    if (triggerType == 'single subscription') {
+      trigger.onPause = () {
+        triggerPaused = true;
+      };
+    }
+    values = streamTypes[valuesType]()
+      ..onCancel = () {
+        valuesCanceled = true;
+      };
+    emittedValues = [];
+    errors = [];
+    isDone = false;
+    transformed = values.stream.transform(buffer(trigger.stream));
+    subscription =
+        transformed.listen(emittedValues.add, onError: errors.add, onDone: () {
+      isDone = true;
+    });
+  }
+
   for (var triggerType in streamTypes.keys) {
     for (var valuesType in streamTypes.keys) {
       group('Trigger type: [$triggerType], Values type: [$valuesType]', () {
-        StreamController trigger;
-        StreamController values;
-        List emittedValues;
-        bool valuesCanceled;
-        bool triggerCanceled;
-        bool isDone;
-        List errors;
-        StreamSubscription subscription;
-
-        setUp(() async {
-          valuesCanceled = false;
-          triggerCanceled = false;
-          trigger = streamTypes[triggerType]()
-            ..onCancel = () {
-              triggerCanceled = true;
-            };
-          values = streamTypes[triggerType]()
-            ..onCancel = () {
-              valuesCanceled = true;
-            };
-          emittedValues = [];
-          errors = [];
-          isDone = false;
-          subscription = values.stream
-              .transform(buffer(trigger.stream))
-              .listen(emittedValues.add, onError: errors.add, onDone: () {
-            isDone = true;
-          });
+        setUp(() {
+          setUpForStreamTypes(triggerType, valuesType);
         });
 
         test('does not emit before `trigger`', () async {
@@ -130,12 +142,6 @@ void main() {
           expect(valuesCanceled, true);
         });
 
-        test('cancels trigger subscription when output canceled', () async {
-          expect(triggerCanceled, false);
-          await subscription.cancel();
-          expect(triggerCanceled, true);
-        });
-
         test('closes when trigger ends', () async {
           expect(isDone, false);
           await trigger.close();
@@ -157,14 +163,26 @@ void main() {
           expect(isDone, true);
         });
 
-        test(
-            'closes immediately if there are no pending values when source closes',
+        test('closes if there are no pending values when source closes',
             () async {
           expect(isDone, false);
           values.add(1);
           trigger.add(null);
           await values.close();
           await new Future(() {});
+          expect(isDone, true);
+        });
+
+        test('waits to emit if there is a pending trigger when trigger closes',
+            () async {
+          trigger.add(null);
+          await trigger.close();
+          expect(isDone, false);
+          values.add(1);
+          await new Future(() {});
+          expect(emittedValues, [
+            [1]
+          ]);
           expect(isDone, true);
         });
 
@@ -181,5 +199,57 @@ void main() {
         });
       });
     }
+  }
+
+  test('always cancels trigger if values is singlesubscription', () async {
+    setUpForStreamTypes('broadcast', 'single subscription');
+    expect(triggerCanceled, false);
+    await subscription.cancel();
+    expect(triggerCanceled, true);
+
+    setUpForStreamTypes('single subscription', 'single subscription');
+    expect(triggerCanceled, false);
+    await subscription.cancel();
+    expect(triggerCanceled, true);
+  });
+
+  test('cancels trigger if trigger is broadcast', () async {
+    setUpForStreamTypes('broadcast', 'broadcast');
+    expect(triggerCanceled, false);
+    await subscription.cancel();
+    expect(triggerCanceled, true);
+  });
+
+  test('pauses single subscription trigger for broadcast values', () async {
+    setUpForStreamTypes('single subscription', 'broadcast');
+    expect(triggerCanceled, false);
+    expect(triggerPaused, false);
+    await subscription.cancel();
+    expect(triggerCanceled, false);
+    expect(triggerPaused, true);
+  });
+
+  for (var triggerType in streamTypes.keys) {
+    test('cancel and relisten with [$triggerType] trigger', () async {
+      setUpForStreamTypes(triggerType, 'broadcast');
+      values.add(1);
+      trigger.add(null);
+      await new Future(() {});
+      expect(emittedValues, [
+        [1]
+      ]);
+      await subscription.cancel();
+      values.add(2);
+      trigger.add(null);
+      await new Future(() {});
+      subscription = transformed.listen(emittedValues.add);
+      values.add(3);
+      trigger.add(null);
+      await new Future(() {});
+      expect(emittedValues, [
+        [1],
+        [3]
+      ]);
+    });
   }
 }
