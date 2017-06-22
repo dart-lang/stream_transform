@@ -46,9 +46,9 @@ class _StreamTransformer<S, T> implements StreamTransformer<S, T> {
   Stream<T> bind(Stream<S> values) {
     StreamController<T> controller;
     if (values.isBroadcast) {
-      controller = new StreamController<T>.broadcast();
+      controller = new StreamController<T>.broadcast(sync: true);
     } else {
-      controller = new StreamController<T>();
+      controller = new StreamController<T>(sync: true);
     }
     StreamSubscription<S> subscription;
     controller.onListen = () {
@@ -67,12 +67,9 @@ class _StreamTransformer<S, T> implements StreamTransformer<S, T> {
       controller.onResume = () => subscription?.resume();
     }
     controller.onCancel = () {
-      if (controller.hasListener || subscription == null) {
-        return new Future.value();
-      }
-      var toCancel = subscription;
+      if (controller.hasListener || subscription == null) return;
+      subscription.cancel();
       subscription = null;
-      return toCancel.cancel();
     };
     return controller.stream;
   }

@@ -55,7 +55,6 @@ void main() {
 
       test('forwards done', () async {
         await values.close();
-        await new Future(() {});
         expect(isDone, true);
       });
 
@@ -103,7 +102,6 @@ void main() {
 
       test('forwards done', () async {
         await values.close();
-        await new Future(() {});
         expect(isDone, true);
         expect(isDone2, true);
       });
