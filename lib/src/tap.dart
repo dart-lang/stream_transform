@@ -3,6 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 import 'dart:async';
 
+import 'from_handlers.dart';
+
 /// Taps into a Stream to allow additional handling on a single-subscriber
 /// stream without first wrapping as a broadcast stream.
 ///
@@ -13,7 +15,7 @@ import 'dart:async';
 /// listener, and may be canceled only by the listener.
 StreamTransformer<T, T> tap<T>(void fn(T value),
         {void onError(error, stackTrace), void onDone()}) =>
-    new StreamTransformer.fromHandlers(handleData: (value, sink) {
+    fromHandlers(handleData: (value, sink) {
       try {
         fn(value);
       } catch (_) {/*Ignore*/}

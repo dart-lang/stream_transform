@@ -2,6 +2,8 @@
 
 - Bug Fix: Some transformers did not correctly add data to all listeners on
   broadcast streams. Fixed for `throttle`, `debounce`, and `audit`.
+- Bug Fix: Only call the `tap` data callback once per event rather than once per
+  listener.
 
 ## 0.0.5
 
