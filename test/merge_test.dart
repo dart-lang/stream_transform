@@ -32,6 +32,40 @@ void main() {
       expect(firstCanceled, true);
       expect(secondCanceled, true);
     });
+
+    test('completes when both sources complete', () async {
+      var first = new StreamController();
+      var second = new StreamController();
+      var isDone = false;
+      first.stream.transform(merge(second.stream)).listen((_) {}, onDone: () {
+        isDone = true;
+      });
+      await first.close();
+      expect(isDone, false);
+      await second.close();
+      expect(isDone, true);
+    });
+
+    test('can cancel and relisten to broadcast stream', () async {
+      var first = new StreamController.broadcast();
+      var second = new StreamController();
+      var emittedValues = [];
+      var transformed = first.stream.transform((merge(second.stream)));
+      var subscription = transformed.listen(emittedValues.add);
+      first.add(1);
+      second.add(2);
+      await new Future(() {});
+      expect(emittedValues, contains(1));
+      expect(emittedValues, contains(2));
+      await subscription.cancel();
+      emittedValues = [];
+      subscription = transformed.listen(emittedValues.add);
+      first.add(3);
+      second.add(4);
+      await new Future(() {});
+      expect(emittedValues, contains(3));
+      expect(emittedValues, contains(4));
+    });
   });
 
   group('mergeAll', () {
@@ -93,7 +127,9 @@ void main() {
       await new Future(() {});
       expect(firstCanceled, true);
       expect(secondBroadcastCanceled, true);
-      expect(secondSingleCanceled, true);
+      expect(secondSingleCanceled, false,
+          reason: 'Single subscription streams merged into broadcast streams '
+              'are not canceled');
 
       expect(firstListenerValues, [1, 2, 3]);
       expect(secondListenerValues, [1, 2, 3, 4, 5, 6]);

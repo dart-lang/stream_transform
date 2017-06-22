@@ -4,6 +4,8 @@
   broadcast streams. Fixed for `throttle`, `debounce`, and `audit`.
 - Bug Fix: Only call the `tap` data callback once per event rather than once per
   listener.
+- Bug Fix: Allow canceling and re-listening to broadcast streams after a
+  `merge` transform.
 - Use sync `StreamControllers` for forwarding where possible.
 
 ## 0.0.5
