@@ -1,10 +1,7 @@
 ## 0.0.6
 
-- Bug Fix: Some transformers did not correctly add date to all listeners on
-  broadcast streams. Fixed for:
-  - `debounce`
-  - `audit`
-
+- Bug Fix: Some transformers did not correctly add data to all listeners on
+  broadcast streams. Fixed for `debounce`, and `audit`.
 
 ## 0.0.5
 
