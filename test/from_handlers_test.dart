@@ -136,18 +136,23 @@ void main() {
     group('broadcast stream with multiple listeners', () {
       int dataCallCount;
       int doneCallCount;
+      int errorCallCount;
 
       setUp(() async {
         dataCallCount = 0;
         doneCallCount = 0;
+        errorCallCount = 0;
         setUpForController(
             new StreamController.broadcast(),
             fromHandlers(handleData: (value, sink) {
               dataCallCount++;
+            }, handleError: (error, stackTrace, sink) {
+              errorCallCount++;
+              sink.addError(error, stackTrace);
             }, handleDone: (sink) {
               doneCallCount++;
             }));
-        transformed.listen((_) {});
+        transformed.listen((_) {}, onError: (_, __) {});
       });
 
       test('handles data once', () async {
@@ -159,6 +164,12 @@ void main() {
       test('handles done once', () async {
         await values.close();
         expect(doneCallCount, 1);
+      });
+
+      test('handles errors once', () async {
+        values.addError('error');
+        await new Future(() {});
+        expect(errorCallCount, 1);
       });
     });
   });
