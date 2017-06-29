@@ -63,9 +63,7 @@ void main() {
           values.add(1);
           await new Future.delayed(const Duration(milliseconds: 10));
           values.add(2);
-          await new Future(() {});
           await values.close();
-          await new Future(() {});
           expect(isDone, true);
         });
 
