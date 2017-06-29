@@ -44,32 +44,31 @@ class _StreamTransformer<S, T> implements StreamTransformer<S, T> {
 
   @override
   Stream<T> bind(Stream<S> values) {
-    StreamController<T> controller;
-    if (values.isBroadcast) {
-      controller = new StreamController<T>.broadcast(sync: true);
-    } else {
-      controller = new StreamController<T>(sync: true);
-    }
+    var controller = values.isBroadcast
+        ? new StreamController<T>.broadcast(sync: true)
+        : new StreamController<T>(sync: true);
+
     StreamSubscription<S> subscription;
     controller.onListen = () {
-      if (subscription != null) {
-        return;
-      }
+      if (subscription != null) return;
+      bool valuesDone = false;
       subscription = values.listen((value) => _handleData(value, controller),
           onError: (error, stackTrace) {
         _handleError(error, stackTrace, controller);
       }, onDone: () {
+        valuesDone = true;
         _handleDone(controller);
       });
-    };
-    if (!values.isBroadcast) {
-      controller.onPause = () => subscription?.pause();
-      controller.onResume = () => subscription?.resume();
-    }
-    controller.onCancel = () {
-      if (controller.hasListener || subscription == null) return;
-      subscription.cancel();
-      subscription = null;
+      if (!values.isBroadcast) {
+        controller.onPause = subscription.pause;
+        controller.onResume = subscription.resume;
+      }
+      controller.onCancel = () {
+        var toCancel = subscription;
+        subscription = null;
+        if (!valuesDone) return toCancel.cancel();
+        return null;
+      };
     };
     return controller.stream;
   }
