@@ -91,7 +91,8 @@ void main() {
           values.add(2);
           await new Future.delayed(const Duration(milliseconds: 3));
           values.add(3);
-          expect(emittedValues, [2]);
+          await waitForTimer(5);
+          expect(emittedValues, [2, 3]);
         });
 
         if (streamType == 'broadcast') {
