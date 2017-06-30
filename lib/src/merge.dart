@@ -7,14 +7,17 @@ import 'dart:async';
 /// Emits values from the source stream and [other] in any order as they arrive.
 ///
 /// If the source stream is a broadcast stream, the result stream will be as
-/// well, regardless of the type of stream [other] is.
+/// well, regardless of [other]'s type. If a single subscription stream is
+/// merged into a broadcast stream it may never be canceled.
 StreamTransformer<T, T> merge<T>(Stream<T> other) => new _Merge<T>([other]);
 
 /// Emits values from the source stream and all streams in [others] in any order
 /// as they arrive.
 ///
 /// If the source stream is a broadcast stream, the result stream will be as
-/// well, regardless of the types of streams in [others].
+/// well, regardless of the types of streams in [others]. If single
+/// subscription streams are merged into a broadcast stream they may never be
+/// canceled.
 StreamTransformer<T, T> mergeAll<T>(List<Stream<T>> others) =>
     new _Merge<T>(others);
 
@@ -25,18 +28,22 @@ class _Merge<T> implements StreamTransformer<T, T> {
 
   @override
   Stream<T> bind(Stream<T> first) {
-    StreamController<T> controller;
-    if (first.isBroadcast) {
-      controller = new StreamController<T>.broadcast();
-    } else {
-      controller = new StreamController<T>();
-    }
-    List<StreamSubscription> subscriptions;
+    var controller = first.isBroadcast
+        ? new StreamController<T>.broadcast(sync: true)
+        : new StreamController<T>(sync: true);
+
     List<Stream<T>> allStreams = [first]..addAll(_others);
-    var activeStreamCount = 0;
+    if (first.isBroadcast) {
+      allStreams = allStreams
+          .map((s) => s.isBroadcast ? s : s.asBroadcastStream())
+          .toList();
+    }
+
+    List<StreamSubscription> subscriptions;
 
     controller.onListen = () {
       if (subscriptions != null) return;
+      var activeStreamCount = 0;
       subscriptions = allStreams.map((stream) {
         activeStreamCount++;
         return stream.listen(controller.add, onError: controller.addError,
@@ -44,28 +51,25 @@ class _Merge<T> implements StreamTransformer<T, T> {
           if (--activeStreamCount <= 0) controller.close();
         });
       }).toList();
-    };
-
-    // Forward methods from listener
-    if (!first.isBroadcast) {
-      controller.onPause = () {
-        for (var subscription in subscriptions) {
-          subscription.pause();
-        }
-      };
-      controller.onResume = () {
-        for (var subscription in subscriptions) {
-          subscription.resume();
-        }
-      };
-      controller.onCancel =
-          () => Future.wait(subscriptions.map((s) => s.cancel()));
-    } else {
+      if (!first.isBroadcast) {
+        controller.onPause = () {
+          for (var subscription in subscriptions) {
+            subscription.pause();
+          }
+        };
+        controller.onResume = () {
+          for (var subscription in subscriptions) {
+            subscription.resume();
+          }
+        };
+      }
       controller.onCancel = () {
-        if (controller?.hasListener ?? false) return new Future.value(null);
-        return Future.wait(subscriptions.map((s) => s.cancel()));
+        var toCancel = subscriptions;
+        subscriptions = null;
+        if (activeStreamCount <= 0) return null;
+        return Future.wait(toCancel.map((s) => s.cancel()));
       };
-    }
+    };
     return controller.stream;
   }
 }
