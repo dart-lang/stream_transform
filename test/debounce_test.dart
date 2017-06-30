@@ -1,6 +1,9 @@
 import 'dart:async';
+
 import 'package:test/test.dart';
 import 'package:stream_transform/stream_transform.dart';
+
+import 'utils.dart';
 
 void main() {
   var streamTypes = {
@@ -47,21 +50,21 @@ void main() {
           values.add(1);
           values.add(2);
           await values.close();
-          await _waitForTimer(5);
+          await waitForTimer(5);
           expect(emittedValues, [2]);
         });
 
         test('outputs multiple values spaced further than duration', () async {
           values.add(1);
-          await _waitForTimer(5);
+          await waitForTimer(5);
           values.add(2);
-          await _waitForTimer(5);
+          await waitForTimer(5);
           expect(emittedValues, [1, 2]);
         });
 
         test('waits for pending value to close', () async {
           values.add(1);
-          await _waitForTimer(5);
+          await waitForTimer(5);
           await values.close();
           await new Future(() {});
           expect(isDone, true);
@@ -69,12 +72,12 @@ void main() {
 
         test('closes output if there are no pending values', () async {
           values.add(1);
-          await _waitForTimer(5);
+          await waitForTimer(5);
           values.add(2);
           await new Future(() {});
           await values.close();
           expect(isDone, false);
-          await _waitForTimer(5);
+          await waitForTimer(5);
           expect(isDone, true);
         });
 
@@ -84,7 +87,7 @@ void main() {
             transformed.listen(otherValues.add);
             values.add(1);
             values.add(2);
-            await _waitForTimer(5);
+            await waitForTimer(5);
             expect(emittedValues, [2]);
             expect(otherValues, [2]);
           });
@@ -100,7 +103,7 @@ void main() {
           values.add(1);
           values.add(2);
           await values.close();
-          await _waitForTimer(5);
+          await waitForTimer(5);
           expect(emittedValues, [
             [1, 2]
           ]);
@@ -109,9 +112,9 @@ void main() {
         test('separate lists for multiple values spaced further than duration',
             () async {
           values.add(1);
-          await _waitForTimer(5);
+          await waitForTimer(5);
           values.add(2);
-          await _waitForTimer(5);
+          await waitForTimer(5);
           expect(emittedValues, [
             [1],
             [2]
@@ -124,7 +127,7 @@ void main() {
             transformed.listen(otherValues.add);
             values.add(1);
             values.add(2);
-            await _waitForTimer(5);
+            await waitForTimer(5);
             expect(emittedValues, [
               [1, 2]
             ]);
@@ -137,9 +140,3 @@ void main() {
     });
   }
 }
-
-/// Cycle the event loop to ensure timers are started, then wait for a delay
-/// longer than [milliseconds] to allow for the timer to fire.
-Future _waitForTimer(int milliseconds) =>
-    new Future(() {/* ensure Timer is started*/}).then((_) =>
-        new Future.delayed(new Duration(milliseconds: milliseconds + 1)));
