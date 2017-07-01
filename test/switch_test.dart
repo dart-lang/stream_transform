@@ -82,12 +82,9 @@ void main() {
           await new Future(() {});
 
           await outer.close();
-
           expect(isDone, false);
 
           await second.close();
-
-          await new Future(() {});
           expect(isDone, true);
         });
 
@@ -97,11 +94,9 @@ void main() {
           outer.add(first.stream);
           await new Future(() {});
           await first.close();
-          await new Future(() {});
           expect(isDone, false);
 
           await outer.close();
-          await new Future(() {});
           expect(isDone, true);
         });
 

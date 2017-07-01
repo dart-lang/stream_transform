@@ -32,58 +32,54 @@ class _SwitchTransformer<T> implements StreamTransformer<Stream<T>, T> {
 
   @override
   Stream<T> bind(Stream<Stream<T>> outer) {
-    StreamController<T> controller;
-    if (outer.isBroadcast) {
-      controller = new StreamController<T>.broadcast();
-    } else {
-      controller = new StreamController<T>();
-    }
-    StreamSubscription<T> innerSubscription;
+    var controller = outer.isBroadcast
+        ? new StreamController<T>.broadcast(sync: true)
+        : new StreamController<T>(sync: true);
+
     StreamSubscription<Stream<T>> outerSubscription;
+
     controller.onListen = () {
+      if (outerSubscription != null) return;
+
+      StreamSubscription<T> innerSubscription;
       var outerStreamDone = false;
-      var innerStreamDone = false;
-      outerSubscription = outer.listen((innerStream) {
-        innerSubscription?.cancel();
-        innerSubscription = innerStream.listen(controller.add);
-        innerSubscription.onDone(() {
-          innerStreamDone = true;
-          if (outerStreamDone) {
-            controller.close();
-          }
-        });
-        innerSubscription.onError(controller.addError);
-      });
-      outerSubscription.onDone(() {
-        outerStreamDone = true;
-        if (innerStreamDone) {
-          controller.close();
-        }
-      });
-      outerSubscription.onError(controller.addError);
-    };
 
-    cancelSubscriptions() => Future.wait([
-          innerSubscription?.cancel() ?? new Future.value(),
-          outerSubscription?.cancel() ?? new Future.value()
-        ]);
-
-    if (!outer.isBroadcast) {
-      controller.onPause = () {
-        innerSubscription?.pause();
-        outerSubscription?.pause();
-      };
-      controller.onResume = () {
-        innerSubscription?.resume();
-        outerSubscription?.resume();
-      };
-      controller.onCancel = () => cancelSubscriptions();
-    } else {
+      outerSubscription = outer.listen(
+          (innerStream) {
+            innerSubscription?.cancel();
+            innerSubscription = innerStream.listen(controller.add,
+                onError: controller.addError, onDone: () {
+              innerSubscription = null;
+              if (outerStreamDone) controller.close();
+            });
+          },
+          onError: controller.addError,
+          onDone: () {
+            outerStreamDone = true;
+            if (innerSubscription == null) controller.close();
+          });
+      if (!outer.isBroadcast) {
+        controller.onPause = () {
+          innerSubscription?.pause();
+          outerSubscription.pause();
+        };
+        controller.onResume = () {
+          innerSubscription?.resume();
+          outerSubscription.resume();
+        };
+      }
       controller.onCancel = () {
-        if (controller.hasListener) return new Future.value();
-        return cancelSubscriptions();
+        var toCancel = <StreamSubscription>[];
+        if (!outerStreamDone) toCancel.add(outerSubscription);
+        if (innerSubscription != null) {
+          toCancel.add(innerSubscription);
+        }
+        outerSubscription = null;
+        innerSubscription = null;
+        if (toCancel.isEmpty) return null;
+        return Future.wait(toCancel.map((s) => s.cancel()));
       };
-    }
+    };
     return controller.stream;
   }
 }
