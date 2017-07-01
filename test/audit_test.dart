@@ -1,6 +1,13 @@
+// Copyright (c) 2017, the Dart project authors.  Please see the AUTHORS file
+// for details. All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.
+
 import 'dart:async';
+
 import 'package:test/test.dart';
 import 'package:stream_transform/stream_transform.dart';
+
+import 'utils.dart';
 
 void main() {
   var streamTypes = {
@@ -47,15 +54,15 @@ void main() {
           values.add(1);
           values.add(2);
           await values.close();
-          await new Future.delayed(const Duration(milliseconds: 10));
+          await waitForTimer(5);
           expect(emittedValues, [2]);
         });
 
         test('outputs multiple values spaced further than duration', () async {
           values.add(1);
-          await new Future.delayed(const Duration(milliseconds: 10));
+          await waitForTimer(5);
           values.add(2);
-          await new Future.delayed(const Duration(milliseconds: 10));
+          await waitForTimer(5);
           expect(emittedValues, [1, 2]);
         });
 
@@ -63,17 +70,17 @@ void main() {
           values.add(1);
           await values.close();
           expect(isDone, false);
-          await new Future.delayed(const Duration(milliseconds: 10));
+          await waitForTimer(5);
           expect(isDone, true);
         });
 
         test('closes output if there are no pending values', () async {
           values.add(1);
-          await new Future.delayed(const Duration(milliseconds: 10));
+          await waitForTimer(5);
           values.add(2);
           await values.close();
           expect(isDone, false);
-          await new Future.delayed(const Duration(milliseconds: 10));
+          await waitForTimer(5);
           expect(isDone, true);
         });
 
@@ -84,7 +91,8 @@ void main() {
           values.add(2);
           await new Future.delayed(const Duration(milliseconds: 3));
           values.add(3);
-          expect(emittedValues, [2]);
+          await waitForTimer(5);
+          expect(emittedValues, [2, 3]);
         });
 
         if (streamType == 'broadcast') {
@@ -93,7 +101,7 @@ void main() {
             transformed.listen(otherValues.add);
             values.add(1);
             values.add(2);
-            await new Future.delayed(const Duration(milliseconds: 10));
+            await waitForTimer(5);
             expect(emittedValues, [2]);
             expect(otherValues, [2]);
           });
