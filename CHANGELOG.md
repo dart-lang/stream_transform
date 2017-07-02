@@ -6,6 +6,8 @@
   listener.
 - Bug Fix: Allow canceling and re-listening to broadcast streams after a
   `merge` transform.
+- Bug Fix: Single-subscription streams concatted after broadcast streams are
+  handled correctly.
 - Use sync `StreamControllers` for forwarding where possible.
 
 ## 0.0.5

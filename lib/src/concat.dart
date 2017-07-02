@@ -8,6 +8,9 @@ import 'dart:async';
 ///
 /// If the initial stream never finishes, the [next] stream will never be
 /// listened to.
+///
+/// If a single-subscription is concatted to the end of a broadcast stream it
+/// may be listened to and never canceled.
 StreamTransformer<T, T> concat<T>(Stream<T> next) => new _Concat<T>(next);
 
 class _Concat<T> implements StreamTransformer<T, T> {
@@ -17,11 +20,66 @@ class _Concat<T> implements StreamTransformer<T, T> {
 
   @override
   Stream<T> bind(Stream<T> first) {
-    var controller = new StreamController<T>();
-    controller
-        .addStream(first)
-        .then((_) => controller.addStream(_next))
-        .then((_) => controller.close());
+    var controller = first.isBroadcast
+        ? new StreamController<T>.broadcast(sync: true)
+        : new StreamController<T>(sync: true);
+
+    StreamSubscription subscription;
+    var currentStream = first;
+    var firstDone = false;
+    var secondDone = false;
+
+    Function currentDoneHandler;
+
+    listen() {
+      subscription = currentStream.listen(controller.add,
+          onError: controller.addError, onDone: () => currentDoneHandler());
+    }
+
+    onSecondDone() {
+      secondDone = true;
+      controller.close();
+    }
+
+    onFirstDone() {
+      firstDone = true;
+      currentStream = _next;
+      currentDoneHandler = onSecondDone;
+      listen();
+    }
+
+    currentDoneHandler = onFirstDone;
+
+    controller.onListen = () {
+      if (firstDone &&
+          !_next.isBroadcast &&
+          subscription != null &&
+          subscription.isPaused) {
+        subscription.resume();
+      }
+      if (subscription != null) return;
+      listen();
+      if (!first.isBroadcast) {
+        controller.onPause = () {
+          if (!firstDone || !_next.isBroadcast) return subscription.pause();
+          subscription.cancel();
+          subscription = null;
+        };
+        controller.onResume = () {
+          if (!firstDone || !_next.isBroadcast) return subscription.resume();
+          listen();
+        };
+      }
+      controller.onCancel = () {
+        if (secondDone) return null;
+        if (!firstDone || _next.isBroadcast) {
+          var toCancel = subscription;
+          subscription = null;
+          return toCancel.cancel();
+        }
+        subscription.pause();
+      };
+    };
     return controller.stream;
   }
 }
