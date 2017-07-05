@@ -68,6 +68,12 @@ void main() {
           expect(secondListened, true);
         });
 
+        test('closes stream after both inputs close', () async {
+          await first.close();
+          await second.close();
+          expect(isDone, true);
+        });
+
         test('cancels any type of first stream on cancel', () async {
           await subscription.cancel();
           expect(firstCanceled, true);
@@ -82,12 +88,6 @@ void main() {
             expect(secondCanceled, true);
           });
         }
-
-        test('closes stream after both inputs close', () async {
-          await first.close();
-          await second.close();
-          expect(isDone, true);
-        });
 
         if (firstType == 'broadcast') {
           test('can cancel and relisten during first stream', () async {
