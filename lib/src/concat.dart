@@ -11,6 +11,12 @@ import 'dart:async';
 ///
 /// If a single-subscription is concatted to the end of a broadcast stream it
 /// may be listened to and never canceled.
+///
+/// If a broadcast stream is concatted to any other stream it will miss any
+/// events which occur before the first stream is done. If a broadcast stream is
+/// concatted to a single-subscription stream, pausing the stream while it is
+/// listening to the second stream will cause events to be dropped rather than
+/// buffered.
 StreamTransformer<T, T> concat<T>(Stream<T> next) => new _Concat<T>(next);
 
 class _Concat<T> implements StreamTransformer<T, T> {

@@ -100,10 +100,12 @@ void main() {
           test('can cancel and relisten during second stream', () async {
             await first.close();
             await subscription.cancel();
-            subscription = transformed.listen(emittedValues.add);
             second.add(2);
+            await new Future(() {});
+            subscription = transformed.listen(emittedValues.add);
+            second.add(3);
             await new Future((() {}));
-            expect(emittedValues, [2]);
+            expect(emittedValues, [3]);
           });
 
           test('forwards values to multiple listeners', () async {
