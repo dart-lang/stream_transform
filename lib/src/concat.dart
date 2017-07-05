@@ -24,6 +24,10 @@ class _Concat<T> implements StreamTransformer<T, T> {
         ? new StreamController<T>.broadcast(sync: true)
         : new StreamController<T>(sync: true);
 
+    var next = first.isBroadcast && !_next.isBroadcast
+        ? _next.asBroadcastStream()
+        : _next;
+
     StreamSubscription subscription;
     var currentStream = first;
     var firstDone = false;
@@ -43,7 +47,7 @@ class _Concat<T> implements StreamTransformer<T, T> {
 
     onFirstDone() {
       firstDone = true;
-      currentStream = _next;
+      currentStream = next;
       currentDoneHandler = onSecondDone;
       listen();
     }
@@ -51,33 +55,24 @@ class _Concat<T> implements StreamTransformer<T, T> {
     currentDoneHandler = onFirstDone;
 
     controller.onListen = () {
-      if (firstDone &&
-          !_next.isBroadcast &&
-          subscription != null &&
-          subscription.isPaused) {
-        subscription.resume();
-      }
       if (subscription != null) return;
       listen();
       if (!first.isBroadcast) {
         controller.onPause = () {
-          if (!firstDone || !_next.isBroadcast) return subscription.pause();
+          if (!firstDone || !next.isBroadcast) return subscription.pause();
           subscription.cancel();
           subscription = null;
         };
         controller.onResume = () {
-          if (!firstDone || !_next.isBroadcast) return subscription.resume();
+          if (!firstDone || !next.isBroadcast) return subscription.resume();
           listen();
         };
       }
       controller.onCancel = () {
         if (secondDone) return null;
-        if (!firstDone || _next.isBroadcast) {
-          var toCancel = subscription;
-          subscription = null;
-          return toCancel.cancel();
-        }
-        subscription.pause();
+        var toCancel = subscription;
+        subscription = null;
+        return toCancel.cancel();
       };
     };
     return controller.stream;
