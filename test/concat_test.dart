@@ -79,7 +79,7 @@ void main() {
           expect(firstCanceled, true);
         });
 
-        if (firstType == 'single-subscription') {
+        if (firstType == 'single subscription') {
           test(
               'cancels any type of second stream on cancel if first is '
               'broadcast', () async {
@@ -87,6 +87,32 @@ void main() {
             await subscription.cancel();
             expect(secondCanceled, true);
           });
+
+          if (secondType == 'broadcast') {
+            test('can pause and resume during second stream - dropping values',
+                () async {
+              await first.close();
+              subscription.pause();
+              second.add(1);
+              await new Future(() {});
+              subscription.resume();
+              second.add(2);
+              await new Future(() {});
+              expect(emittedValues, [2]);
+            });
+          } else {
+            test('can pause and resume during second stream - buffering values',
+                () async {
+              await first.close();
+              subscription.pause();
+              second.add(1);
+              await new Future(() {});
+              subscription.resume();
+              second.add(2);
+              await new Future(() {});
+              expect(emittedValues, [1, 2]);
+            });
+          }
         }
 
         if (firstType == 'broadcast') {
