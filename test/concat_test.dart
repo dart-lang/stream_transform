@@ -68,13 +68,15 @@ void main() {
           expect(secondListened, true);
         });
 
-        test('cancels single-subscription first stream on cancel', () async {
+        test('cancels any type of first stream on cancel', () async {
           await subscription.cancel();
           expect(firstCanceled, true);
         });
 
         if (firstType == 'single-subscription') {
-          test('cancels single-subscription second stream on cancel', () async {
+          test(
+              'cancels any type of second stream on cancel if first is '
+              'broadcast', () async {
             await first.close();
             await subscription.cancel();
             expect(secondCanceled, true);
