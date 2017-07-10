@@ -10,6 +10,8 @@
   trigger can be canceled and re-listened.
 - Bug Fix: Buffer outputs one more value if there is a pending trigger before
   the trigger closes.
+- Bug Fix: Single-subscription streams concatted after broadcast streams are
+  handled correctly.
 - Use sync `StreamControllers` for forwarding where possible.
 
 ## 0.0.5
