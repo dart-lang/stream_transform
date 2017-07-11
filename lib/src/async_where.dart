@@ -3,11 +3,13 @@
 // BSD-style license that can be found in the LICENSE file.
 import 'dart:async';
 
+import 'from_handlers.dart';
+
 /// Like [Stream.where] but allows the [test] to return a [Future].
 StreamTransformer<T, T> asyncWhere<T>(FutureOr<bool> test(T element)) {
   var valuesWaiting = 0;
   var sourceDone = false;
-  return new StreamTransformer<T, T>.fromHandlers(handleData: (element, sink) {
+  return fromHandlers(handleData: (element, sink) {
     valuesWaiting++;
     () async {
       if (await test(element)) sink.add(element);

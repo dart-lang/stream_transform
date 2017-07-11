@@ -1,7 +1,7 @@
 ## 0.0.6
 
 - Bug Fix: Some transformers did not correctly add data to all listeners on
-  broadcast streams. Fixed for `throttle`, `debounce`, and `audit`.
+  broadcast streams. Fixed for `throttle`, `debounce`, `asyncWhere` and `audit`.
 - Bug Fix: Only call the `tap` data callback once per event rather than once per
   listener.
 - Bug Fix: Allow canceling and re-listening to broadcast streams after a

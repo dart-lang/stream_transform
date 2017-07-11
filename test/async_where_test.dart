@@ -34,4 +34,36 @@ void main() {
     var filtered = values.transform(asyncWhere((e) => e > 4));
     expect(await filtered.isEmpty, true);
   });
+
+  test('forwards values to multiple listeners', () async {
+    var values = new StreamController.broadcast();
+    var filtered = values.stream.transform(asyncWhere((e) async => e > 2));
+    var firstValues = [];
+    var secondValues = [];
+    filtered..listen(firstValues.add)..listen(secondValues.add);
+    values..add(1)..add(2)..add(3)..add(4);
+    await new Future(() {});
+    expect(firstValues, [3, 4]);
+    expect(secondValues, [3, 4]);
+  });
+
+  test('closes streams with multiple listeners', () async {
+    var values = new StreamController.broadcast();
+    var predicate = new Completer<bool>();
+    var filtered = values.stream.transform(asyncWhere((_) => predicate.future));
+    var firstDone = false;
+    var secondDone = false;
+    filtered
+      ..listen(null, onDone: () => firstDone = true)
+      ..listen(null, onDone: () => secondDone = true);
+    values.add(1);
+    await values.close();
+    expect(firstDone, false);
+    expect(secondDone, false);
+
+    predicate.complete(true);
+    await new Future(() {});
+    expect(firstDone, true);
+    expect(secondDone, true);
+  });
 }
