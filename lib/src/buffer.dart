@@ -14,12 +14,6 @@ import 'dart:async';
 /// the output.
 StreamTransformer<T, List<T>> buffer<T>(Stream trigger) => new _Buffer(trigger);
 
-List<T> _collectToList<T>(T element, List<T> soFar) {
-  soFar ??= <T>[];
-  soFar.add(element);
-  return soFar;
-}
-
 /// A StreamTransformer which aggregates values and emits when it sees a value
 /// on [_trigger].
 ///
@@ -36,35 +30,16 @@ class _Buffer<T> implements StreamTransformer<T, List<T>> {
 
   @override
   Stream<List<T>> bind(Stream<T> values) {
-    StreamController<List<T>> controller;
-    if (values.isBroadcast) {
-      controller = new StreamController<List<T>>.broadcast();
-    } else {
-      controller = new StreamController<List<T>>();
-    }
+    var controller = values.isBroadcast
+        ? new StreamController<List<T>>.broadcast(sync: true)
+        : new StreamController<List<T>>(sync: true);
 
     List<T> currentResults;
     bool waitingForTrigger = true;
-    StreamSubscription valuesSub;
+    bool isTriggerDone = false;
+    bool isValueDone = false;
+    StreamSubscription valueSub;
     StreamSubscription triggerSub;
-
-    cancelValues() {
-      var sub = valuesSub;
-      valuesSub = null;
-      return sub?.cancel() ?? new Future.value();
-    }
-
-    cancelTrigger() {
-      var sub = triggerSub;
-      triggerSub = null;
-      return sub?.cancel() ?? new Future.value();
-    }
-
-    closeController() {
-      var ctl = controller;
-      controller = null;
-      return ctl?.close() ?? new Future.value();
-    }
 
     emit() {
       controller.add(currentResults);
@@ -73,72 +48,77 @@ class _Buffer<T> implements StreamTransformer<T, List<T>> {
     }
 
     onValue(T value) {
-      currentResults = _collectToList(value, currentResults);
-      if (!waitingForTrigger) {
-        emit();
+      (currentResults ??= <T>[]).add(value);
+
+      if (!waitingForTrigger) emit();
+
+      if (isTriggerDone) {
+        valueSub.cancel();
+        controller.close();
       }
     }
 
-    valuesDone() {
-      valuesSub = null;
+    onValuesDone() {
+      isValueDone = true;
       if (currentResults == null) {
-        closeController();
-        cancelTrigger();
+        triggerSub?.cancel();
+        controller.close();
       }
     }
 
     onTrigger(_) {
-      if (currentResults == null) {
-        waitingForTrigger = false;
-        return;
-      }
-      emit();
-      if (valuesSub == null) {
-        closeController();
-        cancelTrigger();
+      waitingForTrigger = false;
+
+      if (currentResults != null) emit();
+
+      if (isValueDone) {
+        triggerSub.cancel();
+        controller.close();
       }
     }
 
-    triggerDone() {
-      cancelValues();
-      closeController();
+    onTriggerDone() {
+      isTriggerDone = true;
+      if (waitingForTrigger) {
+        valueSub?.cancel();
+        controller.close();
+      }
     }
 
     controller.onListen = () {
-      if (valuesSub != null) return;
-      valuesSub = values.listen(onValue,
-          onError: controller.addError, onDone: valuesDone);
+      if (valueSub != null) return;
+      valueSub = values.listen(onValue,
+          onError: controller.addError, onDone: onValuesDone);
       if (triggerSub != null) {
         if (triggerSub.isPaused) triggerSub.resume();
       } else {
         triggerSub = _trigger.listen(onTrigger,
-            onError: controller.addError, onDone: triggerDone);
+            onError: controller.addError, onDone: onTriggerDone);
       }
-    };
-
-    // Forward methods from listener
-    if (!values.isBroadcast) {
-      controller.onPause = () {
-        valuesSub?.pause();
-        triggerSub?.pause();
-      };
-      controller.onResume = () {
-        valuesSub?.resume();
-        triggerSub?.resume();
-      };
-      controller.onCancel =
-          () => Future.wait([cancelValues(), cancelTrigger()]);
-    } else {
+      if (!values.isBroadcast) {
+        controller.onPause = () {
+          valueSub?.pause();
+          triggerSub?.pause();
+        };
+        controller.onResume = () {
+          valueSub?.resume();
+          triggerSub?.resume();
+        };
+      }
       controller.onCancel = () {
-        if (controller?.hasListener ?? false) return;
-        if (_trigger.isBroadcast) {
-          cancelTrigger();
+        var toCancel = <StreamSubscription>[];
+        if (!isValueDone) toCancel.add(valueSub);
+        valueSub = null;
+        if (_trigger.isBroadcast || !values.isBroadcast) {
+          if (!isTriggerDone) toCancel.add(triggerSub);
+          triggerSub = null;
         } else {
           triggerSub.pause();
         }
-        cancelValues();
+        if (toCancel.isEmpty) return null;
+        return Future.wait(toCancel.map((s) => s.cancel()));
       };
-    }
+    };
     return controller.stream;
   }
 }
