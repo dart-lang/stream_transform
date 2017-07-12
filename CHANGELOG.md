@@ -1,3 +1,8 @@
+## 0.0.7
+
+- Bug Fix: Streams produces with `scan` and `switchMap` now correctly report
+  `isBroadcast`.
+
 ## 0.0.6
 
 - Bug Fix: Some transformers did not correctly add data to all listeners on

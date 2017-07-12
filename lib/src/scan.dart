@@ -3,13 +3,13 @@
 // BSD-style license that can be found in the LICENSE file.
 import 'dart:async';
 
+import 'bind.dart';
+
 /// Scan is like fold, but instead of producing a single value it yields
 /// each intermediate accumulation.
 StreamTransformer<S, T> scan<S, T>(
         T initialValue, T combine(T previousValue, S element)) =>
-    new StreamTransformer<S, T>((stream, cancelOnError) {
+    fromBind((stream) {
       T accumulated = initialValue;
-      return stream
-          .map((value) => accumulated = combine(accumulated, value))
-          .listen(null, cancelOnError: cancelOnError);
+      return stream.map((value) => accumulated = combine(accumulated, value));
     });
