@@ -9,6 +9,7 @@ export 'src/concat.dart';
 export 'src/debounce.dart';
 export 'src/merge.dart';
 export 'src/scan.dart';
+export 'src/start_with.dart';
 export 'src/switch.dart';
 export 'src/tap.dart';
 export 'src/throttle.dart';
