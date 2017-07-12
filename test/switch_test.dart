@@ -136,6 +136,7 @@ void main() {
       await new Future(() {});
       outer.add([4, 5, 6]);
       await new Future(() {});
+      expect(values, [1, 2, 3, 4, 5, 6]);
     });
 
     test('can create a broadcast stream', () async {
