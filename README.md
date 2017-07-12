@@ -33,6 +33,10 @@ Interleaves events from multiple streams into a single stream.
 Scan is like fold, but instead of producing a single value it yields each 
 intermediate accumulation.
 
+# startWith, startWithMany, startWithStream
+
+Prepend a value, an iterable, or a stream to the beginning of another stream.
+
 # switchMap, switchLatest
 
 Flatten a Stream of Streams into a Stream which forwards values from the most
