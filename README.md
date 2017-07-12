@@ -30,7 +30,7 @@ Interleaves events from multiple streams into a single stream.
 
 # scan
 
-Scan is like fold, but instead of producing a single value it yields each 
+Scan is like fold, but instead of producing a single value it yields each
 intermediate accumulation.
 
 # startWith, startWithMany, startWithStream

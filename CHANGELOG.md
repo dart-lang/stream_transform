@@ -1,6 +1,6 @@
 ## 0.0.7
 
-- Bug Fix: Streams produces with `scan` and `switchMap` now correctly report
+- Bug Fix: Streams produced with `scan` and `switchMap` now correctly report
   `isBroadcast`.
 - Add `startWith`, `startWithMany`, and `startWithStream`.
 
