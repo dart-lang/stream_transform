@@ -13,5 +13,13 @@ void main() {
 
       expect(result, [1, 3, 6, 10]);
     });
+
+    test('can create a broadcast stream', () async {
+      var source = new StreamController.broadcast();
+
+      var transformed = source.stream.transform(scan(null, null));
+
+      expect(transformed.isBroadcast, true);
+    });
   });
 }
