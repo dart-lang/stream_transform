@@ -33,7 +33,7 @@ class _TakeUntil<T> implements StreamTransformer<T, T> {
     });
 
     controller.onListen = () {
-      if (subscription != null || isDone) return;
+      if (isDone) return;
       subscription = values.listen(controller.add, onError: controller.addError,
           onDone: () {
         if (isDone) return;
