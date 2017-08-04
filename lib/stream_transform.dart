@@ -11,5 +11,6 @@ export 'src/merge.dart';
 export 'src/scan.dart';
 export 'src/start_with.dart';
 export 'src/switch.dart';
+export 'src/take_until.dart';
 export 'src/tap.dart';
 export 'src/throttle.dart';

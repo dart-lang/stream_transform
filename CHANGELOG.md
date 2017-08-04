@@ -1,3 +1,7 @@
+## 0.0.8
+
+- Add `takeUntil`.
+
 ## 0.0.7
 
 - Bug Fix: Streams produced with `scan` and `switchMap` now correctly report

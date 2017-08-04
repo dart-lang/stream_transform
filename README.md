@@ -1,5 +1,4 @@
-Contains utility methods to create `StreamTransfomer` instances to manipulate
-Streams.
+Utility methods to create `StreamTransfomer` instances to manipulate Streams.
 
 # asyncWhere
 
@@ -41,6 +40,10 @@ Prepend a value, an iterable, or a stream to the beginning of another stream.
 
 Flatten a Stream of Streams into a Stream which forwards values from the most
 recent Stream
+
+# takeUntil
+
+Let values through until a Future fires.
 
 # tap
 
