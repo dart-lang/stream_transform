@@ -43,7 +43,7 @@ recent Stream
 
 # takeUntil
 
-Let value through until a Future fires.
+Let values through until a Future fires.
 
 # tap
 
