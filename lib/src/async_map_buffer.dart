@@ -11,7 +11,7 @@ import 'from_handlers.dart';
 /// Like [Stream.asyncMap] but events are buffered until previous events have
 /// been processed by [convert].
 ///
-/// If the source steram is a broadcast stream the result will be as well. When
+/// If the source stream is a broadcast stream the result will be as well. When
 /// used with a broadcast stream behavior also differs from [Stream.asyncMap] in
 /// that the [convert] function is only called once per event, rather than once
 /// per listener per event.
