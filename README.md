@@ -1,5 +1,10 @@
 Utility methods to create `StreamTransfomer` instances to manipulate Streams.
 
+# asyncMapBuffer
+
+Like `asyncMap` but events are buffered until previous events have been
+processed.
+
 # asyncWhere
 
 Like `where` but allows an asynchronous predicate.
