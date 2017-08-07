@@ -23,6 +23,9 @@ void main() {
 
   Completer finishWork;
   List workArgument;
+
+  /// Represents the async `convert` function and asserts that is is only called
+  /// after the previous iteration has completed.
   Future work(List values) {
     expect(finishWork, isNull,
         reason: 'See $values befor previous work is complete');
@@ -117,7 +120,8 @@ void main() {
         values.add(2);
         await new Future(() {});
         expect(errors, ['error']);
-        // expect finishWork was null in doWork
+        // [work] will assert that the second iteration is not called because
+        // the first has not completed.
       });
 
       test('cancels value subscription when output canceled', () async {
