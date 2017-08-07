@@ -1,3 +1,7 @@
+## 0.0.9
+
+- Add `asyncMapBuffer`.
+
 ## 0.0.8
 
 - Add `takeUntil`.
