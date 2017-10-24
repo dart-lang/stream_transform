@@ -9,6 +9,8 @@ cache:
     - $HOME/.pub-cache
 dart_task:
   - test
+  - test -p chrome
+  - test -p firefox
   - dartfmt
   - dartanalyzer
   - dartanalyzer: --no-strong .
