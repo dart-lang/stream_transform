@@ -18,7 +18,7 @@ import 'from_handlers.dart';
 /// within [duration].
 StreamTransformer<T, T> audit<T>(Duration duration) {
   Timer timer;
-  bool shouldClose = false;
+  var shouldClose = false;
   T recentData;
 
   return fromHandlers(handleData: (T data, EventSink<T> sink) {

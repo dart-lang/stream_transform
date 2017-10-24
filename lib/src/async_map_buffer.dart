@@ -28,7 +28,7 @@ import 'from_handlers.dart';
 /// pending conversions have finished.
 StreamTransformer<S, T> asyncMapBuffer<S, T>(
     Future<T> convert(List<S> collected)) {
-  var workFinished = new StreamController<Null>();
+  var workFinished = new StreamController();
   // Let the first event through.
   workFinished.add(null);
   return fromBind((values) => values
@@ -40,7 +40,7 @@ StreamTransformer<S, T> asyncMapBuffer<S, T>(
 /// rather than once per listener, and [then] is called after completing the
 /// work.
 StreamTransformer<S, T> _asyncMapThen<S, T>(
-    Future<T> convert(S event), void then(_)) {
+    Future<T> convert(S event), void then(Object _)) {
   Future pendingEvent;
   return fromHandlers(handleData: (event, sink) {
     pendingEvent =

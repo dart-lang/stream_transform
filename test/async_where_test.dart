@@ -36,7 +36,7 @@ void main() {
   });
 
   test('forwards values to multiple listeners', () async {
-    var values = new StreamController.broadcast();
+    var values = new StreamController<int>.broadcast();
     var filtered = values.stream.transform(asyncWhere((e) async => e > 2));
     var firstValues = [];
     var secondValues = [];

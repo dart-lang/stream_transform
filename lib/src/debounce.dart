@@ -36,7 +36,7 @@ StreamTransformer<T, R> _debounceAggregate<T, R>(
     Duration duration, R collect(T element, R soFar)) {
   Timer timer;
   R soFar;
-  bool shouldClose = false;
+  var shouldClose = false;
   return fromHandlers(handleData: (T value, EventSink<R> sink) {
     timer?.cancel();
     timer = new Timer(duration, () {

@@ -12,7 +12,8 @@ import 'dart:async';
 ///
 /// Errors from the source stream or the trigger are immediately forwarded to
 /// the output.
-StreamTransformer<T, List<T>> buffer<T>(Stream trigger) => new _Buffer(trigger);
+StreamTransformer<T, List<T>> buffer<T>(Stream trigger) =>
+    new _Buffer<T>(trigger);
 
 /// A StreamTransformer which aggregates values and emits when it sees a value
 /// on [_trigger].
@@ -35,9 +36,9 @@ class _Buffer<T> implements StreamTransformer<T, List<T>> {
         : new StreamController<List<T>>(sync: true);
 
     List<T> currentResults;
-    bool waitingForTrigger = true;
-    bool isTriggerDone = false;
-    bool isValueDone = false;
+    var waitingForTrigger = true;
+    var isTriggerDone = false;
+    var isValueDone = false;
     StreamSubscription valueSub;
     StreamSubscription triggerSub;
 

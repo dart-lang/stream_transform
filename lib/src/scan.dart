@@ -10,6 +10,6 @@ import 'bind.dart';
 StreamTransformer<S, T> scan<S, T>(
         T initialValue, T combine(T previousValue, S element)) =>
     fromBind((stream) {
-      T accumulated = initialValue;
+      var accumulated = initialValue;
       return stream.map((value) => accumulated = combine(accumulated, value));
     });

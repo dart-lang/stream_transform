@@ -32,7 +32,7 @@ class _Merge<T> implements StreamTransformer<T, T> {
         ? new StreamController<T>.broadcast(sync: true)
         : new StreamController<T>(sync: true);
 
-    List<Stream<T>> allStreams = [first]..addAll(_others);
+    var allStreams = [first]..addAll(_others);
     if (first.isBroadcast) {
       allStreams = allStreams
           .map((s) => s.isBroadcast ? s : s.asBroadcastStream())

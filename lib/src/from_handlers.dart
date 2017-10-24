@@ -51,9 +51,9 @@ class _StreamTransformer<S, T> implements StreamTransformer<S, T> {
     StreamSubscription<S> subscription;
     controller.onListen = () {
       if (subscription != null) return;
-      bool valuesDone = false;
+      var valuesDone = false;
       subscription = values.listen((value) => _handleData(value, controller),
-          onError: (error, stackTrace) {
+          onError: (error, StackTrace stackTrace) {
         _handleError(error, stackTrace, controller);
       }, onDone: () {
         valuesDone = true;
