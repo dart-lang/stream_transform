@@ -26,7 +26,7 @@ StreamTransformer<S, T> switchMap<S, T>(Stream<T> map(S event)) =>
 StreamTransformer<Stream<T>, T> switchLatest<T>() =>
     new _SwitchTransformer<T>();
 
-class _SwitchTransformer<T> implements StreamTransformer<Stream<T>, T> {
+class _SwitchTransformer<T> extends StreamTransformerBase<Stream<T>, T> {
   const _SwitchTransformer();
 
   @override

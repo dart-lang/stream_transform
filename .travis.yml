@@ -2,8 +2,6 @@ language: dart
 sudo: false
 dart:
   - dev
-  - stable
-  - 1.22.1
 cache:
   directories:
     - $HOME/.pub-cache
@@ -14,9 +12,3 @@ dart_task:
   - dartfmt
   - dartanalyzer
   - dartanalyzer: --no-strong .
-matrix:
-  exclude:
-    - dart: 1.22.1
-      dart_task: dartfmt
-    - dart: 1.22.1
-      dart_task: dartanalyzer

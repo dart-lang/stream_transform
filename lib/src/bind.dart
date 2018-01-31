@@ -12,7 +12,7 @@ typedef Stream<T> Bind<S, T>(Stream<S> values);
 StreamTransformer<S, T> fromBind<S, T>(Bind<S, T> bindFn) =>
     new _StreamTransformer(bindFn);
 
-class _StreamTransformer<S, T> implements StreamTransformer<S, T> {
+class _StreamTransformer<S, T> extends StreamTransformerBase<S, T> {
   final Bind<S, T> _bind;
 
   _StreamTransformer(this._bind);

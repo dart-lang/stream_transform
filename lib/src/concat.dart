@@ -19,7 +19,7 @@ import 'dart:async';
 /// buffered.
 StreamTransformer<T, T> concat<T>(Stream<T> next) => new _Concat<T>(next);
 
-class _Concat<T> implements StreamTransformer<T, T> {
+class _Concat<T> extends StreamTransformerBase<T, T> {
   final Stream<T> _next;
 
   _Concat(this._next);

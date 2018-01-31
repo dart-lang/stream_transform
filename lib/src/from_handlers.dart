@@ -20,7 +20,7 @@ StreamTransformer<S, T> fromHandlers<S, T>(
         handleError: handleError,
         handleDone: handleDone);
 
-class _StreamTransformer<S, T> implements StreamTransformer<S, T> {
+class _StreamTransformer<S, T> extends StreamTransformerBase<S, T> {
   final HandleData<S, T> _handleData;
   final HandleDone<T> _handleDone;
   final HandleError<T> _handleError;
