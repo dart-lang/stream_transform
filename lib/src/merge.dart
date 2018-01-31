@@ -21,7 +21,7 @@ StreamTransformer<T, T> merge<T>(Stream<T> other) => new _Merge<T>([other]);
 StreamTransformer<T, T> mergeAll<T>(List<Stream<T>> others) =>
     new _Merge<T>(others);
 
-class _Merge<T> implements StreamTransformer<T, T> {
+class _Merge<T> extends StreamTransformerBase<T, T> {
   final List<Stream<T>> _others;
 
   _Merge(this._others);

@@ -12,7 +12,7 @@ import 'dart:async';
 /// a subscription immediately stops values.
 StreamTransformer<T, T> takeUntil<T>(Future trigger) => new _TakeUntil(trigger);
 
-class _TakeUntil<T> implements StreamTransformer<T, T> {
+class _TakeUntil<T> extends StreamTransformerBase<T, T> {
   final Future _trigger;
 
   _TakeUntil(this._trigger);

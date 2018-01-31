@@ -24,7 +24,7 @@ StreamTransformer<T, List<T>> buffer<T>(Stream trigger) =>
 ///
 /// Errors from the source stream or the trigger are immediately forwarded to
 /// the output.
-class _Buffer<T> implements StreamTransformer<T, List<T>> {
+class _Buffer<T> extends StreamTransformerBase<T, List<T>> {
   final Stream _trigger;
 
   _Buffer(this._trigger);
