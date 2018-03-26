@@ -16,7 +16,8 @@ import 'dart:async';
 /// occur before the first stream is done. If a broadcast stream follows a
 /// single-subscription stream, pausing the stream while it is listening to the
 /// second stream will cause events to be dropped rather than buffered.
-StreamTransformer<T, T> followedBy<T>(Stream<T> next) => new _FollowedBy<T>(next);
+StreamTransformer<T, T> followedBy<T>(Stream<T> next) =>
+    new _FollowedBy<T>(next);
 
 class _FollowedBy<T> extends StreamTransformerBase<T, T> {
   final Stream<T> _next;
