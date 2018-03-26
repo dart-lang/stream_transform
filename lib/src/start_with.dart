@@ -5,7 +5,7 @@
 import 'dart:async';
 
 import 'bind.dart';
-import 'concat.dart';
+import 'followed_by.dart';
 
 /// Emits [initial] before any values from the original stream.
 ///
@@ -31,5 +31,5 @@ StreamTransformer<T, T> startWithStream<T>(Stream<T> initial) =>
       if (values.isBroadcast && !initial.isBroadcast) {
         initial = initial.asBroadcastStream();
       }
-      return initial.transform(concat(values));
+      return initial.transform(followedBy(values));
     });
