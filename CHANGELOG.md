@@ -1,3 +1,8 @@
+## 0.0.11
+
+- Renamed `concat` as `followedBy` to match the naming of `Iterable.followedBy`.
+  `concat` is now deprecated.
+
 ## 0.0.10
 
 - Updates to support Dart 2.0 core library changes (wave
