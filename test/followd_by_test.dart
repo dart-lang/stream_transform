@@ -14,7 +14,7 @@ void main() {
   };
   for (var firstType in streamTypes.keys) {
     for (var secondType in streamTypes.keys) {
-      group('concat [$firstType] with [$secondType]', () {
+      group('followedBy [$firstType] with [$secondType]', () {
         StreamController first;
         StreamController second;
 
@@ -45,7 +45,7 @@ void main() {
           emittedValues = [];
           errors = [];
           isDone = false;
-          transformed = first.stream.transform(concat(second.stream));
+          transformed = first.stream.transform(followedBy(second.stream));
           subscription = transformed
               .listen(emittedValues.add, onError: errors.add, onDone: () {
             isDone = true;
