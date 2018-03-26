@@ -8,6 +8,7 @@ export 'src/audit.dart';
 export 'src/buffer.dart';
 export 'src/concat.dart';
 export 'src/debounce.dart';
+export 'src/followed_by.dart';
 export 'src/merge.dart';
 export 'src/scan.dart';
 export 'src/start_with.dart';
