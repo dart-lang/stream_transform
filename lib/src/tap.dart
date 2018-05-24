@@ -8,16 +8,25 @@ import 'from_handlers.dart';
 /// Taps into a Stream to allow additional handling on a single-subscriber
 /// stream without first wrapping as a broadcast stream.
 ///
-/// The callback will be called with every value from the stream before it is
-/// forwarded to listeners on the stream. Errors from the callbacks are ignored.
+/// The [onValue] callback will be called with every value from the original
+/// stream before it is forwarded to listeners on the resulting stream. May be
+/// null if only [onError] or [onDone] callbacks are needed.
 ///
-/// The tapped stream may not emit any values until the result stream has a
-/// listener, and may be canceled only by the listener.
-StreamTransformer<T, T> tap<T>(void fn(T value),
+/// The [onError] callback will be called with every error from the original
+/// stream before it is forwarded to listeners on the resulting stream.
+///
+/// The [onDone] callback will be called after the original stream closes and
+/// before the resulting stream is closed.
+///
+/// Errors from any of the callbacks are ignored.
+///
+/// The callbacks may not be called until the tapped stream has a listener, and
+/// may not be called after the listener has canceled the subscription.
+StreamTransformer<T, T> tap<T>(void onValue(T value),
         {void onError(error, stackTrace), void onDone()}) =>
     fromHandlers(handleData: (value, sink) {
       try {
-        fn(value);
+        onValue?.call(value);
       } catch (_) {/*Ignore*/}
       sink.add(value);
     }, handleError: (error, stackTrace, sink) {
