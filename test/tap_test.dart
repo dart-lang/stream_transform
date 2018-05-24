@@ -113,4 +113,9 @@ void main() {
     expect(emittedValues1, [1]);
     expect(emittedValues2, [1]);
   });
+
+  test('allows null callback', () async {
+    var stream = new Stream.fromIterable([1, 2, 3]);
+    await stream.transform(tap(null)).last;
+  });
 }
