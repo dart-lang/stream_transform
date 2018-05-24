@@ -1,5 +1,6 @@
 language: dart
-sudo: false
+branches:
+  only: [master]
 dart:
   - dev
 cache:
