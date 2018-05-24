@@ -20,7 +20,7 @@ import 'from_handlers.dart';
 ///
 /// Errors from any of the callbacks are ignored.
 ///
-/// The callbacks may not be called unil the tapped stream has a listener, and
+/// The callbacks may not be called until the tapped stream has a listener, and
 /// may not be called after the listener has canceled the subscription.
 StreamTransformer<T, T> tap<T>(void onValue(T value),
         {void onError(error, stackTrace), void onDone()}) =>
