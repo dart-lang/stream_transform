@@ -1,3 +1,8 @@
+## 0.0.12
+
+- Add `chainTransformers` and `map` for use cases where `StreamTransformer`
+  instances are stored as variables or passed to methods other than `transform`.
+
 ## 0.0.11
 
 - Renamed `concat` as `followedBy` to match the naming of `Iterable.followedBy`.

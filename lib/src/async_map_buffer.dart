@@ -4,8 +4,8 @@
 
 import 'dart:async';
 
-import 'bind.dart';
 import 'buffer.dart';
+import 'chain_transformers.dart';
 import 'from_handlers.dart';
 
 /// Like [Stream.asyncMap] but events are buffered until previous events have
@@ -31,9 +31,8 @@ StreamTransformer<S, T> asyncMapBuffer<S, T>(
   var workFinished = new StreamController();
   // Let the first event through.
   workFinished.add(null);
-  return fromBind((values) => values
-      .transform(buffer(workFinished.stream))
-      .transform(_asyncMapThen(convert, workFinished.add)));
+  return chainTransformers(
+      buffer(workFinished.stream), _asyncMapThen(convert, workFinished.add));
 }
 
 /// Like [Stream.asyncMap] but the [convert] is only called once per event,

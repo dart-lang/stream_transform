@@ -3,7 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 import 'dart:async';
 
-import 'bind.dart';
+import 'chain_transformers.dart';
+import 'map.dart';
 
 /// Maps events to a Stream and emits values from the most recently created
 /// Stream.
@@ -13,8 +14,8 @@ import 'bind.dart';
 ///
 /// If the source stream is a broadcast stream, the result stream will be as
 /// well, regardless of the types of the streams produced by [map].
-StreamTransformer<S, T> switchMap<S, T>(Stream<T> map(S event)) =>
-    fromBind((stream) => stream.map(map).transform(switchLatest()));
+StreamTransformer<S, T> switchMap<S, T>(Stream<T> convert(S event)) =>
+    chainTransformers(map(convert), switchLatest());
 
 /// Emits values from the most recently emitted Stream.
 ///
