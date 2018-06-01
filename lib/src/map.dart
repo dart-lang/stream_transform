@@ -16,7 +16,7 @@ import 'bind.dart';
 ///
 /// ```
 /// final sinkMapper = new StreamSinkTransformer.fromStreamTransformer(
-///     forMap((v) => '$v'));
+///     map((v) => '$v'));
 /// ```
-StreamTransformer<S, T> forMap<S, T>(T map(S event)) =>
-    fromBind((stream) => stream.map(map));
+StreamTransformer<S, T> map<S, T>(T convert(S event)) =>
+    fromBind((stream) => stream.map(convert));
