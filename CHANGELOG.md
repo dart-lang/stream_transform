@@ -1,7 +1,7 @@
 ## 0.0.12
 
-- Add `chain` and `map` for use cases where `StreamTransformer` instances are
-  stored as variables or passed to methods other than `transform`.
+- Add `chainTransformers` and `map` for use cases where `StreamTransformer`
+  instances are stored as variables or passed to methods other than `transform`.
 
 ## 0.0.11
 

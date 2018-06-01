@@ -5,7 +5,7 @@
 import 'dart:async';
 
 import 'buffer.dart';
-import 'chain.dart';
+import 'chain_transformers.dart';
 import 'from_handlers.dart';
 
 /// Like [Stream.asyncMap] but events are buffered until previous events have
@@ -31,7 +31,7 @@ StreamTransformer<S, T> asyncMapBuffer<S, T>(
   var workFinished = new StreamController();
   // Let the first event through.
   workFinished.add(null);
-  return chain(
+  return chainTransformers(
       buffer(workFinished.stream), _asyncMapThen(convert, workFinished.add));
 }
 

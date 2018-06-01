@@ -19,6 +19,6 @@ import 'bind.dart';
 /// /// values.transform(utf8.decoder).transform(const LineSplitter())
 /// final splitDecoded = chain(utf8.decoder, const LineSplitter());
 /// ```
-StreamTransformer<S, T> chain<S, I, T>(
+StreamTransformer<S, T> chainTransformers<S, I, T>(
         StreamTransformer<S, I> first, StreamTransformer<I, T> second) =>
     fromBind((values) => values.transform(first).transform(second));
