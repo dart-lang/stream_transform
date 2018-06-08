@@ -1,3 +1,7 @@
+## 0.0.13
+
+- `mergeAll` now accepts an `Iterable<Stream>` instead of only `List<Stream>`.
+
 ## 0.0.12
 
 - Add `chainTransformers` and `map` for use cases where `StreamTransformer`
