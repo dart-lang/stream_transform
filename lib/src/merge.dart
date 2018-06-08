@@ -18,11 +18,11 @@ StreamTransformer<T, T> merge<T>(Stream<T> other) => new _Merge<T>([other]);
 /// well, regardless of the types of streams in [others]. If single
 /// subscription streams are merged into a broadcast stream they may never be
 /// canceled.
-StreamTransformer<T, T> mergeAll<T>(List<Stream<T>> others) =>
+StreamTransformer<T, T> mergeAll<T>(Iterable<Stream<T>> others) =>
     new _Merge<T>(others);
 
 class _Merge<T> extends StreamTransformerBase<T, T> {
-  final List<Stream<T>> _others;
+  final Iterable<Stream<T>> _others;
 
   _Merge(this._others);
 
