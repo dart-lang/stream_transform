@@ -1,3 +1,8 @@
+## 0.0.14
+
+- `asyncWhere` will now forward exceptions thrown by the callback through the
+  result Stream.
+
 ## 0.0.13
 
 - `mergeAll` now accepts an `Iterable<Stream>` instead of only `List<Stream>`.
