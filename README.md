@@ -2,8 +2,8 @@ Utility methods to create `StreamTransfomer` instances to manipulate Streams.
 
 # asyncMapBuffer
 
-Like `asyncMap` but events are buffered until previous events have been
-processed.
+Like `asyncMap` but events are buffered in a List until previous events have
+been processed rather than being called for each element individually.
 
 # asyncWhere
 
@@ -23,6 +23,11 @@ collected values are emitted.
 
 Prevents a source stream from emitting too frequently by dropping or collecting
 values that occur within a given duration.
+
+# concurrentAsyncMap
+
+Like `asyncMap` but the convert callback can be called with subsequent values
+before it has finished for previous values.
 
 # followedBy
 

@@ -8,6 +8,7 @@ export 'src/audit.dart';
 export 'src/buffer.dart';
 export 'src/chain_transformers.dart';
 export 'src/concat.dart';
+export 'src/concurrent_async_map.dart';
 export 'src/debounce.dart';
 export 'src/followed_by.dart';
 export 'src/map.dart';
