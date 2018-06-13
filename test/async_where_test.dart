@@ -66,4 +66,20 @@ void main() {
     expect(firstDone, true);
     expect(secondDone, true);
   });
+
+  test('forwards errors emitted by the test callback', () async {
+    var errors = [];
+    var emitted = [];
+    var values = new Stream.fromIterable([1, 2, 3, 4]);
+    var filtered = values.transform(asyncWhere((e) async {
+      await new Future(() {});
+      if (e.isEven) throw new Exception('$e');
+      return true;
+    }));
+    var done = new Completer();
+    filtered.listen(emitted.add, onError: errors.add, onDone: done.complete);
+    await done.future;
+    expect(emitted, [1, 3]);
+    expect(errors.map((e) => '$e'), ['Exception: 2', 'Exception: 4']);
+  });
 }
