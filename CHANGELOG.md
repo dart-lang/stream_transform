@@ -2,6 +2,7 @@
 
 - `asyncWhere` will now forward exceptions thrown by the callback through the
   result Stream.
+- Added `concurrentAsyncMap`.
 
 ## 0.0.13
 
