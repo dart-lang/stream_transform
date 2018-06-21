@@ -43,6 +43,7 @@ void main() {
           errors = [];
           isDone = false;
           subscription = outer.stream
+              .cast<Stream>()
               .transform(switchLatest())
               .listen(emittedValues.add, onError: errors.add, onDone: () {
             isDone = true;
