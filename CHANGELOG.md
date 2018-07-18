@@ -1,3 +1,7 @@
+## 0.0.14+1
+
+- Allow using non-dev Dart 2 SDK.
+
 ## 0.0.14
 
 - `asyncWhere` will now forward exceptions thrown by the callback through the
