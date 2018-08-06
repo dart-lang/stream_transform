@@ -10,8 +10,8 @@ import 'package:stream_transform/stream_transform.dart';
 
 void main() {
   var streamTypes = {
-    'single subscription': () => new StreamController(),
-    'broadcast': () => new StreamController.broadcast()
+    'single subscription': () => StreamController(),
+    'broadcast': () => StreamController.broadcast()
   };
   StreamController values;
   Stream transformed;
@@ -35,7 +35,7 @@ void main() {
 
       test('outputs all values', () async {
         values..add(2)..add(3);
-        await new Future(() {});
+        await Future(() {});
         expect(emittedValues, [1, 2, 3]);
       });
 
@@ -53,12 +53,12 @@ void main() {
       if (streamType == 'broadcast') {
         test('can cancel and relisten', () async {
           values.add(2);
-          await new Future(() {});
+          await Future(() {});
           await subscription.cancel();
           subscription = transformed.listen(emittedValues.add);
           values.add(3);
-          await new Future(() {});
-          await new Future(() {});
+          await Future(() {});
+          await Future(() {});
           expect(emittedValues, [1, 2, 3]);
         });
       }
@@ -68,12 +68,12 @@ void main() {
       setUp(() async {
         setupForStreamType(streamType, startWithMany([1, 2]));
         // Ensure all initial values go through
-        await new Future(() {});
+        await Future(() {});
       });
 
       test('outputs all values', () async {
         values..add(3)..add(4);
-        await new Future(() {});
+        await Future(() {});
         expect(emittedValues, [1, 2, 3, 4]);
       });
 
@@ -91,11 +91,11 @@ void main() {
       if (streamType == 'broadcast') {
         test('can cancel and relisten', () async {
           values.add(3);
-          await new Future(() {});
+          await Future(() {});
           await subscription.cancel();
           subscription = transformed.listen(emittedValues.add);
           values.add(4);
-          await new Future(() {});
+          await Future(() {});
           expect(emittedValues, [1, 2, 3, 4]);
         });
       }
@@ -113,7 +113,7 @@ void main() {
           starting..add(1)..add(2);
           await starting.close();
           values..add(3)..add(4);
-          await new Future(() {});
+          await Future(() {});
           expect(emittedValues, [1, 2, 3, 4]);
         });
 
@@ -128,13 +128,13 @@ void main() {
         if (streamType == 'broadcast') {
           test('can cancel and relisten during starting', () async {
             starting.add(1);
-            await new Future(() {});
+            await Future(() {});
             await subscription.cancel();
             subscription = transformed.listen(emittedValues.add);
             starting.add(2);
             await starting.close();
             values..add(3)..add(4);
-            await new Future(() {});
+            await Future(() {});
             expect(emittedValues, [1, 2, 3, 4]);
           });
 
@@ -142,11 +142,11 @@ void main() {
             starting..add(1)..add(2);
             await starting.close();
             values.add(3);
-            await new Future(() {});
+            await Future(() {});
             await subscription.cancel();
             subscription = transformed.listen(emittedValues.add);
             values.add(4);
-            await new Future(() {});
+            await Future(() {});
             expect(emittedValues, [1, 2, 3, 4]);
           });
         }

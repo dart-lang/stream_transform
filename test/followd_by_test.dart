@@ -9,8 +9,8 @@ import 'package:stream_transform/stream_transform.dart';
 
 void main() {
   var streamTypes = {
-    'single subscription': () => new StreamController(),
-    'broadcast': () => new StreamController.broadcast()
+    'single subscription': () => StreamController(),
+    'broadcast': () => StreamController.broadcast()
   };
   for (var firstType in streamTypes.keys) {
     for (var secondType in streamTypes.keys) {
@@ -55,9 +55,9 @@ void main() {
         test('adds all values from both streams', () async {
           first..add(1)..add(2);
           await first.close();
-          await new Future(() {});
+          await Future(() {});
           second..add(3)..add(4);
-          await new Future(() {});
+          await Future(() {});
           expect(emittedValues, [1, 2, 3, 4]);
         });
 
@@ -94,10 +94,10 @@ void main() {
               await first.close();
               subscription.pause();
               second.add(1);
-              await new Future(() {});
+              await Future(() {});
               subscription.resume();
               second.add(2);
-              await new Future(() {});
+              await Future(() {});
               expect(emittedValues, [2]);
             });
           } else {
@@ -106,10 +106,10 @@ void main() {
               await first.close();
               subscription.pause();
               second.add(1);
-              await new Future(() {});
+              await Future(() {});
               subscription.resume();
               second.add(2);
-              await new Future(() {});
+              await Future(() {});
               expect(emittedValues, [1, 2]);
             });
           }
@@ -121,7 +121,7 @@ void main() {
             first.add(1);
             subscription = transformed.listen(emittedValues.add);
             first.add(2);
-            await new Future(() {});
+            await Future(() {});
             expect(emittedValues, [2]);
           });
 
@@ -129,10 +129,10 @@ void main() {
             await first.close();
             await subscription.cancel();
             second.add(2);
-            await new Future(() {});
+            await Future(() {});
             subscription = transformed.listen(emittedValues.add);
             second.add(3);
-            await new Future((() {}));
+            await Future((() {}));
             expect(emittedValues, [3]);
           });
 
@@ -142,11 +142,11 @@ void main() {
             first.add(1);
             await first.close();
             second.add(2);
-            await new Future(() {});
+            await Future(() {});
             var thirdValues = [];
             transformed.listen(thirdValues.add);
             second.add(3);
-            await new Future(() {});
+            await Future(() {});
             expect(emittedValues, [1, 2, 3]);
             expect(otherValues, [1, 2, 3]);
             expect(thirdValues, [3]);

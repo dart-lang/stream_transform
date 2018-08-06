@@ -9,8 +9,8 @@ import 'package:stream_transform/stream_transform.dart';
 
 void main() {
   var streamTypes = {
-    'single subscription': () => new StreamController(),
-    'broadcast': () => new StreamController.broadcast()
+    'single subscription': () => StreamController(),
+    'broadcast': () => StreamController.broadcast()
   };
   StreamController trigger;
   StreamController values;
@@ -59,10 +59,10 @@ void main() {
 
         test('does not emit before `trigger`', () async {
           values.add(1);
-          await new Future(() {});
+          await Future(() {});
           expect(emittedValues, isEmpty);
           trigger.add(null);
-          await new Future(() {});
+          await Future(() {});
           expect(emittedValues, [
             [1]
           ]);
@@ -70,10 +70,10 @@ void main() {
 
         test('emits immediately if trigger emits before a value', () async {
           trigger.add(null);
-          await new Future(() {});
+          await Future(() {});
           expect(emittedValues, isEmpty);
           values.add(1);
-          await new Future(() {});
+          await Future(() {});
           expect(emittedValues, [
             [1]
           ]);
@@ -82,12 +82,12 @@ void main() {
         test('two triggers in a row - emit then emit next value', () async {
           values.add(1);
           values.add(2);
-          await new Future(() {});
+          await Future(() {});
           trigger.add(null);
           trigger.add(null);
-          await new Future(() {});
+          await Future(() {});
           values.add(3);
-          await new Future(() {});
+          await Future(() {});
           expect(emittedValues, [
             [1, 2],
             [3]
@@ -96,12 +96,12 @@ void main() {
 
         test('pre-emptive trigger then trigger after values', () async {
           trigger.add(null);
-          await new Future(() {});
+          await Future(() {});
           values.add(1);
           values.add(2);
-          await new Future(() {});
+          await Future(() {});
           trigger.add(null);
-          await new Future(() {});
+          await Future(() {});
           expect(emittedValues, [
             [1],
             [2]
@@ -111,10 +111,10 @@ void main() {
         test('multiple pre-emptive triggers, only emits first value', () async {
           trigger.add(null);
           trigger.add(null);
-          await new Future(() {});
+          await Future(() {});
           values.add(1);
           values.add(2);
-          await new Future(() {});
+          await Future(() {});
           expect(emittedValues, [
             [1]
           ]);
@@ -123,13 +123,13 @@ void main() {
         test('groups values between trigger', () async {
           values.add(1);
           values.add(2);
-          await new Future(() {});
+          await Future(() {});
           trigger.add(null);
           values.add(3);
           values.add(4);
-          await new Future(() {});
+          await Future(() {});
           trigger.add(null);
-          await new Future(() {});
+          await Future(() {});
           expect(emittedValues, [
             [1, 2],
             [3, 4]
@@ -145,7 +145,7 @@ void main() {
         test('closes when trigger ends', () async {
           expect(isDone, false);
           await trigger.close();
-          await new Future(() {});
+          await Future(() {});
           expect(isDone, true);
         });
 
@@ -156,7 +156,7 @@ void main() {
           await values.close();
           expect(isDone, false);
           trigger.add(null);
-          await new Future(() {});
+          await Future(() {});
           expect(emittedValues, [
             [1]
           ]);
@@ -169,7 +169,7 @@ void main() {
           values.add(1);
           trigger.add(null);
           await values.close();
-          await new Future(() {});
+          await Future(() {});
           expect(isDone, true);
         });
 
@@ -179,7 +179,7 @@ void main() {
           await trigger.close();
           expect(isDone, false);
           values.add(1);
-          await new Future(() {});
+          await Future(() {});
           expect(emittedValues, [
             [1]
           ]);
@@ -188,13 +188,13 @@ void main() {
 
         test('forwards errors from trigger', () async {
           trigger.addError('error');
-          await new Future(() {});
+          await Future(() {});
           expect(errors, ['error']);
         });
 
         test('forwards errors from values', () async {
           values.addError('error');
-          await new Future(() {});
+          await Future(() {});
           expect(errors, ['error']);
         });
       });
@@ -234,18 +234,18 @@ void main() {
       setUpForStreamTypes(triggerType, 'broadcast');
       values.add(1);
       trigger.add(null);
-      await new Future(() {});
+      await Future(() {});
       expect(emittedValues, [
         [1]
       ]);
       await subscription.cancel();
       values.add(2);
       trigger.add(null);
-      await new Future(() {});
+      await Future(() {});
       subscription = transformed.listen(emittedValues.add);
       values.add(3);
       trigger.add(null);
-      await new Future(() {});
+      await Future(() {});
       expect(emittedValues, [
         [1],
         [3]

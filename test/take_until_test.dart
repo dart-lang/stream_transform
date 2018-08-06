@@ -10,8 +10,8 @@ import 'package:stream_transform/stream_transform.dart';
 
 void main() {
   var streamTypes = {
-    'single subscription': () => new StreamController(),
-    'broadcast': () => new StreamController.broadcast()
+    'single subscription': () => StreamController(),
+    'broadcast': () => StreamController.broadcast()
   };
   for (var streamType in streamTypes.keys) {
     group('takeUntil on Stream type [$streamType]', () {
@@ -33,7 +33,7 @@ void main() {
         emittedValues = [];
         errors = [];
         isDone = false;
-        closeTrigger = new Completer();
+        closeTrigger = Completer();
         transformed = values.stream.transform(takeUntil(closeTrigger.future));
         subscription = transformed
             .listen(emittedValues.add, onError: errors.add, onDone: () {
@@ -49,13 +49,13 @@ void main() {
       test('lets values through before trigger', () async {
         values.add(1);
         values.add(2);
-        await new Future(() {});
+        await Future(() {});
         expect(emittedValues, [1, 2]);
       });
 
       test('forwards errors', () async {
         values.addError('error');
-        await new Future(() {});
+        await Future(() {});
         expect(errors, ['error']);
       });
 
@@ -66,13 +66,13 @@ void main() {
 
       test('sends done when trigger fires', () async {
         closeTrigger.complete();
-        await new Future(() {});
+        await Future(() {});
         expect(isDone, true);
       });
 
       test('cancels value subscription when trigger fires', () async {
         closeTrigger.complete();
-        await new Future(() {});
+        await Future(() {});
         expect(valuesCanceled, true);
       });
 
@@ -82,7 +82,7 @@ void main() {
           transformed.listen(otherValues.add);
           values.add(1);
           values.add(2);
-          await new Future(() {});
+          await Future(() {});
           expect(emittedValues, [1, 2]);
           expect(otherValues, [1, 2]);
         });
@@ -91,7 +91,7 @@ void main() {
           var otherDone = false;
           transformed.listen(null, onDone: () => otherDone = true);
           closeTrigger.complete();
-          await new Future(() {});
+          await Future(() {});
           expect(otherDone, true);
           expect(isDone, true);
         });
@@ -106,13 +106,13 @@ void main() {
 
         test('can cancel and relisten before trigger fires', () async {
           values.add(1);
-          await new Future(() {});
+          await Future(() {});
           await subscription.cancel();
           values.add(2);
-          await new Future(() {});
+          await Future(() {});
           subscription = transformed.listen(emittedValues.add);
           values.add(3);
-          await new Future(() {});
+          await Future(() {});
           expect(emittedValues, [1, 3]);
         });
       }

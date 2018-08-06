@@ -10,8 +10,8 @@ import 'package:stream_transform/stream_transform.dart';
 
 void main() {
   var streamTypes = {
-    'single subscription': () => new StreamController(),
-    'broadcast': () => new StreamController.broadcast()
+    'single subscription': () => StreamController(),
+    'broadcast': () => StreamController.broadcast()
   };
   StreamController values;
   List emittedValues;
@@ -30,7 +30,7 @@ void main() {
     expect(finishWork, isNull,
         reason: 'See $values befor previous work is complete');
     workArgument = values;
-    finishWork = new Completer();
+    finishWork = Completer();
     finishWork.future.then((_) {
       workArgument = null;
       finishWork = null;
@@ -63,11 +63,11 @@ void main() {
 
       test('does not emit before work finishes', () async {
         values.add(1);
-        await new Future(() {});
+        await Future(() {});
         expect(emittedValues, isEmpty);
         expect(workArgument, [1]);
         finishWork.complete(workArgument);
-        await new Future(() {});
+        await Future(() {});
         expect(emittedValues, [
           [1]
         ]);
@@ -75,50 +75,50 @@ void main() {
 
       test('buffers values while work is ongoing', () async {
         values.add(1);
-        await new Future(() {});
+        await Future(() {});
         values.add(2);
         values.add(3);
-        await new Future(() {});
+        await Future(() {});
         finishWork.complete();
-        await new Future(() {});
+        await Future(() {});
         expect(workArgument, [2, 3]);
       });
 
       test('forwards errors without waiting for work', () async {
         values.add(1);
-        await new Future(() {});
+        await Future(() {});
         values.addError('error');
-        await new Future(() {});
+        await Future(() {});
         expect(errors, ['error']);
       });
 
       test('forwards errors which occur during the work', () async {
         values.add(1);
-        await new Future(() {});
+        await Future(() {});
         finishWork.completeError('error');
-        await new Future(() {});
+        await Future(() {});
         expect(errors, ['error']);
       });
 
       test('can continue handling events after an error', () async {
         values.add(1);
-        await new Future(() {});
+        await Future(() {});
         finishWork.completeError('error');
         values.add(2);
-        await new Future(() {});
+        await Future(() {});
         expect(workArgument, [2]);
         finishWork.completeError('another');
-        await new Future(() {});
+        await Future(() {});
         expect(errors, ['error', 'another']);
       });
 
       test('does not start next work early due to an error in values',
           () async {
         values.add(1);
-        await new Future(() {});
+        await Future(() {});
         values.addError('error');
         values.add(2);
-        await new Future(() {});
+        await Future(() {});
         expect(errors, ['error']);
         // [work] will assert that the second iteration is not called because
         // the first has not completed.
@@ -133,29 +133,29 @@ void main() {
       test('closes when values end if no work is pending', () async {
         expect(isDone, false);
         await values.close();
-        await new Future(() {});
+        await Future(() {});
         expect(isDone, true);
       });
 
       test('waits for pending work when values close', () async {
         values.add(1);
-        await new Future(() {});
+        await Future(() {});
         expect(isDone, false);
         values.add(2);
         await values.close();
         expect(isDone, false);
         finishWork.complete(null);
-        await new Future(() {});
+        await Future(() {});
         // Still a pending value
         expect(isDone, false);
         finishWork.complete(null);
-        await new Future(() {});
+        await Future(() {});
         expect(isDone, true);
       });
 
       test('forwards errors from values', () async {
         values.addError('error');
-        await new Future(() {});
+        await Future(() {});
         expect(errors, ['error']);
       });
 
@@ -164,9 +164,9 @@ void main() {
           var otherValues = [];
           transformed.listen(otherValues.add);
           values.add(1);
-          await new Future(() {});
+          await Future(() {});
           finishWork.complete('result');
-          await new Future(() {});
+          await Future(() {});
           expect(emittedValues, ['result']);
           expect(otherValues, ['result']);
         });
@@ -175,30 +175,30 @@ void main() {
           var otherDone = false;
           transformed.listen(null, onDone: () => otherDone = true);
           values.add(1);
-          await new Future(() {});
+          await Future(() {});
           await values.close();
           expect(isDone, false);
           expect(otherDone, false);
           finishWork.complete();
-          await new Future(() {});
+          await Future(() {});
           expect(isDone, true);
           expect(otherDone, true);
         });
 
         test('can cancel and relisten', () async {
           values.add(1);
-          await new Future(() {});
+          await Future(() {});
           finishWork.complete('first');
-          await new Future(() {});
+          await Future(() {});
           await subscription.cancel();
           values.add(2);
-          await new Future(() {});
+          await Future(() {});
           subscription = transformed.listen(emittedValues.add);
           values.add(3);
-          await new Future(() {});
+          await Future(() {});
           expect(workArgument, [3]);
           finishWork.complete('second');
-          await new Future(() {});
+          await Future(() {});
           expect(emittedValues, ['first', 'second']);
         });
       }

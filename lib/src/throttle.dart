@@ -13,7 +13,7 @@ StreamTransformer<T, T> throttle<T>(Duration duration) {
   return fromHandlers(handleData: (data, sink) {
     if (timer == null) {
       sink.add(data);
-      timer = new Timer(duration, () {
+      timer = Timer(duration, () {
         timer = null;
       });
     }

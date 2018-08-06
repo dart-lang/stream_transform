@@ -10,8 +10,8 @@ import 'package:stream_transform/stream_transform.dart';
 
 void main() {
   var streamTypes = {
-    'single subscription': () => new StreamController(),
-    'broadcast': () => new StreamController.broadcast()
+    'single subscription': () => StreamController(),
+    'broadcast': () => StreamController.broadcast()
   };
   for (var outerType in streamTypes.keys) {
     for (var innerType in streamTypes.keys) {
@@ -52,40 +52,40 @@ void main() {
 
         test('forwards events', () async {
           outer.add(first.stream);
-          await new Future(() {});
+          await Future(() {});
           first.add(1);
           first.add(2);
-          await new Future(() {});
+          await Future(() {});
 
           outer.add(second.stream);
-          await new Future(() {});
+          await Future(() {});
           second.add(3);
           second.add(4);
-          await new Future(() {});
+          await Future(() {});
 
           expect(emittedValues, [1, 2, 3, 4]);
         });
 
         test('forwards errors from outer Stream', () async {
           outer.addError('error');
-          await new Future(() {});
+          await Future(() {});
           expect(errors, ['error']);
         });
 
         test('forwards errors from inner Stream', () async {
           outer.add(first.stream);
-          await new Future(() {});
+          await Future(() {});
           first.addError('error');
-          await new Future(() {});
+          await Future(() {});
           expect(errors, ['error']);
         });
 
         test('closes when final stream is done', () async {
           outer.add(first.stream);
-          await new Future(() {});
+          await Future(() {});
 
           outer.add(second.stream);
-          await new Future(() {});
+          await Future(() {});
 
           await outer.close();
           expect(isDone, false);
@@ -98,7 +98,7 @@ void main() {
             'closes when outer stream closes if latest inner stream already '
             'closed', () async {
           outer.add(first.stream);
-          await new Future(() {});
+          await Future(() {});
           await first.close();
           expect(isDone, false);
 
@@ -108,20 +108,20 @@ void main() {
 
         test('cancels listeners on previous streams', () async {
           outer.add(first.stream);
-          await new Future(() {});
+          await Future(() {});
 
           outer.add(second.stream);
-          await new Future(() {});
+          await Future(() {});
           expect(firstCanceled, true);
         });
 
         test('cancels listener on current and outer stream on cancel',
             () async {
           outer.add(first.stream);
-          await new Future(() {});
+          await Future(() {});
           await subscription.cancel();
 
-          await new Future(() {});
+          await Future(() {});
           expect(outerCanceled, true);
           expect(firstCanceled, true);
         });
@@ -131,22 +131,22 @@ void main() {
 
   group('switchMap', () {
     test('uses map function', () async {
-      var outer = new StreamController<List>();
+      var outer = StreamController<List>();
 
       var values = [];
       outer.stream
-          .transform(switchMap((l) => new Stream.fromIterable(l)))
+          .transform(switchMap((l) => Stream.fromIterable(l)))
           .listen(values.add);
 
       outer.add([1, 2, 3]);
-      await new Future(() {});
+      await Future(() {});
       outer.add([4, 5, 6]);
-      await new Future(() {});
+      await Future(() {});
       expect(values, [1, 2, 3, 4, 5, 6]);
     });
 
     test('can create a broadcast stream', () async {
-      var outer = new StreamController.broadcast();
+      var outer = StreamController.broadcast();
 
       var transformed = outer.stream.transform(switchMap(null));
 

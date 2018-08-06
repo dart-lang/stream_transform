@@ -11,7 +11,7 @@ import 'followed_by.dart';
 ///
 /// If the original stream is a broadcast stream the result will be as well.
 StreamTransformer<T, T> startWith<T>(T initial) =>
-    startWithStream<T>(new Future.value(initial).asStream());
+    startWithStream<T>(Future.value(initial).asStream());
 
 /// Emits all values in [initial] before any values from the original stream.
 ///
@@ -19,7 +19,7 @@ StreamTransformer<T, T> startWith<T>(T initial) =>
 /// the original stream is a broadcast stream it will miss any events which
 /// occur before the initial values are all emitted.
 StreamTransformer<T, T> startWithMany<T>(Iterable<T> initial) =>
-    startWithStream<T>(new Stream.fromIterable(initial));
+    startWithStream<T>(Stream.fromIterable(initial));
 
 /// Emits all values in [initial] before any values from the original stream.
 ///

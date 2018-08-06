@@ -24,8 +24,7 @@ StreamTransformer<S, T> switchMap<S, T>(Stream<T> convert(S event)) =>
 ///
 /// If the source stream is a broadcast stream, the result stream will be as
 /// well, regardless of the types of streams emitted.
-StreamTransformer<Stream<T>, T> switchLatest<T>() =>
-    new _SwitchTransformer<T>();
+StreamTransformer<Stream<T>, T> switchLatest<T>() => _SwitchTransformer<T>();
 
 class _SwitchTransformer<T> extends StreamTransformerBase<Stream<T>, T> {
   const _SwitchTransformer();
@@ -33,8 +32,8 @@ class _SwitchTransformer<T> extends StreamTransformerBase<Stream<T>, T> {
   @override
   Stream<T> bind(Stream<Stream<T>> outer) {
     var controller = outer.isBroadcast
-        ? new StreamController<T>.broadcast(sync: true)
-        : new StreamController<T>(sync: true);
+        ? StreamController<T>.broadcast(sync: true)
+        : StreamController<T>(sync: true);
 
     StreamSubscription<Stream<T>> outerSubscription;
 
