@@ -10,7 +10,7 @@ typedef Stream<T> Bind<S, T>(Stream<S> values);
 /// Creates a [StreamTransformer] which overrides [StreamTransformer.bind] to
 /// [bindFn].
 StreamTransformer<S, T> fromBind<S, T>(Bind<S, T> bindFn) =>
-    new _StreamTransformer(bindFn);
+    _StreamTransformer(bindFn);
 
 class _StreamTransformer<S, T> extends StreamTransformerBase<S, T> {
   final Bind<S, T> _bind;

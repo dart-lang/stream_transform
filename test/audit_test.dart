@@ -11,8 +11,8 @@ import 'utils.dart';
 
 void main() {
   var streamTypes = {
-    'single subscription': () => new StreamController(),
-    'broadcast': () => new StreamController.broadcast()
+    'single subscription': () => StreamController(),
+    'broadcast': () => StreamController.broadcast()
   };
   for (var streamType in streamTypes.keys) {
     group('Stream type [$streamType]', () {
@@ -87,9 +87,9 @@ void main() {
         test('does not starve output if many values come closer than duration',
             () async {
           values.add(1);
-          await new Future.delayed(const Duration(milliseconds: 3));
+          await Future.delayed(const Duration(milliseconds: 3));
           values.add(2);
-          await new Future.delayed(const Duration(milliseconds: 3));
+          await Future.delayed(const Duration(milliseconds: 3));
           values.add(3);
           await waitForTimer(5);
           expect(emittedValues, [2, 3]);

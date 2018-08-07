@@ -11,8 +11,8 @@ import 'utils.dart';
 
 void main() {
   var streamTypes = {
-    'single subscription': () => new StreamController(),
-    'broadcast': () => new StreamController.broadcast()
+    'single subscription': () => StreamController(),
+    'broadcast': () => StreamController.broadcast()
   };
   for (var streamType in streamTypes.keys) {
     group('Stream type [$streamType]', () {
@@ -79,7 +79,7 @@ void main() {
             var otherValues = [];
             transformed.listen(otherValues.add);
             values.add(1);
-            await new Future(() {});
+            await Future(() {});
             expect(emittedValues, [1]);
             expect(otherValues, [1]);
           });

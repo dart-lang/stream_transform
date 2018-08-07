@@ -10,8 +10,8 @@ import 'package:stream_transform/stream_transform.dart';
 
 void main() {
   var streamTypes = {
-    'single subscription': () => new StreamController(),
-    'broadcast': () => new StreamController.broadcast()
+    'single subscription': () => StreamController(),
+    'broadcast': () => StreamController.broadcast()
   };
   StreamController streamController;
   List emittedValues;
@@ -26,7 +26,7 @@ void main() {
 
   Future convert(dynamic value) {
     values.add(value);
-    var completer = new Completer();
+    var completer = Completer();
     finishWork.add(completer);
     return completer.future;
   }
@@ -54,11 +54,11 @@ void main() {
 
       test('does not emit before convert finishes', () async {
         streamController.add(1);
-        await new Future(() {});
+        await Future(() {});
         expect(emittedValues, isEmpty);
         expect(values, [1]);
         finishWork.first.complete(1);
-        await new Future(() {});
+        await Future(() {});
         expect(emittedValues, [1]);
       });
 
@@ -66,36 +66,36 @@ void main() {
         streamController.add(1);
         streamController.add(2);
         streamController.add(3);
-        await new Future(() {});
+        await Future(() {});
         expect(values, [1, 2, 3]);
       });
 
       test('forwards errors directly without waiting for previous convert',
           () async {
         streamController.add(1);
-        await new Future(() {});
+        await Future(() {});
         streamController.addError('error');
-        await new Future(() {});
+        await Future(() {});
         expect(errors, ['error']);
       });
 
       test('forwards errors which occur during the convert', () async {
         streamController.add(1);
-        await new Future(() {});
+        await Future(() {});
         finishWork.first.completeError('error');
-        await new Future(() {});
+        await Future(() {});
         expect(errors, ['error']);
       });
 
       test('can continue handling events after an error', () async {
         streamController.add(1);
-        await new Future(() {});
+        await Future(() {});
         finishWork[0].completeError('error');
         streamController.add(2);
-        await new Future(() {});
+        await Future(() {});
         expect(values, [1, 2]);
         finishWork[1].completeError('another');
-        await new Future(() {});
+        await Future(() {});
         expect(errors, ['error', 'another']);
       });
 
@@ -108,7 +108,7 @@ void main() {
       test('closes when values end if no conversion is pending', () async {
         expect(isDone, false);
         await streamController.close();
-        await new Future(() {});
+        await Future(() {});
         expect(isDone, true);
       });
 
@@ -117,9 +117,9 @@ void main() {
           var otherValues = [];
           transformed.listen(otherValues.add);
           streamController.add(1);
-          await new Future(() {});
+          await Future(() {});
           finishWork.first.complete('result');
-          await new Future(() {});
+          await Future(() {});
           expect(emittedValues, ['result']);
           expect(otherValues, ['result']);
         });
@@ -128,30 +128,30 @@ void main() {
           var otherDone = false;
           transformed.listen(null, onDone: () => otherDone = true);
           streamController.add(1);
-          await new Future(() {});
+          await Future(() {});
           await streamController.close();
           expect(isDone, false);
           expect(otherDone, false);
           finishWork.first.complete();
-          await new Future(() {});
+          await Future(() {});
           expect(isDone, true);
           expect(otherDone, true);
         });
 
         test('can cancel and relisten', () async {
           streamController.add(1);
-          await new Future(() {});
+          await Future(() {});
           finishWork.first.complete('first');
-          await new Future(() {});
+          await Future(() {});
           await subscription.cancel();
           streamController.add(2);
-          await new Future(() {});
+          await Future(() {});
           subscription = transformed.listen(emittedValues.add);
           streamController.add(3);
-          await new Future(() {});
+          await Future(() {});
           expect(values, [1, 3]);
           finishWork[1].complete('second');
-          await new Future(() {});
+          await Future(() {});
           expect(emittedValues, ['first', 'second']);
         });
       }

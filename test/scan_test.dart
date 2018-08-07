@@ -11,7 +11,7 @@ import 'package:stream_transform/stream_transform.dart';
 void main() {
   group('Scan', () {
     test('produces intermediate values', () async {
-      var source = new Stream.fromIterable([1, 2, 3, 4]);
+      var source = Stream.fromIterable([1, 2, 3, 4]);
       var sum = (int x, int y) => x + y;
       var result = await source.transform(scan(0, sum)).toList();
 
@@ -19,7 +19,7 @@ void main() {
     });
 
     test('can create a broadcast stream', () async {
-      var source = new StreamController.broadcast();
+      var source = StreamController.broadcast();
 
       var transformed = source.stream.transform(scan(null, null));
 

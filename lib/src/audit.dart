@@ -23,7 +23,7 @@ StreamTransformer<T, T> audit<T>(Duration duration) {
 
   return fromHandlers(handleData: (T data, EventSink<T> sink) {
     recentData = data;
-    timer ??= new Timer(duration, () {
+    timer ??= Timer(duration, () {
       sink.add(recentData);
       timer = null;
       if (shouldClose) {

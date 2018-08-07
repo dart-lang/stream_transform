@@ -11,8 +11,8 @@ import 'package:stream_transform/stream_transform.dart';
 void main() {
   group('merge', () {
     test('includes all values', () async {
-      var first = new Stream.fromIterable([1, 2, 3]);
-      var second = new Stream.fromIterable([4, 5, 6]);
+      var first = Stream.fromIterable([1, 2, 3]);
+      var second = Stream.fromIterable([4, 5, 6]);
       var allValues = await first.transform(merge(second)).toList();
       expect(allValues, containsAllInOrder([1, 2, 3]));
       expect(allValues, containsAllInOrder([4, 5, 6]));
@@ -21,12 +21,12 @@ void main() {
 
     test('cancels both sources', () async {
       var firstCanceled = false;
-      var first = new StreamController()
+      var first = StreamController()
         ..onCancel = () {
           firstCanceled = true;
         };
       var secondCanceled = false;
-      var second = new StreamController()
+      var second = StreamController()
         ..onCancel = () {
           secondCanceled = true;
         };
@@ -38,8 +38,8 @@ void main() {
     });
 
     test('completes when both sources complete', () async {
-      var first = new StreamController();
-      var second = new StreamController();
+      var first = StreamController();
+      var second = StreamController();
       var isDone = false;
       first.stream.transform(merge(second.stream)).listen((_) {}, onDone: () {
         isDone = true;
@@ -51,14 +51,14 @@ void main() {
     });
 
     test('can cancel and relisten to broadcast stream', () async {
-      var first = new StreamController.broadcast();
-      var second = new StreamController();
+      var first = StreamController.broadcast();
+      var second = StreamController();
       var emittedValues = [];
       var transformed = first.stream.transform((merge(second.stream)));
       var subscription = transformed.listen(emittedValues.add);
       first.add(1);
       second.add(2);
-      await new Future(() {});
+      await Future(() {});
       expect(emittedValues, contains(1));
       expect(emittedValues, contains(2));
       await subscription.cancel();
@@ -66,7 +66,7 @@ void main() {
       subscription = transformed.listen(emittedValues.add);
       first.add(3);
       second.add(4);
-      await new Future(() {});
+      await Future(() {});
       expect(emittedValues, contains(3));
       expect(emittedValues, contains(4));
     });
@@ -74,9 +74,9 @@ void main() {
 
   group('mergeAll', () {
     test('includes all values', () async {
-      var first = new Stream.fromIterable([1, 2, 3]);
-      var second = new Stream.fromIterable([4, 5, 6]);
-      var third = new Stream.fromIterable([7, 8, 9]);
+      var first = Stream.fromIterable([1, 2, 3]);
+      var second = Stream.fromIterable([4, 5, 6]);
+      var third = Stream.fromIterable([7, 8, 9]);
       var allValues = await first.transform(mergeAll([second, third])).toList();
       expect(allValues, containsAllInOrder([1, 2, 3]));
       expect(allValues, containsAllInOrder([4, 5, 6]));
@@ -86,17 +86,17 @@ void main() {
 
     test('handles mix of broadcast and single-subscription', () async {
       var firstCanceled = false;
-      var first = new StreamController.broadcast()
+      var first = StreamController.broadcast()
         ..onCancel = () {
           firstCanceled = true;
         };
       var secondBroadcastCanceled = false;
-      var secondBroadcast = new StreamController.broadcast()
+      var secondBroadcast = StreamController.broadcast()
         ..onCancel = () {
           secondBroadcastCanceled = true;
         };
       var secondSingleCanceled = false;
-      var secondSingle = new StreamController()
+      var secondSingle = StreamController()
         ..onCancel = () {
           secondSingleCanceled = true;
         };
@@ -114,7 +114,7 @@ void main() {
       secondBroadcast.add(2);
       secondSingle.add(3);
 
-      await new Future(() {});
+      await Future(() {});
       await firstSubscription.cancel();
 
       expect(firstCanceled, false);
@@ -125,10 +125,10 @@ void main() {
       secondBroadcast.add(5);
       secondSingle.add(6);
 
-      await new Future(() {});
+      await Future(() {});
       await secondSubscription.cancel();
 
-      await new Future(() {});
+      await Future(() {});
       expect(firstCanceled, true);
       expect(secondBroadcastCanceled, true);
       expect(secondSingleCanceled, false,

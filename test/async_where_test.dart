@@ -9,47 +9,47 @@ import 'package:stream_transform/stream_transform.dart';
 
 void main() {
   test('forwards only events that pass the predicate', () async {
-    var values = new Stream.fromIterable([1, 2, 3, 4]);
+    var values = Stream.fromIterable([1, 2, 3, 4]);
     var filtered = values.transform(asyncWhere((e) async => e > 2));
     expect(await filtered.toList(), [3, 4]);
   });
 
   test('allows predicates that go through event loop', () async {
-    var values = new Stream.fromIterable([1, 2, 3, 4]);
+    var values = Stream.fromIterable([1, 2, 3, 4]);
     var filtered = values.transform(asyncWhere((e) async {
-      await new Future(() {});
+      await Future(() {});
       return e > 2;
     }));
     expect(await filtered.toList(), [3, 4]);
   });
 
   test('allows synchronous predicate', () async {
-    var values = new Stream.fromIterable([1, 2, 3, 4]);
+    var values = Stream.fromIterable([1, 2, 3, 4]);
     var filtered = values.transform(asyncWhere((e) => e > 2));
     expect(await filtered.toList(), [3, 4]);
   });
 
   test('can result in empty stream', () async {
-    var values = new Stream.fromIterable([1, 2, 3, 4]);
+    var values = Stream.fromIterable([1, 2, 3, 4]);
     var filtered = values.transform(asyncWhere((e) => e > 4));
     expect(await filtered.isEmpty, true);
   });
 
   test('forwards values to multiple listeners', () async {
-    var values = new StreamController<int>.broadcast();
+    var values = StreamController<int>.broadcast();
     var filtered = values.stream.transform(asyncWhere((e) async => e > 2));
     var firstValues = [];
     var secondValues = [];
     filtered..listen(firstValues.add)..listen(secondValues.add);
     values..add(1)..add(2)..add(3)..add(4);
-    await new Future(() {});
+    await Future(() {});
     expect(firstValues, [3, 4]);
     expect(secondValues, [3, 4]);
   });
 
   test('closes streams with multiple listeners', () async {
-    var values = new StreamController.broadcast();
-    var predicate = new Completer<bool>();
+    var values = StreamController.broadcast();
+    var predicate = Completer<bool>();
     var filtered = values.stream.transform(asyncWhere((_) => predicate.future));
     var firstDone = false;
     var secondDone = false;
@@ -62,7 +62,7 @@ void main() {
     expect(secondDone, false);
 
     predicate.complete(true);
-    await new Future(() {});
+    await Future(() {});
     expect(firstDone, true);
     expect(secondDone, true);
   });
@@ -70,13 +70,13 @@ void main() {
   test('forwards errors emitted by the test callback', () async {
     var errors = [];
     var emitted = [];
-    var values = new Stream.fromIterable([1, 2, 3, 4]);
+    var values = Stream.fromIterable([1, 2, 3, 4]);
     var filtered = values.transform(asyncWhere((e) async {
-      await new Future(() {});
-      if (e.isEven) throw new Exception('$e');
+      await Future(() {});
+      if (e.isEven) throw Exception('$e');
       return true;
     }));
-    var done = new Completer();
+    var done = Completer();
     filtered.listen(emitted.add, onError: errors.add, onDone: done.complete);
     await done.future;
     expect(emitted, [1, 3]);

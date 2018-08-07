@@ -37,7 +37,7 @@ void main() {
   group('default from_handlers', () {
     group('Single subscription stream', () {
       setUp(() {
-        setUpForController(new StreamController(), fromHandlers());
+        setUpForController(StreamController(), fromHandlers());
       });
 
       test('has correct stream type', () {
@@ -47,13 +47,13 @@ void main() {
       test('forwards values', () async {
         values.add(1);
         values.add(2);
-        await new Future(() {});
+        await Future(() {});
         expect(emittedValues, [1, 2]);
       });
 
       test('forwards errors', () async {
         values.addError('error');
-        await new Future(() {});
+        await Future(() {});
         expect(errors, ['error']);
       });
 
@@ -75,7 +75,7 @@ void main() {
       StreamSubscription subscription2;
 
       setUp(() {
-        setUpForController(new StreamController.broadcast(), fromHandlers());
+        setUpForController(StreamController.broadcast(), fromHandlers());
         emittedValues2 = [];
         errors2 = [];
         isDone2 = false;
@@ -92,14 +92,14 @@ void main() {
       test('forwards values', () async {
         values.add(1);
         values.add(2);
-        await new Future(() {});
+        await Future(() {});
         expect(emittedValues, [1, 2]);
         expect(emittedValues2, [1, 2]);
       });
 
       test('forwards errors', () async {
         values.addError('error');
-        await new Future(() {});
+        await Future(() {});
         expect(errors, ['error']);
         expect(errors2, ['error']);
       });
@@ -122,7 +122,7 @@ void main() {
   group('custom handlers', () {
     group('single subscription', () {
       setUp(() async {
-        setUpForController(new StreamController(),
+        setUpForController(StreamController(),
             fromHandlers(handleData: (value, sink) {
           sink.add(value + 1);
         }));
@@ -130,7 +130,7 @@ void main() {
       test('uses transform from handleData', () async {
         values.add(1);
         values.add(2);
-        await new Future(() {});
+        await Future(() {});
         expect(emittedValues, [2, 3]);
       });
     });
@@ -145,7 +145,7 @@ void main() {
         doneCallCount = 0;
         errorCallCount = 0;
         setUpForController(
-            new StreamController.broadcast(),
+            StreamController.broadcast(),
             fromHandlers(handleData: (value, sink) {
               dataCallCount++;
             }, handleError: (error, stackTrace, sink) {
@@ -159,7 +159,7 @@ void main() {
 
       test('handles data once', () async {
         values.add(1);
-        await new Future(() {});
+        await Future(() {});
         expect(dataCallCount, 1);
       });
 
@@ -170,7 +170,7 @@ void main() {
 
       test('handles errors once', () async {
         values.addError('error');
-        await new Future(() {});
+        await Future(() {});
         expect(errorCallCount, 1);
       });
     });

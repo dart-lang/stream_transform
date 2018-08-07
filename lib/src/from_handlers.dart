@@ -15,7 +15,7 @@ StreamTransformer<S, T> fromHandlers<S, T>(
         {HandleData<S, T> handleData,
         HandleError<T> handleError,
         HandleDone<T> handleDone}) =>
-    new _StreamTransformer(
+    _StreamTransformer(
         handleData: handleData,
         handleError: handleError,
         handleDone: handleDone);
@@ -49,8 +49,8 @@ class _StreamTransformer<S, T> extends StreamTransformerBase<S, T> {
   @override
   Stream<T> bind(Stream<S> values) {
     var controller = values.isBroadcast
-        ? new StreamController<T>.broadcast(sync: true)
-        : new StreamController<T>(sync: true);
+        ? StreamController<T>.broadcast(sync: true)
+        : StreamController<T>(sync: true);
 
     StreamSubscription<S> subscription;
     controller.onListen = () {
