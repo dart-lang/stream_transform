@@ -2,7 +2,8 @@ language: dart
 branches:
   only: [master]
 dart:
-  - dev
+  # Skipping dev until Dart 2.1.0-dev is out
+  #- dev
   - stable
 cache:
   directories:
