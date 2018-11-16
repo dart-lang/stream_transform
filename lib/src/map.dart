@@ -4,8 +4,6 @@
 
 import 'dart:async';
 
-import 'bind.dart';
-
 /// Models a [Stream.map] callback as a [StreamTransformer].
 ///
 /// This is most useful to pass to functions that take a [StreamTransformer]
@@ -19,4 +17,4 @@ import 'bind.dart';
 ///     map((v) => '$v'));
 /// ```
 StreamTransformer<S, T> map<S, T>(T convert(S event)) =>
-    fromBind((stream) => stream.map(convert));
+    StreamTransformer.fromBind((stream) => stream.map(convert));
