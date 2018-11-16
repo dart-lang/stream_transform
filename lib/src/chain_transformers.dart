@@ -4,8 +4,6 @@
 
 import 'dart:async';
 
-import 'bind.dart';
-
 /// Combines two transformers into one.
 ///
 /// This is most useful to keep a reference to the combination and use it in
@@ -21,4 +19,5 @@ import 'bind.dart';
 /// ```
 StreamTransformer<S, T> chainTransformers<S, I, T>(
         StreamTransformer<S, I> first, StreamTransformer<I, T> second) =>
-    fromBind((values) => values.transform(first).transform(second));
+    StreamTransformer.fromBind(
+        (values) => values.transform(first).transform(second));

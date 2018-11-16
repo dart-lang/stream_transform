@@ -4,7 +4,6 @@
 
 import 'dart:async';
 
-import 'bind.dart';
 import 'followed_by.dart';
 
 /// Emits [initial] before any values from the original stream.
@@ -27,7 +26,7 @@ StreamTransformer<T, T> startWithMany<T>(Iterable<T> initial) =>
 /// the original stream is a broadcast stream it will miss any events which
 /// occur before [initial] closes.
 StreamTransformer<T, T> startWithStream<T>(Stream<T> initial) =>
-    fromBind((values) {
+    StreamTransformer.fromBind((values) {
       if (values.isBroadcast && !initial.isBroadcast) {
         initial = initial.asBroadcastStream();
       }
