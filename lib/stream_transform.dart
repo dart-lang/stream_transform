@@ -19,3 +19,4 @@ export 'src/switch.dart';
 export 'src/take_until.dart';
 export 'src/tap.dart';
 export 'src/throttle.dart';
+export 'src/where_type.dart';

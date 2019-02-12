@@ -1,3 +1,7 @@
+## 0.0.15
+
+- Add `whereType`.
+
 ## 0.0.14+1
 
 - Allow using non-dev Dart 2 SDK.

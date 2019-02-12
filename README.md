@@ -63,3 +63,7 @@ being a real subscriber.
 # throttle
 
 Blocks events for a duration after an event is successfully emitted.
+
+# whereType
+
+Like `Iterable.whereType` for a stream.
