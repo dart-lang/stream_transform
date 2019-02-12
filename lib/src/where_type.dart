@@ -9,6 +9,14 @@ import 'dart:async';
 /// If the source stream is a broadcast stream the result will be as well.
 ///
 /// Errors from the source stream are forwarded directly to the result stream.
+///
+/// The static type of the returned transformer takes `Null` so that it can
+/// satisfy the subtype requirements for `stream.transform()` argument on any
+/// source Stream. The argument to `bind` has been broaded to take
+/// `Stream<Object>` since it never be passed a `Stream<Null>` at runtime. This
+/// is safe to use on any source stream and there is no static or runtime
+/// checking that [R] is sensible - that is that is a subtype of the stream's
+/// type such that some values of that type may be possible.
 StreamTransformer<Null, R> whereType<R>() => _WhereType<R>();
 
 class _WhereType<R> extends StreamTransformerBase<Null, R> {
