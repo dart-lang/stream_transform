@@ -21,14 +21,13 @@ class _WhereType<R> extends StreamTransformerBase<Null, R> {
     StreamSubscription<Object> subscription;
     controller.onListen = () {
       if (subscription != null) return;
-      var valuesDone = false;
       subscription = values.listen(
           (value) {
             if (value is R) controller.add(value);
           },
           onError: controller.addError,
           onDone: () {
-            valuesDone = true;
+            subscription = null;
             controller.close();
           });
       if (!values.isBroadcast) {
@@ -36,10 +35,8 @@ class _WhereType<R> extends StreamTransformerBase<Null, R> {
         controller.onResume = subscription.resume;
       }
       controller.onCancel = () {
-        var toCancel = subscription;
+        subscription?.cancel();
         subscription = null;
-        if (!valuesDone) return toCancel.cancel();
-        return null;
       };
     };
     return controller.stream;
