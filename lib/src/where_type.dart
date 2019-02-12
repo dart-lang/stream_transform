@@ -23,15 +23,15 @@ StreamTransformer<Null, R> whereType<R>() => _WhereType<R>();
 
 class _WhereType<R> extends StreamTransformerBase<Null, R> {
   @override
-  Stream<R> bind(Stream<Object> input) {
-    var controller = input.isBroadcast
+  Stream<R> bind(Stream<Object> source) {
+    var controller = source.isBroadcast
         ? StreamController<R>.broadcast(sync: true)
         : StreamController<R>(sync: true);
 
     StreamSubscription<Object> subscription;
     controller.onListen = () {
       if (subscription != null) return;
-      subscription = input.listen(
+      subscription = source.listen(
           (value) {
             if (value is R) controller.add(value);
           },
@@ -40,7 +40,7 @@ class _WhereType<R> extends StreamTransformerBase<Null, R> {
             subscription = null;
             controller.close();
           });
-      if (!input.isBroadcast) {
+      if (!source.isBroadcast) {
         controller.onPause = subscription.pause;
         controller.onResume = subscription.resume;
       }
