@@ -12,7 +12,7 @@ import 'dart:async';
 ///
 /// The static type of the returned transformer takes `Null` so that it can
 /// satisfy the subtype requirements for the `stream.transform()` argument on
-/// any source stream. The argument to `bind` has been broaded to take
+/// any source stream. The argument to `bind` has been broadened to take
 /// `Stream<Object>` since it will never be passed a `Stream<Null>` at runtime.
 /// This is safe to use on any source stream.
 ///
