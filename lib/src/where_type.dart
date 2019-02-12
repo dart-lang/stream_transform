@@ -16,7 +16,7 @@ import 'dart:async';
 /// `Stream<Object>` since it will never be passed a `Stream<Null>` at runtime.
 /// This is safe to use on any source stream.
 ///
-/// [R] should b a subtype of the stream's generic type otherwise nothing of
+/// [R] should be a subtype of the stream's generic type, otherwise nothing of
 /// type [R] could possibly be emitted, however there is no static or runtime
 /// checking that this is the case.
 StreamTransformer<Null, R> whereType<R>() => _WhereType<R>();
