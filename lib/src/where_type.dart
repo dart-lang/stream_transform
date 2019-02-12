@@ -11,25 +11,27 @@ import 'dart:async';
 /// Errors from the source stream are forwarded directly to the result stream.
 ///
 /// The static type of the returned transformer takes `Null` so that it can
-/// satisfy the subtype requirements for `stream.transform()` argument on any
-/// source Stream. The argument to `bind` has been broaded to take
-/// `Stream<Object>` since it never be passed a `Stream<Null>` at runtime. This
-/// is safe to use on any source stream and there is no static or runtime
-/// checking that [R] is sensible - that is that is a subtype of the stream's
-/// type such that some values of that type may be possible.
+/// satisfy the subtype requirements for the `stream.transform()` argument on
+/// any source stream. The argument to `bind` has been broaded to take
+/// `Stream<Object>` since it will never be passed a `Stream<Null>` at runtime.
+/// This is safe to use on any source stream.
+///
+/// [R] should b a subtype of the stream's generic type otherwise nothing of
+/// type [R] could possibly be emitted, however there is no static or runtime
+/// checking that this is the case.
 StreamTransformer<Null, R> whereType<R>() => _WhereType<R>();
 
 class _WhereType<R> extends StreamTransformerBase<Null, R> {
   @override
-  Stream<R> bind(Stream<Object> values) {
-    var controller = values.isBroadcast
+  Stream<R> bind(Stream<Object> input) {
+    var controller = input.isBroadcast
         ? StreamController<R>.broadcast(sync: true)
         : StreamController<R>(sync: true);
 
     StreamSubscription<Object> subscription;
     controller.onListen = () {
       if (subscription != null) return;
-      subscription = values.listen(
+      subscription = input.listen(
           (value) {
             if (value is R) controller.add(value);
           },
@@ -38,7 +40,7 @@ class _WhereType<R> extends StreamTransformerBase<Null, R> {
             subscription = null;
             controller.close();
           });
-      if (!values.isBroadcast) {
+      if (!input.isBroadcast) {
         controller.onPause = subscription.pause;
         controller.onResume = subscription.resume;
       }
