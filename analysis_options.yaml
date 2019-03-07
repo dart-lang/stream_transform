@@ -1,3 +1,4 @@
+include: package:pedantic/analysis_options.yaml
 analyzer:
   strong-mode:
     implicit-casts: false
@@ -38,7 +39,6 @@ linter:
     - prefer_single_quotes
     - recursive_getters
     - slash_for_doc_comments
-    - test_types_in_equals
     - test_types_in_equals
     - throw_in_finally
     - type_init_formals
