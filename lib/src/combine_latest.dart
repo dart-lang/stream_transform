@@ -80,7 +80,13 @@ class _CombineLatest<S, T, R> extends StreamTransformerBase<S, R> {
           onError: controller.addError,
           onDone: () {
             sourceDone = true;
-            if (otherDone) controller.close();
+            if (otherDone) {
+              controller.close();
+            } else if (!sourceStarted) {
+              // Nothing can ever be emitted
+              otherSubscription.cancel();
+              controller.close();
+            }
           });
       otherSubscription = other.listen(
           (o) {
@@ -91,7 +97,13 @@ class _CombineLatest<S, T, R> extends StreamTransformerBase<S, R> {
           onError: controller.addError,
           onDone: () {
             otherDone = true;
-            if (sourceDone) controller.close();
+            if (sourceDone) {
+              controller.close();
+            } else if (!otherStarted) {
+              // Nothing can ever be emitted
+              sourceSubscription.cancel();
+              controller.close();
+            }
           });
       if (!source.isBroadcast) {
         controller

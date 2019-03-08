@@ -52,12 +52,30 @@ void main() {
           .transform(combineLatest(combineWith.stream, sum))
           .listen(null, onDone: () => done = true);
 
+      source.add(1);
+
       await source.close();
       await Future(() {});
       expect(done, false);
 
       await combineWith.close();
       await Future(() {});
+      expect(done, true);
+    });
+
+    test('ends if a Stream closes without ever emitting a value', () async {
+      var source = StreamController<int>();
+      var combineWith = Stream<int>.empty();
+
+      int sum(int a, int b) => a + b;
+
+      var done = false;
+      source.stream
+          .transform(combineLatest(combineWith, sum))
+          .listen(null, onDone: () => done = true);
+
+      await Future(() {});
+      // Nothing can ever be emitted on the result, may as well close.
       expect(done, true);
     });
 
