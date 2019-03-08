@@ -116,14 +116,12 @@ class _CombineLatest<S, T, R> extends StreamTransformerBase<S, R> {
             otherSubscription.resume();
           };
       }
-      controller.onCancel = () async {
+      controller.onCancel = () {
         var cancelSource = sourceSubscription.cancel();
         var cancelOther = otherSubscription.cancel();
         sourceSubscription = null;
         otherSubscription = null;
-
-        await cancelSource;
-        await cancelOther;
+        return Future.wait([cancelSource, cancelOther]);
       };
     };
     return controller.stream;
