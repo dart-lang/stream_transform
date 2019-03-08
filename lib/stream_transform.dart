@@ -7,6 +7,7 @@ export 'src/async_where.dart';
 export 'src/audit.dart';
 export 'src/buffer.dart';
 export 'src/chain_transformers.dart';
+export 'src/combine_latest.dart';
 export 'src/concat.dart';
 export 'src/concurrent_async_map.dart';
 export 'src/debounce.dart';
