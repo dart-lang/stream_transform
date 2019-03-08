@@ -1,3 +1,10 @@
+## 0.0.16
+
+- Allow a `combine` callback to return a `FutureOr<T>` in `scan`. There are no
+  behavior changes for synchronous callbacks. **Potential breaking change** In
+  the unlikely situation where `scan` was used to produce a `Stream<Future>`
+  inference may now fail and require explicit generic type arguments.
+
 ## 0.0.15
 
 - Add `whereType`.
