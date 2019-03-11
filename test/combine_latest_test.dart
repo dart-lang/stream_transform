@@ -13,19 +13,19 @@ void main() {
   group('combineLatest', () {
     test('flows through combine callback', () async {
       var source = StreamController<int>();
-      var combineWith = StreamController<int>();
+      var other = StreamController<int>();
       int sum(int a, int b) => a + b;
 
       var results = <int>[];
       unawaited(source.stream
-          .transform(combineLatest(combineWith.stream, sum))
+          .transform(combineLatest(other.stream, sum))
           .forEach(results.add));
 
       source.add(1);
       await Future(() {});
       expect(results, isEmpty);
 
-      combineWith.add(2);
+      other.add(2);
       await Future(() {});
       expect(results, [3]);
 
@@ -37,19 +37,19 @@ void main() {
       await Future(() {});
       expect(results, [3, 5, 6]);
 
-      combineWith.add(5);
+      other.add(5);
       await Future(() {});
       expect(results, [3, 5, 6, 9]);
     });
 
     test('can combine different typed streams', () async {
       var source = StreamController<String>();
-      var combineWith = StreamController<int>();
+      var other = StreamController<int>();
       String times(String a, int b) => a * b;
 
       var results = <String>[];
       unawaited(source.stream
-          .transform(combineLatest(combineWith.stream, times))
+          .transform(combineLatest(other.stream, times))
           .forEach(results.add));
 
       source.add('a');
@@ -57,11 +57,11 @@ void main() {
       await Future(() {});
       expect(results, isEmpty);
 
-      combineWith.add(2);
+      other.add(2);
       await Future(() {});
       expect(results, ['bb']);
 
-      combineWith.add(3);
+      other.add(3);
       await Future(() {});
       expect(results, ['bb', 'bbb']);
 
@@ -72,12 +72,12 @@ void main() {
 
     test('ends after both streams have ended', () async {
       var source = StreamController<int>();
-      var combineWith = StreamController<int>();
+      var other = StreamController<int>();
       int sum(int a, int b) => a + b;
 
       var done = false;
       source.stream
-          .transform(combineLatest(combineWith.stream, sum))
+          .transform(combineLatest(other.stream, sum))
           .listen(null, onDone: () => done = true);
 
       source.add(1);
@@ -86,7 +86,7 @@ void main() {
       await Future(() {});
       expect(done, false);
 
-      await combineWith.close();
+      await other.close();
       await Future(() {});
       expect(done, true);
     });
@@ -94,13 +94,13 @@ void main() {
     test('ends if source stream closes without ever emitting a value',
         () async {
       var source = Stream<int>.empty();
-      var combineWith = StreamController<int>();
+      var other = StreamController<int>();
 
       int sum(int a, int b) => a + b;
 
       var done = false;
       source
-          .transform(combineLatest(combineWith.stream, sum))
+          .transform(combineLatest(other.stream, sum))
           .listen(null, onDone: () => done = true);
 
       await Future(() {});
@@ -110,13 +110,13 @@ void main() {
 
     test('ends if other stream closes without ever emitting a value', () async {
       var source = StreamController<int>();
-      var combineWith = Stream<int>.empty();
+      var other = Stream<int>.empty();
 
       int sum(int a, int b) => a + b;
 
       var done = false;
       source.stream
-          .transform(combineLatest(combineWith, sum))
+          .transform(combineLatest(other, sum))
           .listen(null, onDone: () => done = true);
 
       await Future(() {});
@@ -126,19 +126,19 @@ void main() {
 
     test('forwards errors', () async {
       var source = StreamController<int>();
-      var combineWith = StreamController<int>();
+      var other = StreamController<int>();
       int sum(int a, int b) => throw _NumberedException(3);
 
       var errors = [];
       source.stream
-          .transform(combineLatest(combineWith.stream, sum))
+          .transform(combineLatest(other.stream, sum))
           .listen(null, onError: errors.add);
 
       source.addError(_NumberedException(1));
-      combineWith.addError(_NumberedException(2));
+      other.addError(_NumberedException(2));
 
       source.add(1);
-      combineWith.add(2);
+      other.add(2);
 
       await Future(() {});
 
@@ -148,17 +148,17 @@ void main() {
     group('broadcast source', () {
       test('can cancel and relisten to broadcast stream', () async {
         var source = StreamController<int>.broadcast();
-        var combineWith = StreamController<int>();
+        var other = StreamController<int>();
         int combine(int a, int b) => a + b;
 
         var emittedValues = <int>[];
         var transformed =
-            source.stream.transform(combineLatest(combineWith.stream, combine));
+            source.stream.transform(combineLatest(other.stream, combine));
 
         var subscription = transformed.listen(emittedValues.add);
 
         source.add(1);
-        combineWith.add(2);
+        other.add(2);
         await Future(() {});
         expect(emittedValues, [3]);
 

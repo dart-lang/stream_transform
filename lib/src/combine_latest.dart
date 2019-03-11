@@ -5,11 +5,11 @@
 import 'dart:async';
 
 /// Combine the latest value from the source stream with the latest value from
-/// [combineWith] using [combine].
+/// [other] using [combine].
 ///
 /// No event will be emitted from the result stream until both the source stream
-/// and [combineWith] have each emitted at least one event. Once both streams
-/// have emitted at least one event, the result stream will emit any time either
+/// and [other] have each emitted at least one event. Once both streams have
+/// emitted at least one event, the result stream will emit any time either
 /// input stream emits.
 ///
 /// For example:
@@ -22,18 +22,18 @@ import 'dart:async';
 ///   result:
 ///     ------5--7
 ///
-/// The result stream will not close until both the source stream and
-/// [combineWith] have closed.
+/// The result stream will not close until both the source stream and [other]
+/// have closed.
 ///
 /// Errors thrown by [combine], along with any errors on the source stream or
-/// [combineWith], are forwarded to the result stream.
+/// [other], are forwarded to the result stream.
 ///
 /// If the source stream is a broadcast stream, the result stream will be as
-/// well, regardless of [combineWith]'s type. If a single subscription stream is
+/// well, regardless of [other]'s type. If a single subscription stream is
 /// combined with a broadcast stream it may never be canceled.
 StreamTransformer<S, R> combineLatest<S, T, R>(
-        Stream<T> combineWith, FutureOr<R> Function(S, T) combine) =>
-    _CombineLatest(combineWith, combine);
+        Stream<T> other, FutureOr<R> Function(S, T) combine) =>
+    _CombineLatest(other, combine);
 
 class _CombineLatest<S, T, R> extends StreamTransformerBase<S, R> {
   final Stream<T> _other;
