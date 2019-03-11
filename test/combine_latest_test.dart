@@ -42,6 +42,34 @@ void main() {
       expect(results, [3, 5, 6, 9]);
     });
 
+    test('can combine different typed streams', () async {
+      var source = StreamController<String>();
+      var combineWith = StreamController<int>();
+      String times(String a, int b) => a * b;
+
+      var results = <String>[];
+      unawaited(source.stream
+          .transform(combineLatest(combineWith.stream, times))
+          .forEach(results.add));
+
+      source.add('a');
+      source.add('b');
+      await Future(() {});
+      expect(results, isEmpty);
+
+      combineWith.add(2);
+      await Future(() {});
+      expect(results, ['bb']);
+
+      combineWith.add(3);
+      await Future(() {});
+      expect(results, ['bb', 'bbb']);
+
+      source.add('c');
+      await Future(() {});
+      expect(results, ['bb', 'bbb', 'ccc']);
+    });
+
     test('ends after both streams have ended', () async {
       var source = StreamController<int>();
       var combineWith = StreamController<int>();
@@ -63,7 +91,24 @@ void main() {
       expect(done, true);
     });
 
-    test('ends if a Stream closes without ever emitting a value', () async {
+    test('ends if source stream closes without ever emitting a value',
+        () async {
+      var source = Stream<int>.empty();
+      var combineWith = StreamController<int>();
+
+      int sum(int a, int b) => a + b;
+
+      var done = false;
+      source
+          .transform(combineLatest(combineWith.stream, sum))
+          .listen(null, onDone: () => done = true);
+
+      await Future(() {});
+      // Nothing can ever be emitted on the result, may as well close.
+      expect(done, true);
+    });
+
+    test('ends if other stream closes without ever emitting a value', () async {
       var source = StreamController<int>();
       var combineWith = Stream<int>.empty();
 

@@ -8,14 +8,29 @@ import 'dart:async';
 /// [combineWith] using [combine].
 ///
 /// No event will be emitted from the result stream until both the source stream
-/// and [combineWith] have each emitted at least one event. The result stream
-/// will not close until both the source stream and [combineWith] have closed.
-/// Errors throw by [combine], along with any errors on the source stream or
+/// and [combineWith] have each emitted at least one event. Once both streams
+/// have emitted at least one event, the result stream will emit any time either
+/// input stream emits.
+///
+/// For example:
+///     source.transform(combineLatest(other, (a, b) => a + b));
+///
+///   source:
+///     1--2-----4
+///   other:
+///     ------3---
+///   result:
+///     ------5--7
+///
+/// The result stream will not close until both the source stream and
+/// [combineWith] have closed.
+///
+/// Errors thrown by [combine], along with any errors on the source stream or
 /// [combineWith], are forwarded to the result stream.
 ///
 /// If the source stream is a broadcast stream, the result stream will be as
 /// well, regardless of [combineWith]'s type. If a single subscription stream is
-/// merged into a broadcast stream it may never be canceled.
+/// combined with a broadcast stream it may never be canceled.
 StreamTransformer<S, R> combineLatest<S, T, R>(
         Stream<T> combineWith, FutureOr<R> Function(S, T) combine) =>
     _CombineLatest(combineWith, combine);
@@ -58,6 +73,8 @@ class _CombineLatest<S, T, R> extends StreamTransformerBase<S, R> {
         return;
       }
       if (result is Future<R>) {
+        sourceSubscription.pause();
+        otherSubscription.pause();
         result
             .then(controller.add, onError: controller.addError)
             .whenComplete(() {
@@ -70,7 +87,7 @@ class _CombineLatest<S, T, R> extends StreamTransformerBase<S, R> {
     }
 
     controller.onListen = () {
-      if (sourceSubscription != null) return;
+      assert(sourceSubscription == null);
       sourceSubscription = source.listen(
           (s) {
             sourceStarted = true;

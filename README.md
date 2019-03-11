@@ -21,7 +21,7 @@ collected values are emitted.
 
 # combineLatest
 
-Combine the most recent event from two streams through a callback and emit thre
+Combine the most recent event from two streams through a callback and emit the
 result.
 
 # debounce, debounceBuffer
