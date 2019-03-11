@@ -19,6 +19,11 @@ the most recent value.
 Collects values from a source stream until a `trigger` stream fires and the
 collected values are emitted.
 
+# combineLatest
+
+Combine the most recent event from two streams through a callback and emit the
+result.
+
 # debounce, debounceBuffer
 
 Prevents a source stream from emitting too frequently by dropping or collecting

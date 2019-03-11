@@ -4,6 +4,7 @@
   behavior changes for synchronous callbacks. **Potential breaking change** In
   the unlikely situation where `scan` was used to produce a `Stream<Future>`
   inference may now fail and require explicit generic type arguments.
+- Add `combineLatest`.
 
 ## 0.0.15
 
