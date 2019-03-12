@@ -92,7 +92,7 @@ void main() {
 
     test('ends if source stream closes without ever emitting a value',
         () async {
-      var source = Stream<int>.empty();
+      var source = const Stream<int>.empty();
       var other = StreamController<int>();
 
       int sum(int a, int b) => a + b;
@@ -109,7 +109,7 @@ void main() {
 
     test('ends if other stream closes without ever emitting a value', () async {
       var source = StreamController<int>();
-      var other = Stream<int>.empty();
+      var other = const Stream<int>.empty();
 
       int sum(int a, int b) => a + b;
 
@@ -178,4 +178,4 @@ class _NumberedException implements Exception {
 }
 
 Matcher _isException(int id) =>
-    TypeMatcher<_NumberedException>().having((n) => n.id, 'id', id);
+    const TypeMatcher<_NumberedException>().having((n) => n.id, 'id', id);
