@@ -54,7 +54,7 @@ void main() {
       var first = StreamController.broadcast();
       var second = StreamController();
       var emittedValues = [];
-      var transformed = first.stream.transform((merge(second.stream)));
+      var transformed = first.stream.transform(merge(second.stream));
       var subscription = transformed.listen(emittedValues.add);
       first.add(1);
       second.add(2);

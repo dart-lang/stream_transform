@@ -51,9 +51,9 @@ void main() {
     var doneCalled = false;
     var source = StreamController();
     source.stream
-        .transform((tap((_) {}, onDone: () {
+        .transform(tap((_) {}, onDone: () {
           doneCalled = true;
-        })))
+        }))
         .listen((_) {});
     await source.close();
     expect(doneCalled, true);
