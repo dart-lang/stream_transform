@@ -51,8 +51,7 @@ void main() {
         });
 
         test('swallows values that come faster than duration', () async {
-          values.add(1);
-          values.add(2);
+          values..add(1)..add(2);
           await values.close();
           await waitForTimer(5);
           expect(emittedValues, [1]);

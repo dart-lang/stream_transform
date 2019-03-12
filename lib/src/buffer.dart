@@ -96,14 +96,15 @@ class _Buffer<T> extends StreamTransformerBase<T, List<T>> {
             onError: controller.addError, onDone: onTriggerDone);
       }
       if (!values.isBroadcast) {
-        controller.onPause = () {
-          valueSub?.pause();
-          triggerSub?.pause();
-        };
-        controller.onResume = () {
-          valueSub?.resume();
-          triggerSub?.resume();
-        };
+        controller
+          ..onPause = () {
+            valueSub?.pause();
+            triggerSub?.pause();
+          }
+          ..onResume = () {
+            valueSub?.resume();
+            triggerSub?.resume();
+          };
       }
       controller.onCancel = () {
         var toCancel = <StreamSubscription>[];

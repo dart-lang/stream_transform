@@ -28,9 +28,9 @@ import 'from_handlers.dart';
 /// pending conversions have finished.
 StreamTransformer<S, T> asyncMapBuffer<S, T>(
     Future<T> convert(List<S> collected)) {
-  var workFinished = StreamController();
-  // Let the first event through.
-  workFinished.add(null);
+  var workFinished = StreamController()
+    // Let the first event through.
+    ..add(null);
   return chainTransformers(
       buffer(workFinished.stream), _asyncMapThen(convert, workFinished.add));
 }

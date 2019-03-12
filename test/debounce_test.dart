@@ -51,8 +51,7 @@ void main() {
         });
 
         test('swallows values that come faster than duration', () async {
-          values.add(1);
-          values.add(2);
+          values..add(1)..add(2);
           await values.close();
           await waitForTimer(5);
           expect(emittedValues, [2]);
@@ -89,8 +88,7 @@ void main() {
           test('multiple listeners all get values', () async {
             var otherValues = [];
             transformed.listen(otherValues.add);
-            values.add(1);
-            values.add(2);
+            values..add(1)..add(2);
             await waitForTimer(5);
             expect(emittedValues, [2]);
             expect(otherValues, [2]);
@@ -104,8 +102,7 @@ void main() {
         });
 
         test('Emits all values as a list', () async {
-          values.add(1);
-          values.add(2);
+          values..add(1)..add(2);
           await values.close();
           await waitForTimer(5);
           expect(emittedValues, [
@@ -129,8 +126,7 @@ void main() {
           test('multiple listeners all get values', () async {
             var otherValues = [];
             transformed.listen(otherValues.add);
-            values.add(1);
-            values.add(2);
+            values..add(1)..add(2);
             await waitForTimer(5);
             expect(emittedValues, [
               [1, 2]

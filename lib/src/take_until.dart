@@ -41,8 +41,9 @@ class _TakeUntil<T> extends StreamTransformerBase<T, T> {
         controller.close();
       });
       if (!values.isBroadcast) {
-        controller.onPause = subscription.pause;
-        controller.onResume = subscription.resume;
+        controller
+          ..onPause = subscription.pause
+          ..onResume = subscription.resume;
       }
       controller.onCancel = () {
         if (isDone) return null;

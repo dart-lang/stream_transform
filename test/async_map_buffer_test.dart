@@ -76,8 +76,7 @@ void main() {
       test('buffers values while work is ongoing', () async {
         values.add(1);
         await Future(() {});
-        values.add(2);
-        values.add(3);
+        values..add(2)..add(3);
         await Future(() {});
         finishWork.complete();
         await Future(() {});
@@ -116,8 +115,9 @@ void main() {
           () async {
         values.add(1);
         await Future(() {});
-        values.addError('error');
-        values.add(2);
+        values
+          ..addError('error')
+          ..add(2);
         await Future(() {});
         expect(errors, ['error']);
         // [work] will assert that the second iteration is not called because

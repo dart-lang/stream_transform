@@ -64,8 +64,9 @@ class _StreamTransformer<S, T> extends StreamTransformerBase<S, T> {
         _handleDone(controller);
       });
       if (!values.isBroadcast) {
-        controller.onPause = subscription.pause;
-        controller.onResume = subscription.resume;
+        controller
+          ..onPause = subscription.pause
+          ..onResume = subscription.resume;
       }
       controller.onCancel = () {
         var toCancel = subscription;

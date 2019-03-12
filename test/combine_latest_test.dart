@@ -52,8 +52,7 @@ void main() {
           .transform(combineLatest(other.stream, times))
           .forEach(results.add));
 
-      source.add('a');
-      source.add('b');
+      source..add('a')..add('b');
       await Future(() {});
       expect(results, isEmpty);
 

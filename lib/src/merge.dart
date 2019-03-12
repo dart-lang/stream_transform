@@ -52,16 +52,17 @@ class _Merge<T> extends StreamTransformerBase<T, T> {
         });
       }).toList();
       if (!first.isBroadcast) {
-        controller.onPause = () {
-          for (var subscription in subscriptions) {
-            subscription.pause();
+        controller
+          ..onPause = () {
+            for (var subscription in subscriptions) {
+              subscription.pause();
+            }
           }
-        };
-        controller.onResume = () {
-          for (var subscription in subscriptions) {
-            subscription.resume();
-          }
-        };
+          ..onResume = () {
+            for (var subscription in subscriptions) {
+              subscription.resume();
+            }
+          };
       }
       controller.onCancel = () {
         var toCancel = subscriptions;

@@ -41,8 +41,7 @@ void main() {
     filtered
       ..listen(null, onDone: () => firstDone = true)
       ..listen(null, onDone: () => secondDone = true);
-    values.add(1);
-    values.add('a');
+    values..add(1)..add('a');
     await values.close();
     expect(firstDone, true);
     expect(secondDone, true);
