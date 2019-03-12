@@ -41,8 +41,9 @@ class _WhereType<R> extends StreamTransformerBase<Null, R> {
             controller.close();
           });
       if (!source.isBroadcast) {
-        controller.onPause = subscription.pause;
-        controller.onResume = subscription.resume;
+        controller
+          ..onPause = subscription.pause
+          ..onResume = subscription.resume;
       }
       controller.onCancel = () {
         subscription?.cancel();

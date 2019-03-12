@@ -87,16 +87,17 @@ class _CombineLatestAll<T> extends StreamTransformerBase<T, List<T>> {
         });
       }).toList();
       if (!source.isBroadcast) {
-        controller.onPause = () {
-          for (var subscription in subscriptions) {
-            subscription.pause();
+        controller
+          ..onPause = () {
+            for (var subscription in subscriptions) {
+              subscription.pause();
+            }
           }
-        };
-        controller.onResume = () {
-          for (var subscription in subscriptions) {
-            subscription.resume();
-          }
-        };
+          ..onResume = () {
+            for (var subscription in subscriptions) {
+              subscription.resume();
+            }
+          };
       }
       controller.onCancel = () {
         final toCancel = subscriptions;

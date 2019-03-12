@@ -45,8 +45,7 @@ void main() {
       });
 
       test('forwards values', () async {
-        values.add(1);
-        values.add(2);
+        values..add(1)..add(2);
         await Future(() {});
         expect(emittedValues, [1, 2]);
       });
@@ -90,8 +89,7 @@ void main() {
       });
 
       test('forwards values', () async {
-        values.add(1);
-        values.add(2);
+        values..add(1)..add(2);
         await Future(() {});
         expect(emittedValues, [1, 2]);
         expect(emittedValues2, [1, 2]);
@@ -128,8 +126,7 @@ void main() {
         }));
       });
       test('uses transform from handleData', () async {
-        values.add(1);
-        values.add(2);
+        values..add(1)..add(2);
         await Future(() {});
         expect(emittedValues, [2, 3]);
       });

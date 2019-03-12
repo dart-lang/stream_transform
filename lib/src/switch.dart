@@ -58,14 +58,15 @@ class _SwitchTransformer<T> extends StreamTransformerBase<Stream<T>, T> {
             if (innerSubscription == null) controller.close();
           });
       if (!outer.isBroadcast) {
-        controller.onPause = () {
-          innerSubscription?.pause();
-          outerSubscription.pause();
-        };
-        controller.onResume = () {
-          innerSubscription?.resume();
-          outerSubscription.resume();
-        };
+        controller
+          ..onPause = () {
+            innerSubscription?.pause();
+            outerSubscription.pause();
+          }
+          ..onResume = () {
+            innerSubscription?.resume();
+            outerSubscription.resume();
+          };
       }
       controller.onCancel = () {
         var toCancel = <StreamSubscription>[];
