@@ -60,7 +60,7 @@ class _FollowedBy<T> extends StreamTransformerBase<T, T> {
     currentDoneHandler = onFirstDone;
 
     controller.onListen = () {
-      if (subscription != null) return;
+      assert(subscription == null);
       listen();
       if (!first.isBroadcast) {
         controller.onPause = () {

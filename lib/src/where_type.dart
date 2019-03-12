@@ -30,7 +30,7 @@ class _WhereType<R> extends StreamTransformerBase<Null, R> {
 
     StreamSubscription<Object> subscription;
     controller.onListen = () {
-      if (subscription != null) return;
+      assert(subscription == null);
       subscription = source.listen(
           (value) {
             if (value is R) controller.add(value);

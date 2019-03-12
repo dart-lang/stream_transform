@@ -42,7 +42,7 @@ class _Merge<T> extends StreamTransformerBase<T, T> {
     List<StreamSubscription> subscriptions;
 
     controller.onListen = () {
-      if (subscriptions != null) return;
+      assert(subscriptions == null);
       var activeStreamCount = 0;
       subscriptions = allStreams.map((stream) {
         activeStreamCount++;
