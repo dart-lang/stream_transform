@@ -4,6 +4,7 @@
 
 import 'dart:async';
 
+import 'package:pedantic/pedantic.dart';
 import 'package:test/test.dart';
 
 import 'package:stream_transform/stream_transform.dart';
@@ -75,7 +76,8 @@ void main() {
 
         var results = <int>[];
 
-        source.stream.transform(scan(0, combine)).forEach(results.add);
+        unawaited(
+            source.stream.transform(scan(0, combine)).forEach(results.add));
 
         source..add(1)..add(2);
         await Future(() {});
