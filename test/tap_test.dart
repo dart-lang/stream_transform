@@ -23,7 +23,7 @@ void main() {
   });
 
   test('calls function for errors', () async {
-    var error;
+    dynamic error;
     var source = StreamController();
     source.stream
         .transform(tap((_) {}, onError: (e, st) {
@@ -36,7 +36,7 @@ void main() {
   });
 
   test('forwards errors', () async {
-    var error;
+    dynamic error;
     var source = StreamController();
     source.stream.transform(tap((_) {}, onError: (e, st) {})).listen((_) {},
         onError: (e) {
