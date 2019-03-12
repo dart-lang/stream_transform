@@ -38,7 +38,7 @@ class _SwitchTransformer<T> extends StreamTransformerBase<Stream<T>, T> {
     StreamSubscription<Stream<T>> outerSubscription;
 
     controller.onListen = () {
-      if (outerSubscription != null) return;
+      assert(outerSubscription == null);
 
       StreamSubscription<T> innerSubscription;
       var outerStreamDone = false;

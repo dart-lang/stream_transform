@@ -54,7 +54,7 @@ class _StreamTransformer<S, T> extends StreamTransformerBase<S, T> {
 
     StreamSubscription<S> subscription;
     controller.onListen = () {
-      if (subscription != null) return;
+      assert(subscription == null);
       var valuesDone = false;
       subscription = values.listen((value) => _handleData(value, controller),
           onError: (error, StackTrace stackTrace) {
