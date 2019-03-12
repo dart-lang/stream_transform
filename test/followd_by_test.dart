@@ -132,7 +132,7 @@ void main() {
             await Future(() {});
             subscription = transformed.listen(emittedValues.add);
             second.add(3);
-            await Future((() {}));
+            await Future(() {});
             expect(emittedValues, [3]);
           });
 

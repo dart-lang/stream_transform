@@ -34,7 +34,7 @@ void main() {
 
       var errors = [];
 
-      source.stream.transform((scan(0, sum))).listen(null, onError: errors.add);
+      source.stream.transform(scan(0, sum)).listen(null, onError: errors.add);
 
       source.addError(StateError('fail'));
       await Future(() {});
@@ -98,7 +98,7 @@ void main() {
         var errors = [];
 
         source.stream
-            .transform((scan(0, combine)))
+            .transform(scan(0, combine))
             .listen(null, onError: errors.add);
 
         source.add(1);
