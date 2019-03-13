@@ -1,3 +1,7 @@
+## 0.0.16+1
+
+- Remove usage of Set literal which is not available before Dart 2.2.0
+
 ## 0.0.16
 
 - Allow a `combine` callback to return a `FutureOr<T>` in `scan`. There are no
