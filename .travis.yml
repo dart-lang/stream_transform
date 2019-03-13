@@ -4,7 +4,6 @@ branches:
 dart:
   - dev
   - stable
-  - 2.1.0
 cache:
   directories:
     - $HOME/.pub-cache
