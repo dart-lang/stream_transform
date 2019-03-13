@@ -66,7 +66,7 @@ class _CombineLatestAll<T> extends StreamTransformerBase<T, List<T>> {
       assert(subscriptions == null);
 
       final latestData = List<T>(allStreams.length);
-      final hasEmitted = <int>{};
+      final hasEmitted = Set<int>();
       void handleData(int index, T data) {
         latestData[index] = data;
         hasEmitted.add(index);
