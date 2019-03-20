@@ -22,8 +22,8 @@ import 'from_handlers.dart';
 ///
 /// The callbacks may not be called until the tapped stream has a listener, and
 /// may not be called after the listener has canceled the subscription.
-StreamTransformer<T, T> tap<T>(void onValue(T value),
-        {void onError(error, stackTrace), void onDone()}) =>
+StreamTransformer<T, T> tap<T>(void Function(T) onValue,
+        {void Function(Object, StackTrace) onError, void Function() onDone}) =>
     fromHandlers(handleData: (value, sink) {
       try {
         onValue?.call(value);
