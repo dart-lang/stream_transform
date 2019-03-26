@@ -1,3 +1,7 @@
+## 0.0.17
+
+- Add concrete types to the `onError` callback in `tap`.
+
 ## 0.0.16+1
 
 - Remove usage of Set literal which is not available before Dart 2.2.0
