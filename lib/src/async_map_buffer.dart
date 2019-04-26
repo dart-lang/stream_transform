@@ -28,24 +28,22 @@ import 'from_handlers.dart';
 /// pending conversions have finished.
 StreamTransformer<S, T> asyncMapBuffer<S, T>(
     Future<T> convert(List<S> collected)) {
-  var workFinished = StreamController()
+  var workFinished = StreamController<void>()
     // Let the first event through.
     ..add(null);
-  return chainTransformers(buffer(workFinished.stream),
-      _asyncMapThen(convert, () => workFinished.add(null)));
+  return chainTransformers(
+      buffer(workFinished.stream), _asyncMapThen(convert, workFinished.add));
 }
 
 /// Like [Stream.asyncMap] but the [convert] is only called once per event,
 /// rather than once per listener, and [then] is called after completing the
 /// work.
 StreamTransformer<S, T> _asyncMapThen<S, T>(
-    Future<T> convert(S event), void then()) {
+    Future<T> convert(S event), void Function(void) then) {
   Future<void> pendingEvent;
   return fromHandlers(handleData: (event, sink) {
-    pendingEvent = convert(event)
-        .then(sink.add)
-        .catchError(sink.addError)
-        .whenComplete(then);
+    pendingEvent =
+        convert(event).then(sink.add).catchError(sink.addError).then(then);
   }, handleDone: (sink) {
     if (pendingEvent != null) {
       pendingEvent.then((_) => sink.close());
