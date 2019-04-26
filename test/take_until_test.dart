@@ -8,25 +8,23 @@ import 'package:test/test.dart';
 
 import 'package:stream_transform/stream_transform.dart';
 
+import 'utils.dart';
+
 void main() {
-  var streamTypes = {
-    'single subscription': () => StreamController(),
-    'broadcast': () => StreamController.broadcast()
-  };
-  for (var streamType in streamTypes.keys) {
+  for (var streamType in streamTypes) {
     group('takeUntil on Stream type [$streamType]', () {
-      StreamController values;
-      List emittedValues;
+      StreamController<int> values;
+      List<int> emittedValues;
       bool valuesCanceled;
       bool isDone;
-      List errors;
-      Stream transformed;
-      StreamSubscription subscription;
-      Completer closeTrigger;
+      List<String> errors;
+      Stream<int> transformed;
+      StreamSubscription<int> subscription;
+      Completer<void> closeTrigger;
 
       setUp(() {
         valuesCanceled = false;
-        values = streamTypes[streamType]()
+        values = createController(streamType)
           ..onCancel = () {
             valuesCanceled = true;
           };

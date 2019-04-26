@@ -58,8 +58,10 @@ void main() {
             .transform(scan<int, Future<int>>(Future.value(0), sum))
             .toList();
 
-        expect(
-            result, [const TypeMatcher<Future>(), const TypeMatcher<Future>()]);
+        expect(result, [
+          const TypeMatcher<Future<void>>(),
+          const TypeMatcher<Future<void>>()
+        ]);
         expect(await Future.wait(result), [1, 3]);
       });
 

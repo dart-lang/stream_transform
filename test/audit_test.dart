@@ -10,23 +10,19 @@ import 'package:stream_transform/stream_transform.dart';
 import 'utils.dart';
 
 void main() {
-  var streamTypes = {
-    'single subscription': () => StreamController(),
-    'broadcast': () => StreamController.broadcast()
-  };
-  for (var streamType in streamTypes.keys) {
+  for (var streamType in streamTypes) {
     group('Stream type [$streamType]', () {
-      StreamController values;
-      List emittedValues;
+      StreamController<int> values;
+      List<int> emittedValues;
       bool valuesCanceled;
       bool isDone;
-      List errors;
-      Stream transformed;
-      StreamSubscription subscription;
+      List<String> errors;
+      Stream<int> transformed;
+      StreamSubscription<int> subscription;
 
-      void setUpStreams(StreamTransformer transformer) {
+      void setUpStreams(StreamTransformer<int, int> transformer) {
         valuesCanceled = false;
-        values = streamTypes[streamType]()
+        values = createController(streamType)
           ..onCancel = () {
             valuesCanceled = true;
           };

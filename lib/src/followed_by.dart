@@ -33,7 +33,7 @@ class _FollowedBy<T> extends StreamTransformerBase<T, T> {
         ? _next.asBroadcastStream()
         : _next;
 
-    StreamSubscription subscription;
+    StreamSubscription<T> subscription;
     var currentStream = first;
     var firstDone = false;
     var secondDone = false;

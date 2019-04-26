@@ -8,25 +8,23 @@ import 'package:test/test.dart';
 
 import 'package:stream_transform/stream_transform.dart';
 
+import 'utils.dart';
+
 void main() {
-  var streamTypes = {
-    'single subscription': () => StreamController(),
-    'broadcast': () => StreamController.broadcast()
-  };
-  StreamController values;
-  List emittedValues;
+  StreamController<int> values;
+  List<String> emittedValues;
   bool valuesCanceled;
   bool isDone;
-  List errors;
-  Stream transformed;
-  StreamSubscription subscription;
+  List<String> errors;
+  Stream<String> transformed;
+  StreamSubscription<String> subscription;
 
-  Completer finishWork;
-  List workArgument;
+  Completer<String> finishWork;
+  List<int> workArgument;
 
   /// Represents the async `convert` function and asserts that is is only called
   /// after the previous iteration has completed.
-  Future work(List values) {
+  Future<String> work(List<int> values) {
     expect(finishWork, isNull,
         reason: 'See $values befor previous work is complete');
     workArgument = values;
@@ -41,11 +39,11 @@ void main() {
     return finishWork.future;
   }
 
-  for (var streamType in streamTypes.keys) {
+  for (var streamType in streamTypes) {
     group('asyncMapBuffer for stream type: [$streamType]', () {
       setUp(() {
         valuesCanceled = false;
-        values = streamTypes[streamType]()
+        values = createController(streamType)
           ..onCancel = () {
             valuesCanceled = true;
           };
@@ -66,11 +64,9 @@ void main() {
         await Future(() {});
         expect(emittedValues, isEmpty);
         expect(workArgument, [1]);
-        finishWork.complete(workArgument);
+        finishWork.complete('result');
         await Future(() {});
-        expect(emittedValues, [
-          [1]
-        ]);
+        expect(emittedValues, ['result']);
       });
 
       test('buffers values while work is ongoing', () async {

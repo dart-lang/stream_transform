@@ -39,7 +39,7 @@ class _Merge<T> extends StreamTransformerBase<T, T> {
           .toList();
     }
 
-    List<StreamSubscription> subscriptions;
+    List<StreamSubscription<T>> subscriptions;
 
     controller.onListen = () {
       assert(subscriptions == null);

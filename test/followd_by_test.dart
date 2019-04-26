@@ -7,35 +7,33 @@ import 'package:test/test.dart';
 
 import 'package:stream_transform/stream_transform.dart';
 
-void main() {
-  var streamTypes = {
-    'single subscription': () => StreamController(),
-    'broadcast': () => StreamController.broadcast()
-  };
-  for (var firstType in streamTypes.keys) {
-    for (var secondType in streamTypes.keys) {
-      group('followedBy [$firstType] with [$secondType]', () {
-        StreamController first;
-        StreamController second;
+import 'utils.dart';
 
-        List emittedValues;
+void main() {
+  for (var firstType in streamTypes) {
+    for (var secondType in streamTypes) {
+      group('followedBy [$firstType] with [$secondType]', () {
+        StreamController<int> first;
+        StreamController<int> second;
+
+        List<int> emittedValues;
         bool firstCanceled;
         bool secondCanceled;
         bool secondListened;
         bool isDone;
-        List errors;
-        Stream transformed;
-        StreamSubscription subscription;
+        List<String> errors;
+        Stream<int> transformed;
+        StreamSubscription<int> subscription;
 
         setUp(() async {
           firstCanceled = false;
           secondCanceled = false;
           secondListened = false;
-          first = streamTypes[firstType]()
+          first = createController(firstType)
             ..onCancel = () {
               firstCanceled = true;
             };
-          second = streamTypes[secondType]()
+          second = createController(secondType)
             ..onCancel = () {
               secondCanceled = true;
             }

@@ -12,7 +12,8 @@ import 'dart:async';
 ///
 /// Errors from the source stream or the trigger are immediately forwarded to
 /// the output.
-StreamTransformer<T, List<T>> buffer<T>(Stream trigger) => _Buffer<T>(trigger);
+StreamTransformer<T, List<T>> buffer<T>(Stream<void> trigger) =>
+    _Buffer<T>(trigger);
 
 /// A StreamTransformer which aggregates values and emits when it sees a value
 /// on [_trigger].
@@ -24,7 +25,7 @@ StreamTransformer<T, List<T>> buffer<T>(Stream trigger) => _Buffer<T>(trigger);
 /// Errors from the source stream or the trigger are immediately forwarded to
 /// the output.
 class _Buffer<T> extends StreamTransformerBase<T, List<T>> {
-  final Stream _trigger;
+  final Stream<void> _trigger;
 
   _Buffer(this._trigger);
 
@@ -38,8 +39,8 @@ class _Buffer<T> extends StreamTransformerBase<T, List<T>> {
     var waitingForTrigger = true;
     var isTriggerDone = false;
     var isValueDone = false;
-    StreamSubscription valueSub;
-    StreamSubscription triggerSub;
+    StreamSubscription<T> valueSub;
+    StreamSubscription<void> triggerSub;
 
     emit() {
       controller.add(currentResults);
@@ -107,7 +108,7 @@ class _Buffer<T> extends StreamTransformerBase<T, List<T>> {
           };
       }
       controller.onCancel = () {
-        var toCancel = <StreamSubscription>[];
+        var toCancel = <StreamSubscription<void>>[];
         if (!isValueDone) toCancel.add(valueSub);
         valueSub = null;
         if (_trigger.isBroadcast || !values.isBroadcast) {

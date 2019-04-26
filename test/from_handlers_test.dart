@@ -9,16 +9,16 @@ import 'package:test/test.dart';
 import 'package:stream_transform/src/from_handlers.dart';
 
 void main() {
-  StreamController values;
-  List emittedValues;
+  StreamController<int> values;
+  List<int> emittedValues;
   bool valuesCanceled;
   bool isDone;
-  List errors;
-  Stream transformed;
-  StreamSubscription subscription;
+  List<String> errors;
+  Stream<int> transformed;
+  StreamSubscription<int> subscription;
 
-  void setUpForController(
-      StreamController controller, StreamTransformer transformer) {
+  void setUpForController(StreamController<int> controller,
+      StreamTransformer<int, int> transformer) {
     valuesCanceled = false;
     values = controller
       ..onCancel = () {
@@ -68,10 +68,10 @@ void main() {
     });
 
     group('broadcast stream with muliple listeners', () {
-      List emittedValues2;
-      List errors2;
+      List<int> emittedValues2;
+      List<String> errors2;
       bool isDone2;
-      StreamSubscription subscription2;
+      StreamSubscription<int> subscription2;
 
       setUp(() {
         setUpForController(StreamController.broadcast(), fromHandlers());

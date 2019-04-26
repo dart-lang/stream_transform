@@ -10,10 +10,11 @@ import 'dart:async';
 /// which are emitted before the trigger, but have further asynchronous delays
 /// in transformations following the takeUtil, will still go through. Cancelling
 /// a subscription immediately stops values.
-StreamTransformer<T, T> takeUntil<T>(Future trigger) => _TakeUntil(trigger);
+StreamTransformer<T, T> takeUntil<T>(Future<void> trigger) =>
+    _TakeUntil(trigger);
 
 class _TakeUntil<T> extends StreamTransformerBase<T, T> {
-  final Future _trigger;
+  final Future<void> _trigger;
 
   _TakeUntil(this._trigger);
 
@@ -23,7 +24,7 @@ class _TakeUntil<T> extends StreamTransformerBase<T, T> {
         ? StreamController<T>.broadcast(sync: true)
         : StreamController<T>(sync: true);
 
-    StreamSubscription subscription;
+    StreamSubscription<T> subscription;
     var isDone = false;
     _trigger.then((_) {
       if (isDone) return;
