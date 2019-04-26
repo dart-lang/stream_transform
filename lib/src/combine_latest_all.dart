@@ -60,7 +60,7 @@ class _CombineLatestAll<T> extends StreamTransformerBase<T, List<T>> {
           .toList();
     }
 
-    List<StreamSubscription> subscriptions;
+    List<StreamSubscription<T>> subscriptions;
 
     controller.onListen = () {
       assert(subscriptions == null);

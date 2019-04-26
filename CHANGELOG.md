@@ -1,3 +1,8 @@
+## 0.0.18
+
+- Internal cleanup. Passed "trigger" streams or futures now allow `<void>`
+  generic type rather than an implicit `dynamic>`
+
 ## 0.0.17
 
 - Add concrete types to the `onError` callback in `tap`.
@@ -47,7 +52,7 @@
 
 - Updates to support Dart 2.0 core library changes (wave
   2.2). See [issue 31847][sdk#31847] for details.
-  
+
   [sdk#31847]: https://github.com/dart-lang/sdk/issues/31847
 
 ## 0.0.9

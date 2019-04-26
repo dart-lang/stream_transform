@@ -69,7 +69,7 @@ class _SwitchTransformer<T> extends StreamTransformerBase<Stream<T>, T> {
           };
       }
       controller.onCancel = () {
-        var toCancel = <StreamSubscription>[];
+        var toCancel = <StreamSubscription<void>>[];
         if (!outerStreamDone) toCancel.add(outerSubscription);
         if (innerSubscription != null) {
           toCancel.add(innerSubscription);

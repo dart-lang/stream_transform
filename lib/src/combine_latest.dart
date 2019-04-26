@@ -51,8 +51,8 @@ class _CombineLatest<S, T, R> extends StreamTransformerBase<S, R> {
         ? _other.asBroadcastStream()
         : _other;
 
-    StreamSubscription sourceSubscription;
-    StreamSubscription otherSubscription;
+    StreamSubscription<S> sourceSubscription;
+    StreamSubscription<T> otherSubscription;
 
     var sourceDone = false;
     var otherDone = false;

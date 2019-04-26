@@ -7,27 +7,25 @@ import 'package:test/test.dart';
 
 import 'package:stream_transform/stream_transform.dart';
 
+import 'utils.dart';
+
 void main() {
-  var streamTypes = {
-    'single subscription': () => StreamController(),
-    'broadcast': () => StreamController.broadcast()
-  };
-  StreamController trigger;
-  StreamController values;
-  List emittedValues;
+  StreamController<void> trigger;
+  StreamController<int> values;
+  List<List<int>> emittedValues;
   bool valuesCanceled;
   bool triggerCanceled;
   bool triggerPaused;
   bool isDone;
-  List errors;
-  Stream transformed;
-  StreamSubscription subscription;
+  List<String> errors;
+  Stream<List<int>> transformed;
+  StreamSubscription<List<int>> subscription;
 
   void setUpForStreamTypes(String triggerType, String valuesType) {
     valuesCanceled = false;
     triggerCanceled = false;
     triggerPaused = false;
-    trigger = streamTypes[triggerType]()
+    trigger = createController(triggerType)
       ..onCancel = () {
         triggerCanceled = true;
       };
@@ -36,7 +34,7 @@ void main() {
         triggerPaused = true;
       };
     }
-    values = streamTypes[valuesType]()
+    values = createController(valuesType)
       ..onCancel = () {
         valuesCanceled = true;
       };
@@ -50,8 +48,8 @@ void main() {
     });
   }
 
-  for (var triggerType in streamTypes.keys) {
-    for (var valuesType in streamTypes.keys) {
+  for (var triggerType in streamTypes) {
+    for (var valuesType in streamTypes) {
       group('Trigger type: [$triggerType], Values type: [$valuesType]', () {
         setUp(() {
           setUpForStreamTypes(triggerType, valuesType);
@@ -222,7 +220,7 @@ void main() {
     expect(triggerPaused, true);
   });
 
-  for (var triggerType in streamTypes.keys) {
+  for (var triggerType in streamTypes) {
     test('cancel and relisten with [$triggerType] trigger', () async {
       setUpForStreamTypes(triggerType, 'broadcast');
       values.add(1);

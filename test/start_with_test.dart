@@ -8,28 +8,27 @@ import 'package:test/test.dart';
 
 import 'package:stream_transform/stream_transform.dart';
 
-void main() {
-  var streamTypes = {
-    'single subscription': () => StreamController(),
-    'broadcast': () => StreamController.broadcast()
-  };
-  StreamController values;
-  Stream transformed;
-  StreamSubscription subscription;
+import 'utils.dart';
 
-  List emittedValues;
+void main() {
+  StreamController<int> values;
+  Stream<int> transformed;
+  StreamSubscription<int> subscription;
+
+  List<int> emittedValues;
   bool isDone;
 
-  setupForStreamType(String streamType, StreamTransformer transformer) {
+  setupForStreamType(
+      String streamType, StreamTransformer<int, int> transformer) {
     emittedValues = [];
     isDone = false;
-    values = streamTypes[streamType]();
+    values = createController(streamType);
     transformed = values.stream.transform(transformer);
     subscription =
         transformed.listen(emittedValues.add, onDone: () => isDone = true);
   }
 
-  for (var streamType in streamTypes.keys) {
+  for (var streamType in streamTypes) {
     group('startWith then [$streamType]', () {
       setUp(() => setupForStreamType(streamType, startWith(1)));
 
@@ -101,11 +100,11 @@ void main() {
       }
     });
 
-    for (var startingStreamType in streamTypes.keys) {
+    for (var startingStreamType in streamTypes) {
       group('startWithStream [$startingStreamType] then [$streamType]', () {
-        StreamController starting;
+        StreamController<int> starting;
         setUp(() async {
-          starting = streamTypes[startingStreamType]();
+          starting = createController(startingStreamType);
           setupForStreamType(streamType, startWithStream(starting.stream));
         });
 

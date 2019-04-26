@@ -31,19 +31,21 @@ StreamTransformer<S, T> asyncMapBuffer<S, T>(
   var workFinished = StreamController()
     // Let the first event through.
     ..add(null);
-  return chainTransformers(
-      buffer(workFinished.stream), _asyncMapThen(convert, workFinished.add));
+  return chainTransformers(buffer(workFinished.stream),
+      _asyncMapThen(convert, () => workFinished.add(null)));
 }
 
 /// Like [Stream.asyncMap] but the [convert] is only called once per event,
 /// rather than once per listener, and [then] is called after completing the
 /// work.
 StreamTransformer<S, T> _asyncMapThen<S, T>(
-    Future<T> convert(S event), void then(Object _)) {
-  Future pendingEvent;
+    Future<T> convert(S event), void then()) {
+  Future<void> pendingEvent;
   return fromHandlers(handleData: (event, sink) {
-    pendingEvent =
-        convert(event).then(sink.add).catchError(sink.addError).then(then);
+    pendingEvent = convert(event)
+        .then(sink.add)
+        .catchError(sink.addError)
+        .whenComplete(then);
   }, handleDone: (sink) {
     if (pendingEvent != null) {
       pendingEvent.then((_) => sink.close());

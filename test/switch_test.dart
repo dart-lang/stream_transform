@@ -8,42 +8,39 @@ import 'package:test/test.dart';
 
 import 'package:stream_transform/stream_transform.dart';
 
-void main() {
-  var streamTypes = {
-    'single subscription': () => StreamController(),
-    'broadcast': () => StreamController.broadcast()
-  };
-  for (var outerType in streamTypes.keys) {
-    for (var innerType in streamTypes.keys) {
-      group('Outer type: [$outerType], Inner type: [$innerType]', () {
-        StreamController first;
-        StreamController second;
-        StreamController outer;
+import 'utils.dart';
 
-        List emittedValues;
+void main() {
+  for (var outerType in streamTypes) {
+    for (var innerType in streamTypes) {
+      group('Outer type: [$outerType], Inner type: [$innerType]', () {
+        StreamController<int> first;
+        StreamController<int> second;
+        StreamController<Stream<int>> outer;
+
+        List<int> emittedValues;
         bool firstCanceled;
         bool outerCanceled;
         bool isDone;
-        List errors;
-        StreamSubscription subscription;
+        List<String> errors;
+        StreamSubscription<int> subscription;
 
         setUp(() async {
           firstCanceled = false;
           outerCanceled = false;
-          outer = streamTypes[outerType]()
+          outer = createController(outerType)
             ..onCancel = () {
               outerCanceled = true;
             };
-          first = streamTypes[innerType]()
+          first = createController(innerType)
             ..onCancel = () {
               firstCanceled = true;
             };
-          second = streamTypes[innerType]();
+          second = createController(innerType);
           emittedValues = [];
           errors = [];
           isDone = false;
           subscription = outer.stream
-              .cast<Stream>()
               .transform(switchLatest())
               .listen(emittedValues.add, onError: errors.add, onDone: () {
             isDone = true;
@@ -129,7 +126,7 @@ void main() {
 
   group('switchMap', () {
     test('uses map function', () async {
-      var outer = StreamController<List>();
+      var outer = StreamController<List<int>>();
 
       var values = [];
       outer.stream

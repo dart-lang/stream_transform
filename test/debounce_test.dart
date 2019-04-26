@@ -10,37 +10,33 @@ import 'package:stream_transform/stream_transform.dart';
 import 'utils.dart';
 
 void main() {
-  var streamTypes = {
-    'single subscription': () => StreamController(),
-    'broadcast': () => StreamController.broadcast()
-  };
-  for (var streamType in streamTypes.keys) {
+  for (var streamType in streamTypes) {
     group('Stream type [$streamType]', () {
-      StreamController values;
-      List emittedValues;
-      bool valuesCanceled;
-      bool isDone;
-      List errors;
-      StreamSubscription subscription;
-      Stream transformed;
-
-      void setUpStreams(StreamTransformer transformer) {
-        valuesCanceled = false;
-        values = streamTypes[streamType]()
-          ..onCancel = () {
-            valuesCanceled = true;
-          };
-        emittedValues = [];
-        errors = [];
-        isDone = false;
-        transformed = values.stream.transform(transformer);
-        subscription = transformed
-            .listen(emittedValues.add, onError: errors.add, onDone: () {
-          isDone = true;
-        });
-      }
-
       group('debounce', () {
+        StreamController<int> values;
+        List<int> emittedValues;
+        bool valuesCanceled;
+        bool isDone;
+        List<String> errors;
+        StreamSubscription<int> subscription;
+        Stream<int> transformed;
+
+        void setUpStreams(StreamTransformer<int, int> transformer) {
+          valuesCanceled = false;
+          values = createController(streamType)
+            ..onCancel = () {
+              valuesCanceled = true;
+            };
+          emittedValues = [];
+          errors = [];
+          isDone = false;
+          transformed = values.stream.transform(transformer);
+          subscription = transformed
+              .listen(emittedValues.add, onError: errors.add, onDone: () {
+            isDone = true;
+          });
+        }
+
         setUp(() async {
           setUpStreams(debounce(const Duration(milliseconds: 5)));
         });
@@ -97,8 +93,18 @@ void main() {
       });
 
       group('debounceBuffer', () {
+        StreamController<int> values;
+        List<List<int>> emittedValues;
+        List<String> errors;
+        Stream<List<int>> transformed;
+
         setUp(() async {
-          setUpStreams(debounceBuffer(const Duration(milliseconds: 5)));
+          values = createController(streamType);
+          emittedValues = [];
+          errors = [];
+          transformed = values.stream
+              .transform(debounceBuffer(const Duration(milliseconds: 5)))
+                ..listen(emittedValues.add, onError: errors.add);
         });
 
         test('Emits all values as a list', () async {
