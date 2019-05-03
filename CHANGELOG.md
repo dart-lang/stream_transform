@@ -1,3 +1,7 @@
+## 0.0.19
+
+- Add `asyncMapSample` transform.
+
 ## 0.0.18
 
 - Internal cleanup. Passed "trigger" streams or futures now allow `<void>`
