@@ -5,7 +5,7 @@ Utility methods to create `StreamTransfomer` instances to manipulate Streams.
 Like `asyncMap` but events are buffered in a List until previous events have
 been processed rather than being called for each element individually.
 
-# asyncMapBuffer
+# asyncMapSample
 
 Like `asyncMap` but events are discarded, keeping only the latest, until
 previous events have been processed rather than being called for every element.
