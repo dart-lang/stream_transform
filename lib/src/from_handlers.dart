@@ -4,9 +4,9 @@
 
 import 'dart:async';
 
-typedef void HandleData<S, T>(S value, EventSink<T> sink);
-typedef void HandleDone<T>(EventSink<T> sink);
-typedef void HandleError<T>(
+typedef HandleData<S, T> = void Function(S value, EventSink<T> sink);
+typedef HandleDone<T> = void Function(EventSink<T> sink);
+typedef HandleError<T> = void Function(
     Object error, StackTrace stackTrace, EventSink<T> sink);
 
 /// Like [new StreamTransformer.fromHandlers] but the handlers are called once
