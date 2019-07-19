@@ -4,31 +4,26 @@
 
 import 'dart:async';
 
-typedef HandleData<S, T> = void Function(S value, EventSink<T> sink);
-typedef HandleDone<T> = void Function(EventSink<T> sink);
-typedef HandleError<T> = void Function(
-    Object error, StackTrace stackTrace, EventSink<T> sink);
-
 /// Like [new StreamTransformer.fromHandlers] but the handlers are called once
 /// per event rather than once per listener for broadcast streams.
 StreamTransformer<S, T> fromHandlers<S, T>(
-        {HandleData<S, T> handleData,
-        HandleError<T> handleError,
-        HandleDone<T> handleDone}) =>
+        {void Function(S, EventSink<T>) handleData,
+        void Function(Object, StackTrace, EventSink<T>) handleError,
+        void Function(EventSink<T>) handleDone}) =>
     _StreamTransformer(
         handleData: handleData,
         handleError: handleError,
         handleDone: handleDone);
 
 class _StreamTransformer<S, T> extends StreamTransformerBase<S, T> {
-  final HandleData<S, T> _handleData;
-  final HandleDone<T> _handleDone;
-  final HandleError<T> _handleError;
+  final void Function(S, EventSink<T>) _handleData;
+  final void Function(EventSink<T>) _handleDone;
+  final void Function(Object, StackTrace, EventSink<T>) _handleError;
 
   _StreamTransformer(
-      {HandleData<S, T> handleData,
-      HandleError<T> handleError,
-      HandleDone<T> handleDone})
+      {void Function(S, EventSink<T>) handleData,
+      void Function(Object, StackTrace, EventSink<T>) handleError,
+      void Function(EventSink<T>) handleDone})
       : _handleData = handleData ?? _defaultHandleData,
         _handleError = handleError ?? _defaultHandleError,
         _handleDone = handleDone ?? _defaultHandleDone;
