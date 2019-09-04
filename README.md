@@ -39,6 +39,10 @@ list of the values.
 Prevents a source stream from emitting too frequently by dropping or collecting
 values that occur within a given duration.
 
+# distinctWhen
+
+Allows developers to apply the distinct operator on a Stream conditionally.
+
 # concurrentAsyncMap
 
 Like `asyncMap` but the convert callback can be called with subsequent values

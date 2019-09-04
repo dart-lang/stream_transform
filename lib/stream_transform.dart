@@ -12,6 +12,7 @@ export 'src/combine_latest_all.dart';
 export 'src/concat.dart';
 export 'src/concurrent_async_map.dart';
 export 'src/debounce.dart';
+export 'src/distinct_when.dart';
 export 'src/followed_by.dart';
 export 'src/map.dart';
 export 'src/merge.dart';
