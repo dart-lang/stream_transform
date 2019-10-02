@@ -32,7 +32,8 @@ extension AsyncMap<T> on Stream<T> {
     var workFinished = StreamController<void>()
       // Let the first event through.
       ..add(null);
-    return transform(buffer(workFinished.stream))
+    return this
+        .buffer(workFinished.stream)
         .transform(_asyncMapThen(convert, workFinished.add));
   }
 
