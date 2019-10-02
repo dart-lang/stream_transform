@@ -31,8 +31,8 @@ extension CombineLatest<T> on Stream<T> {
   /// If the source stream is a broadcast stream, the result stream will be as
   /// well, regardless of [other]'s type. If a single subscription stream is
   /// combined with a broadcast stream it may never be canceled.
-  Stream<S> combineLatest<S, O>(
-          Stream<O> other, FutureOr<S> Function(T, O) combine) =>
+  Stream<S> combineLatest<T2, S>(
+          Stream<T2> other, FutureOr<S> Function(T, T2) combine) =>
       transform(_CombineLatest(other, combine));
 }
 
