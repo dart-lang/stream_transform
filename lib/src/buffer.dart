@@ -6,6 +6,21 @@ import 'dart:async';
 
 import 'aggregate_sample.dart';
 
+extension Buffer<T> on Stream<T> {
+  /// Returns a Stream  which collects values and emits when it sees a value on
+  /// [trigger].
+  ///
+  /// If there are no pending values when [trigger] emits, the next value on the
+  /// source Stream will immediately flow through. Otherwise, the pending values
+  /// are released when [trigger] emits.
+  ///
+  /// If the source stream is a broadcast stream, the result will be as well.
+  /// Errors from the source stream or the trigger are immediately forwarded to
+  /// the output.
+  Stream<List<T>> buffer(Stream<void> trigger) =>
+      transform(AggregateSample<T, List<T>>(trigger, _collect));
+}
+
 /// Creates a [StreamTransformer] which collects values and emits when it sees a
 /// value on [trigger].
 ///
@@ -15,6 +30,7 @@ import 'aggregate_sample.dart';
 ///
 /// Errors from the source stream or the trigger are immediately forwarded to
 /// the output.
+@Deprecated('Use the extension instead')
 StreamTransformer<T, List<T>> buffer<T>(Stream<void> trigger) =>
     AggregateSample<T, List<T>>(trigger, _collect);
 

@@ -1,10 +1,33 @@
 // Copyright (c) 2017, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
+
 import 'dart:async';
 
-import 'chain_transformers.dart';
-import 'map.dart';
+extension Switch<T> on Stream<T> {
+  /// Maps events to a Stream and emits values from the most recently created
+  /// Stream.
+  ///
+  /// When the source emits a value it will be converted to a [Stream] using
+  /// [convert] and the output will switch to emitting events from that result.
+  ///
+  /// If the source stream is a broadcast stream, the result stream will be as
+  /// well, regardless of the types of the streams produced by [convert].
+  Stream<S> switchMap<S>(Stream<S> convert(T event)) {
+    return map(convert).switchLatest();
+  }
+}
+
+extension SwitchLatest<T> on Stream<Stream<T>> {
+  /// Emits values from the most recently emitted Stream.
+  ///
+  /// When the source emits a stream the output will switch to emitting events
+  /// from that stream.
+  ///
+  /// If the source stream is a broadcast stream, the result stream will be as
+  /// well, regardless of the types of streams emitted.
+  Stream<T> switchLatest() => transform(_SwitchTransformer<T>());
+}
 
 /// Maps events to a Stream and emits values from the most recently created
 /// Stream.
@@ -14,8 +37,10 @@ import 'map.dart';
 ///
 /// If the source stream is a broadcast stream, the result stream will be as
 /// well, regardless of the types of the streams produced by [map].
+@Deprecated('Use the extension instead')
 StreamTransformer<S, T> switchMap<S, T>(Stream<T> convert(S event)) =>
-    chainTransformers(map(convert), switchLatest());
+    StreamTransformer.fromBind(
+        (source) => source.map(convert).transform(switchLatest()));
 
 /// Emits values from the most recently emitted Stream.
 ///
@@ -24,6 +49,7 @@ StreamTransformer<S, T> switchMap<S, T>(Stream<T> convert(S event)) =>
 ///
 /// If the source stream is a broadcast stream, the result stream will be as
 /// well, regardless of the types of streams emitted.
+@Deprecated('Use the extension instead')
 StreamTransformer<Stream<T>, T> switchLatest<T>() => _SwitchTransformer<T>();
 
 class _SwitchTransformer<T> extends StreamTransformerBase<Stream<T>, T> {

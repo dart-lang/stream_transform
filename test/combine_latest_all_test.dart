@@ -17,7 +17,7 @@ void main() {
       final second = StreamController<String>();
       final third = StreamController<String>();
       final combined = first.stream
-          .transform(combineLatestAll([second.stream, third.stream]))
+          .combineLatestAll([second.stream, third.stream])
           .map((data) => data.join());
 
       // first:    a----b------------------c--------d---|
@@ -55,7 +55,7 @@ void main() {
       final first = StreamController<String>();
       final second = StreamController<String>();
       final combined =
-          first.stream.transform(combineLatestAll([second.stream]));
+          first.stream.combineLatestAll([second.stream]);
 
       // first:    -a------b-------|
       // second:   -----|
@@ -74,7 +74,7 @@ void main() {
       final first = StreamController<String>();
       final second = StreamController<String>();
       final combined = first.stream
-          .transform(combineLatestAll([second.stream]))
+          .combineLatestAll([second.stream])
           .map((data) => data.join());
 
       // first:    -a---------|
@@ -96,7 +96,7 @@ void main() {
 
       var done = false;
       first.stream
-          .transform(combineLatestAll([second.stream]))
+          .combineLatestAll([second.stream])
           .listen(null, onDone: () => done = true);
 
       // first:    -a---|
@@ -123,7 +123,7 @@ void main() {
         final first = StreamController<String>.broadcast();
         final second = StreamController<String>.broadcast();
         final combined = first.stream
-            .transform(combineLatestAll([second.stream]))
+            .combineLatestAll([second.stream])
             .map((data) => data.join());
 
         // first:    a------b----------------c------d----e---|

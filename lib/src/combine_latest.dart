@@ -4,6 +4,38 @@
 
 import 'dart:async';
 
+extension CombineLatest<T> on Stream<T> {
+  /// Returns a stream which combines the latest value from the source stream
+  /// with the latest value from [other] using [combine].
+  ///
+  /// No event will be emitted until both the source stream and [other] have
+  /// each emitted at least one event. If either the source stream or [other]
+  /// emit multiple events before the other emits the first event, all but the
+  /// last value will be discarded. Once both streams have emitted at least
+  /// once, the result stream will emit any time either input stream emits.
+  ///
+  /// The result stream will not close until both the source stream and [other]
+  /// have closed.
+  ///
+  /// For example:
+  ///
+  ///     source.combineLatest(other, (a, b) => a + b);
+  ///
+  ///     source: --1--2--------4--|
+  ///     other:  -------3--|
+  ///     result: -------5------7--|
+  ///
+  /// Errors thrown by [combine], along with any errors on the source stream or
+  /// [other], are forwarded to the result stream.
+  ///
+  /// If the source stream is a broadcast stream, the result stream will be as
+  /// well, regardless of [other]'s type. If a single subscription stream is
+  /// combined with a broadcast stream it may never be canceled.
+  Stream<S> combineLatest<S, O>(
+          Stream<O> other, FutureOr<S> Function(T, O) combine) =>
+      transform(_CombineLatest(other, combine));
+}
+
 /// Combine the latest value from the source stream with the latest value from
 /// [other] using [combine].
 ///
@@ -31,6 +63,7 @@ import 'dart:async';
 /// If the source stream is a broadcast stream, the result stream will be as
 /// well, regardless of [other]'s type. If a single subscription stream is
 /// combined with a broadcast stream it may never be canceled.
+@Deprecated('Use the extension instead')
 StreamTransformer<S, R> combineLatest<S, T, R>(
         Stream<T> other, FutureOr<R> Function(S, T) combine) =>
     _CombineLatest(other, combine);

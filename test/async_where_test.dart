@@ -10,34 +10,34 @@ import 'package:stream_transform/stream_transform.dart';
 void main() {
   test('forwards only events that pass the predicate', () async {
     var values = Stream.fromIterable([1, 2, 3, 4]);
-    var filtered = values.transform(asyncWhere((e) async => e > 2));
+    var filtered = values.asyncWhere((e) async => e > 2);
     expect(await filtered.toList(), [3, 4]);
   });
 
   test('allows predicates that go through event loop', () async {
     var values = Stream.fromIterable([1, 2, 3, 4]);
-    var filtered = values.transform(asyncWhere((e) async {
+    var filtered = values.asyncWhere((e) async {
       await Future(() {});
       return e > 2;
-    }));
+    });
     expect(await filtered.toList(), [3, 4]);
   });
 
   test('allows synchronous predicate', () async {
     var values = Stream.fromIterable([1, 2, 3, 4]);
-    var filtered = values.transform(asyncWhere((e) => e > 2));
+    var filtered = values.asyncWhere((e) => e > 2);
     expect(await filtered.toList(), [3, 4]);
   });
 
   test('can result in empty stream', () async {
     var values = Stream.fromIterable([1, 2, 3, 4]);
-    var filtered = values.transform(asyncWhere((e) => e > 4));
+    var filtered = values.asyncWhere((e) => e > 4);
     expect(await filtered.isEmpty, true);
   });
 
   test('forwards values to multiple listeners', () async {
     var values = StreamController<int>.broadcast();
-    var filtered = values.stream.transform(asyncWhere((e) async => e > 2));
+    var filtered = values.stream.asyncWhere((e) async => e > 2);
     var firstValues = [];
     var secondValues = [];
     filtered..listen(firstValues.add)..listen(secondValues.add);
@@ -50,7 +50,7 @@ void main() {
   test('closes streams with multiple listeners', () async {
     var values = StreamController.broadcast();
     var predicate = Completer<bool>();
-    var filtered = values.stream.transform(asyncWhere((_) => predicate.future));
+    var filtered = values.stream.asyncWhere((_) => predicate.future);
     var firstDone = false;
     var secondDone = false;
     filtered
@@ -71,11 +71,11 @@ void main() {
     var errors = [];
     var emitted = [];
     var values = Stream.fromIterable([1, 2, 3, 4]);
-    var filtered = values.transform(asyncWhere((e) async {
+    var filtered = values.asyncWhere((e) async {
       await Future(() {});
       if (e.isEven) throw Exception('$e');
       return true;
-    }));
+    });
     var done = Completer();
     filtered.listen(emitted.add, onError: errors.add, onDone: done.complete);
     await done.future;

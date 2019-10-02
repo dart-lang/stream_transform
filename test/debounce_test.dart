@@ -21,7 +21,7 @@ void main() {
         StreamSubscription<int> subscription;
         Stream<int> transformed;
 
-        void setUpStreams(StreamTransformer<int, int> transformer) {
+        setUp(() async {
           valuesCanceled = false;
           values = createController(streamType)
             ..onCancel = () {
@@ -30,15 +30,11 @@ void main() {
           emittedValues = [];
           errors = [];
           isDone = false;
-          transformed = values.stream.transform(transformer);
+          transformed = values.stream.debounce(const Duration(milliseconds: 5));
           subscription = transformed
               .listen(emittedValues.add, onError: errors.add, onDone: () {
             isDone = true;
           });
-        }
-
-        setUp(() async {
-          setUpStreams(debounce(const Duration(milliseconds: 5)));
         });
 
         test('cancels values', () async {
@@ -103,7 +99,7 @@ void main() {
           emittedValues = [];
           errors = [];
           transformed = values.stream
-              .transform(debounceBuffer(const Duration(milliseconds: 5)))
+              .debounceBuffer(const Duration(milliseconds: 5))
                 ..listen(emittedValues.add, onError: errors.add);
         });
 

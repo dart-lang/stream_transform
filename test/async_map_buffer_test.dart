@@ -52,7 +52,7 @@ void main() {
         isDone = false;
         finishWork = null;
         workArgument = null;
-        transformed = values.stream.transform(asyncMapBuffer(work));
+        transformed = values.stream.asyncMapBuffer(work);
         subscription = transformed
             .listen(emittedValues.add, onError: errors.add, onDone: () {
           isDone = true;

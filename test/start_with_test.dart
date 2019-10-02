@@ -19,18 +19,18 @@ void main() {
   bool isDone;
 
   setupForStreamType(
-      String streamType, StreamTransformer<int, int> transformer) {
+      String streamType, Stream<int> Function(Stream<int>) transform) {
     emittedValues = [];
     isDone = false;
     values = createController(streamType);
-    transformed = values.stream.transform(transformer);
+    transformed = transform(values.stream);
     subscription =
         transformed.listen(emittedValues.add, onDone: () => isDone = true);
   }
 
   for (var streamType in streamTypes) {
     group('startWith then [$streamType]', () {
-      setUp(() => setupForStreamType(streamType, startWith(1)));
+      setUp(() => setupForStreamType(streamType, (s) => s.startWith(1)));
 
       test('outputs all values', () async {
         values..add(2)..add(3);
@@ -65,7 +65,7 @@ void main() {
 
     group('startWithMany then [$streamType]', () {
       setUp(() async {
-        setupForStreamType(streamType, startWithMany([1, 2]));
+        setupForStreamType(streamType, (s) => s.startWithMany([1, 2]));
         // Ensure all initial values go through
         await Future(() {});
       });
@@ -105,7 +105,8 @@ void main() {
         StreamController<int> starting;
         setUp(() async {
           starting = createController(startingStreamType);
-          setupForStreamType(streamType, startWithStream(starting.stream));
+          setupForStreamType(
+              streamType, (s) => s.startWithStream(starting.stream));
         });
 
         test('outputs all values', () async {

@@ -4,6 +4,46 @@
 
 import 'dart:async';
 
+extension CombineLatestAll<T> on Stream<T> {
+  /// Combine the latest value emitted from the source stream with the latest
+  /// values emitted from [others].
+  ///
+  /// [combineLatestAll] subscribes to the source stream and [others] and when
+  /// any one of the streams emits, the result stream will emit a [List<T>] of
+  /// the latest values emitted from all streams.
+  ///
+  /// No event will be emitted until all source streams emit at least once. If a
+  /// source stream emits multiple values before another starts emitting, all
+  /// but the last value will be discarded. Once all source streams have emitted
+  /// at least once, the result stream will emit any time any source stream
+  /// emits.
+  ///
+  /// The result stream will not close until all source streams have closed. When
+  /// a source stream closes, the result stream will continue to emit the last
+  /// value from the closed stream when the other source streams emit until the
+  /// result stream has closed. If a source stream closes without emitting any
+  /// value, the result stream will close as well.
+  ///
+  /// For example:
+  ///
+  ///     final combined = first
+  ///         .combineLatestAll([second, third])
+  ///         .map((data) => data.join());
+  ///
+  ///     first:    a----b------------------c--------d---|
+  ///     second:   --1---------2-----------------|
+  ///     third:    -------&----------%---|
+  ///     combined: -------b1&--b2&---b2%---c2%------d2%-|
+  ///
+  /// Errors thrown by any source stream will be forwarded to the result stream.
+  ///
+  /// If the source stream is a broadcast stream, the result stream will be as
+  /// well, regardless of the types of [others]. If a single subscription stream
+  /// is combined with a broadcast source stream, it may never be canceled.
+  Stream<List<T>> combineLatestAll(Iterable<Stream<T>> others) =>
+      transform(_CombineLatestAll<T>(others));
+}
+
 /// Combine the latest value emitted from the source stream with the latest
 /// values emitted from [others].
 ///
@@ -39,6 +79,7 @@ import 'dart:async';
 /// third:    -------&----------%---|
 /// combined: -------b1&--b2&---b2%---c2%------d2%-|
 ///
+@Deprecated('Use the extension instead')
 StreamTransformer<T, List<T>> combineLatestAll<T>(Iterable<Stream<T>> others) =>
     _CombineLatestAll<T>(others);
 

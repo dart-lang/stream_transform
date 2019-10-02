@@ -1,3 +1,22 @@
+## 0.0.20-dev
+
+-   Add extension methods for all most transformers. These should be used in
+    place of the current methods. For example instead of
+    `stream.transform(switchLatest())` use `stream.switchLatest()`. All current
+    implementations are deprecated and will be removed in the next major version
+    bump.
+-   The `map` and `chainTransformers` utilities are no longer useful with the
+    new patterns so they are deprecated without a replacement. If you still have
+    a need for them they can be replicated with `StreamTransformer.fromBind`:
+
+    ```
+    // Replace `map(convert)`
+    StreamTransformer.fromBind((s) => s.map(convert));
+
+    // Replace `chainTransformers(first, second)`
+    StreamTransformer.fromBInd((s) => s.transform(first).transform(second));
+    ```
+
 ## 0.0.19
 
 - Add `asyncMapSample` transform.

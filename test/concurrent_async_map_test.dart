@@ -42,7 +42,7 @@ void main() {
         isDone = false;
         finishWork = [];
         values = [];
-        transformed = controller.stream.transform(concurrentAsyncMap(convert));
+        transformed = controller.stream.concurrentAsyncMap(convert);
         subscription = transformed
             .listen(emittedValues.add, onError: errors.add, onDone: () {
           isDone = true;
