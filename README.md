@@ -1,4 +1,4 @@
-Utility methods to create `StreamTransfomer` instances to manipulate Streams.
+Extension methods on `Stream` adding common transform operators.
 
 # asyncMapBuffer
 
@@ -16,8 +16,8 @@ Like `where` but allows an asynchronous predicate.
 
 # audit
 
-Audit waits for a period of time after receiving a value and then only emits
-the most recent value.
+Waits for a period of time after receiving a value and then only emits the most
+recent value.
 
 # buffer
 
