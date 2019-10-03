@@ -25,11 +25,9 @@ void main() {
   test('calls function for errors', () async {
     dynamic error;
     var source = StreamController();
-    source.stream
-        .tap((_) {}, onError: (e, st) {
-          error = e;
-        })
-        .listen((_) {}, onError: (_) {});
+    source.stream.tap((_) {}, onError: (e, st) {
+      error = e;
+    }).listen((_) {}, onError: (_) {});
     source.addError('error');
     await Future(() {});
     expect(error, 'error');
@@ -38,8 +36,7 @@ void main() {
   test('forwards errors', () async {
     dynamic error;
     var source = StreamController();
-    source.stream.tap((_) {}, onError: (e, st) {}).listen((_) {},
-        onError: (e) {
+    source.stream.tap((_) {}, onError: (e, st) {}).listen((_) {}, onError: (e) {
       error = e;
     });
     source.addError('error');
@@ -50,11 +47,9 @@ void main() {
   test('calls function on done', () async {
     var doneCalled = false;
     var source = StreamController();
-    source.stream
-        .tap((_) {}, onDone: () {
-          doneCalled = true;
-        })
-        .listen((_) {});
+    source.stream.tap((_) {}, onDone: () {
+      doneCalled = true;
+    }).listen((_) {});
     await source.close();
     expect(doneCalled, true);
   });
