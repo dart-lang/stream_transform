@@ -14,7 +14,7 @@
     StreamTransformer.fromBind((s) => s.map(convert));
 
     // Replace `chainTransformers(first, second)`
-    StreamTransformer.fromBInd((s) => s.transform(first).transform(second));
+    StreamTransformer.fromBind((s) => s.transform(first).transform(second));
     ```
 
 ## 0.0.19
