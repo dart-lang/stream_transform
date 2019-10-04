@@ -1,10 +1,13 @@
 ## 0.0.20-dev
 
--   Add extension methods for all most transformers. These should be used in
-    place of the current methods. For example instead of
-    `stream.transform(switchLatest())` use `stream.switchLatest()`. All current
-    implementations are deprecated and will be removed in the next major version
-    bump.
+-   Add extension methods for most transformers. These should be used in place
+    of the current methods. All current implementations are deprecated and will
+    be removed in the next major version bump.
+    -   Migrating typical use: Instead of
+        `stream.transform(debounce(Duration(seconds: 1)))` use
+        `stream.debounce(Duration(seconds: 1))`.
+    -   To migrate a usage where a `StreamTransformer` instance is stored or
+        passed see "Getting a StreamTransformer instance" on the README.
 -   The `map` and `chainTransformers` utilities are no longer useful with the
     new patterns so they are deprecated without a replacement. If you still have
     a need for them they can be replicated with `StreamTransformer.fromBind`:
