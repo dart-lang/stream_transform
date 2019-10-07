@@ -6,7 +6,6 @@ export 'src/async_map.dart';
 export 'src/async_where.dart';
 export 'src/chain_transformers.dart';
 export 'src/combine_latest.dart';
-export 'src/concat.dart';
 export 'src/concatenate.dart';
 export 'src/map.dart';
 export 'src/merge.dart';

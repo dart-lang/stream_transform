@@ -164,3 +164,6 @@ StreamTransformer<T, T> startWithStream<T>(Stream<T> initial) =>
       }
       return initial.transform(followedBy(values));
     });
+
+@Deprecated('Use followedBy instead')
+StreamTransformer<T, T> concat<T>(Stream<T> next) => followedBy<T>(next);
