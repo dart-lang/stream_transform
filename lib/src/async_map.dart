@@ -5,10 +5,20 @@
 import 'dart:async';
 
 import 'aggregate_sample.dart';
-import 'buffer.dart';
 import 'chain_transformers.dart';
 import 'from_handlers.dart';
+import 'rate_limit.dart';
 
+/// Alternatives to [asyncMap].
+///
+/// The built in [asyncMap] will not overlap execution of the passed callback,
+/// and every event will be sent to the callback individually.
+///
+/// - [asyncMapBuffer] prevents the callback from overlapping execution and
+///   collects events while it is executing to process in batches.
+/// - [asyncMapSample] prevents overlapping execution and discards events while
+///   it is executing.
+/// - [concurrentAsyncMap] allows overlap and removes ordering guarantees.
 extension AsyncMap<T> on Stream<T> {
   /// Like [asyncMap] but events are buffered until previous events have been
   /// processed by [convert].
@@ -62,6 +72,43 @@ extension AsyncMap<T> on Stream<T> {
       ..add(null);
     return transform(AggregateSample(workFinished.stream, _dropPrevious))
         .transform(_asyncMapThen(convert, workFinished.add));
+  }
+
+  /// Like [asyncMap] but the [convert] callback may be called for an element
+  /// before processing for the previous element is finished.
+  ///
+  /// Events on the result stream will be emitted in the order that [convert]
+  /// completed which may not match the order of the original stream.
+  ///
+  /// If the source stream is a broadcast stream the result will be as well.
+  /// When used with a broadcast stream behavior also differs from [asyncMap] in
+  /// that the [convert] function is only called once per event, rather than
+  /// once per listener per event. The [convert] callback won't be called for
+  /// events while a broadcast stream has no listener.
+  ///
+  /// Errors from [convert] or the source stream are forwarded directly to the
+  /// result stream.
+  ///
+  /// The result stream will not close until the source stream closes and all
+  /// pending conversions have finished.
+  Stream<S> concurrentAsyncMap<S>(FutureOr<S> convert(T event)) {
+    var valuesWaiting = 0;
+    var sourceDone = false;
+    return transform(fromHandlers(handleData: (element, sink) {
+      valuesWaiting++;
+      () async {
+        try {
+          sink.add(await convert(element));
+        } catch (e, st) {
+          sink.addError(e, st);
+        }
+        valuesWaiting--;
+        if (valuesWaiting <= 0 && sourceDone) sink.close();
+      }();
+    }, handleDone: (sink) {
+      sourceDone = true;
+      if (valuesWaiting <= 0) sink.close();
+    }));
   }
 }
 
@@ -138,5 +185,43 @@ StreamTransformer<S, T> _asyncMapThen<S, T>(
     } else {
       sink.close();
     }
+  });
+}
+
+/// Like [Stream.asyncMap] but the [convert] callback may be called for an
+/// element before processing for the previous element is finished.
+///
+/// Events on the result stream will be emitted in the order that [convert]
+/// completed which may not match the order of the original stream.
+///
+/// If the source stream is a broadcast stream the result will be as well. When
+/// used with a broadcast stream behavior also differs from [Stream.asyncMap] in
+/// that the [convert] function is only called once per event, rather than once
+/// per listener per event. The [convert] callback won't be called for events
+/// while a broadcast stream has no listener.
+///
+/// Errors from the source stream are forwarded directly to the result stream.
+/// Errors during the conversion are also forwarded to the result stream.
+///
+/// The result stream will not close until the source stream closes and all
+/// pending conversions have finished.
+@Deprecated('Use the extension instead')
+StreamTransformer<S, T> concurrentAsyncMap<S, T>(FutureOr<T> convert(S event)) {
+  var valuesWaiting = 0;
+  var sourceDone = false;
+  return fromHandlers(handleData: (element, sink) {
+    valuesWaiting++;
+    () async {
+      try {
+        sink.add(await convert(element));
+      } catch (e, st) {
+        sink.addError(e, st);
+      }
+      valuesWaiting--;
+      if (valuesWaiting <= 0 && sourceDone) sink.close();
+    }();
+  }, handleDone: (sink) {
+    sourceDone = true;
+    if (valuesWaiting <= 0) sink.close();
   });
 }

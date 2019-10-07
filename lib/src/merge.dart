@@ -4,6 +4,7 @@
 
 import 'dart:async';
 
+/// Utilities to interleave events from multiple streams.
 extension Merge<T> on Stream<T> {
   /// Returns a stream which emits values and errors from the source stream and
   /// [other] in any order as they arrive.

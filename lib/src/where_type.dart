@@ -4,6 +4,7 @@
 
 import 'dart:async';
 
+/// A utility to filter events by type.
 extension WhereType<T> on Stream<T> {
   /// Returns a stream which emits only the events which have type [S].
   ///
