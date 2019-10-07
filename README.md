@@ -2,15 +2,16 @@ Extension methods on `Stream` adding common transform operators.
 
 # Operators
 
-## asyncMapBuffer
+## asyncMapBuffer, asyncMapSample, concurrentAsyncMap
+
+Alternatives to `asyncMap`. `asyncMapBuffer` prevents the callback from
+overlapping execution and collects events while it is executing.
+`asyncMapSample` prevents overlapping execution and discards events while it is
+executing. `concurrentAsyncMap` allows overlap and removes ordering guarantees
+for higher throughput.
 
 Like `asyncMap` but events are buffered in a List until previous events have
 been processed rather than being called for each element individually.
-
-## asyncMapSample
-
-Like `asyncMap` but events are discarded, keeping only the latest, until
-previous events have been processed rather than being called for every element.
 
 ## asyncWhere
 
@@ -26,25 +27,15 @@ recent value.
 Collects values from a source stream until a `trigger` stream fires and the
 collected values are emitted.
 
-## combineLatest
+## combineLatest, combineLatestAll
 
-Combine the most recent event from two streams through a callback and emit the
-result.
-
-## combineLatestAll
-
-Combines the latest events emitted from multiple source streams and yields a
-list of the values.
+Combine the most recent event from multiple streams through a callback or into a
+list.
 
 ## debounce, debounceBuffer
 
 Prevents a source stream from emitting too frequently by dropping or collecting
 values that occur within a given duration.
-
-## concurrentAsyncMap
-
-Like `asyncMap` but the convert callback can be called with subsequent values
-before it has finished for previous values.
 
 ## followedBy
 

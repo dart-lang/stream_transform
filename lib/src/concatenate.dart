@@ -4,7 +4,8 @@
 
 import 'dart:async';
 
-extension FollowedBy<T> on Stream<T> {
+/// Utilities to append or prepend to a stream.
+extension Concatenate<T> on Stream<T> {
   /// Returns a stream which emits values and errors from [next] after the
   /// original stream is complete.
   ///
@@ -21,6 +22,35 @@ extension FollowedBy<T> on Stream<T> {
   /// listening to the second stream will cause events to be dropped rather than
   /// buffered.
   Stream<T> followedBy(Stream<T> next) => transform(_FollowedBy(next));
+
+  /// Returns a stream which emits [initial] before any values from the original
+  /// stream.
+  ///
+  /// If the original stream is a broadcast stream the result will be as well.
+  Stream<T> startWith(T initial) =>
+      startWithStream(Future.value(initial).asStream());
+
+  /// Returns a stream which emits all values in [initial] before any values
+  /// from the original stream.
+  ///
+  /// If the original stream is a broadcast stream the result will be as well.
+  /// If the original stream is a broadcast stream it will miss any events which
+  /// occur before the initial values are all emitted.
+  Stream<T> startWithMany(Iterable<T> initial) =>
+      startWithStream(Stream.fromIterable(initial));
+
+  /// Returns a stream which emits all values in [initial] before any values
+  /// from the original stream.
+  ///
+  /// If the original stream is a broadcast stream the result will be as well. If
+  /// the original stream is a broadcast stream it will miss any events which
+  /// occur before [initial] closes.
+  Stream<T> startWithStream(Stream<T> initial) {
+    if (isBroadcast && !initial.isBroadcast) {
+      initial = initial.asBroadcastStream();
+    }
+    return initial.followedBy(this);
+  }
 }
 
 /// Starts emitting values from [next] after the original stream is complete.
@@ -104,3 +134,36 @@ class _FollowedBy<T> extends StreamTransformerBase<T, T> {
     return controller.stream;
   }
 }
+
+/// Emits [initial] before any values from the original stream.
+///
+/// If the original stream is a broadcast stream the result will be as well.
+@Deprecated('Use the extension instead')
+StreamTransformer<T, T> startWith<T>(T initial) =>
+    startWithStream<T>(Future.value(initial).asStream());
+
+/// Emits all values in [initial] before any values from the original stream.
+///
+/// If the original stream is a broadcast stream the result will be as well. If
+/// the original stream is a broadcast stream it will miss any events which
+/// occur before the initial values are all emitted.
+@Deprecated('Use the extension instead')
+StreamTransformer<T, T> startWithMany<T>(Iterable<T> initial) =>
+    startWithStream<T>(Stream.fromIterable(initial));
+
+/// Emits all values in [initial] before any values from the original stream.
+///
+/// If the original stream is a broadcast stream the result will be as well. If
+/// the original stream is a broadcast stream it will miss any events which
+/// occur before [initial] closes.
+@Deprecated('Use the extension instead')
+StreamTransformer<T, T> startWithStream<T>(Stream<T> initial) =>
+    StreamTransformer.fromBind((values) {
+      if (values.isBroadcast && !initial.isBroadcast) {
+        initial = initial.asBroadcastStream();
+      }
+      return initial.transform(followedBy(values));
+    });
+
+@Deprecated('Use followedBy instead')
+StreamTransformer<T, T> concat<T>(Stream<T> next) => followedBy<T>(next);

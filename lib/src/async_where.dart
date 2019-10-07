@@ -5,6 +5,7 @@ import 'dart:async';
 
 import 'from_handlers.dart';
 
+/// An asynchronous [where].
 extension AsyncWhere<T> on Stream<T> {
   /// Like [where] but allows the [test] to return a [Future].
   ///

@@ -5,6 +5,7 @@ import 'dart:async';
 
 import 'from_handlers.dart';
 
+/// A utility to chain extra behavior on a stream.
 extension Tap<T> on Stream<T> {
   /// Taps into this stream to allow additional handling on a single-subscriber
   /// stream without first wrapping as a broadcast stream.

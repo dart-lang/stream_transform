@@ -4,6 +4,8 @@
 
 import 'dart:async';
 
+/// Utilities to combine events from multiple streams through a callback or into
+/// a list.
 extension CombineLatest<T> on Stream<T> {
   /// Returns a stream which combines the latest value from the source stream
   /// with the latest value from [other] using [combine].

@@ -2,22 +2,16 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-export 'src/async_map_buffer.dart';
+export 'src/async_map.dart';
 export 'src/async_where.dart';
-export 'src/audit.dart';
-export 'src/buffer.dart';
 export 'src/chain_transformers.dart';
 export 'src/combine_latest.dart';
-export 'src/concat.dart';
-export 'src/concurrent_async_map.dart';
-export 'src/debounce.dart';
-export 'src/followed_by.dart';
+export 'src/concatenate.dart';
 export 'src/map.dart';
 export 'src/merge.dart';
+export 'src/rate_limit.dart';
 export 'src/scan.dart';
-export 'src/start_with.dart';
 export 'src/switch.dart';
 export 'src/take_until.dart';
 export 'src/tap.dart';
-export 'src/throttle.dart';
 export 'src/where_type.dart';
