@@ -13,7 +13,7 @@ void main() {
     test('includes all values', () async {
       var first = Stream.fromIterable([1, 2, 3]);
       var second = Stream.fromIterable([4, 5, 6]);
-      var allValues = await first.transform(merge(second)).toList();
+      var allValues = await first.merge(second).toList();
       expect(allValues, containsAllInOrder([1, 2, 3]));
       expect(allValues, containsAllInOrder([4, 5, 6]));
       expect(allValues, hasLength(6));
@@ -30,8 +30,7 @@ void main() {
         ..onCancel = () {
           secondCanceled = true;
         };
-      var subscription =
-          first.stream.transform(merge(second.stream)).listen((_) {});
+      var subscription = first.stream.merge(second.stream).listen((_) {});
       await subscription.cancel();
       expect(firstCanceled, true);
       expect(secondCanceled, true);
@@ -41,7 +40,7 @@ void main() {
       var first = StreamController();
       var second = StreamController();
       var isDone = false;
-      first.stream.transform(merge(second.stream)).listen((_) {}, onDone: () {
+      first.stream.merge(second.stream).listen((_) {}, onDone: () {
         isDone = true;
       });
       await first.close();
@@ -54,7 +53,7 @@ void main() {
       var first = StreamController.broadcast();
       var second = StreamController();
       var emittedValues = [];
-      var transformed = first.stream.transform(merge(second.stream));
+      var transformed = first.stream.merge(second.stream);
       var subscription = transformed.listen(emittedValues.add);
       first.add(1);
       second.add(2);
@@ -77,7 +76,7 @@ void main() {
       var first = Stream.fromIterable([1, 2, 3]);
       var second = Stream.fromIterable([4, 5, 6]);
       var third = Stream.fromIterable([7, 8, 9]);
-      var allValues = await first.transform(mergeAll([second, third])).toList();
+      var allValues = await first.mergeAll([second, third]).toList();
       expect(allValues, containsAllInOrder([1, 2, 3]));
       expect(allValues, containsAllInOrder([4, 5, 6]));
       expect(allValues, containsAllInOrder([7, 8, 9]));
@@ -101,8 +100,8 @@ void main() {
           secondSingleCanceled = true;
         };
 
-      var merged = first.stream
-          .transform(mergeAll([secondBroadcast.stream, secondSingle.stream]));
+      var merged =
+          first.stream.mergeAll([secondBroadcast.stream, secondSingle.stream]);
 
       var firstListenerValues = [];
       var secondListenerValues = [];

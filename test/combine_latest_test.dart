@@ -17,9 +17,8 @@ void main() {
       int sum(int a, int b) => a + b;
 
       var results = <int>[];
-      unawaited(source.stream
-          .transform(combineLatest(other.stream, sum))
-          .forEach(results.add));
+      unawaited(
+          source.stream.combineLatest(other.stream, sum).forEach(results.add));
 
       source.add(1);
       await Future(() {});
@@ -49,7 +48,7 @@ void main() {
 
       var results = <String>[];
       unawaited(source.stream
-          .transform(combineLatest(other.stream, times))
+          .combineLatest(other.stream, times)
           .forEach(results.add));
 
       source..add('a')..add('b');
@@ -76,7 +75,7 @@ void main() {
 
       var done = false;
       source.stream
-          .transform(combineLatest(other.stream, sum))
+          .combineLatest(other.stream, sum)
           .listen(null, onDone: () => done = true);
 
       source.add(1);
@@ -99,7 +98,7 @@ void main() {
 
       var done = false;
       source
-          .transform(combineLatest(other.stream, sum))
+          .combineLatest(other.stream, sum)
           .listen(null, onDone: () => done = true);
 
       await Future(() {});
@@ -115,7 +114,7 @@ void main() {
 
       var done = false;
       source.stream
-          .transform(combineLatest(other, sum))
+          .combineLatest(other, sum)
           .listen(null, onDone: () => done = true);
 
       await Future(() {});
@@ -130,7 +129,7 @@ void main() {
 
       var errors = [];
       source.stream
-          .transform(combineLatest(other.stream, sum))
+          .combineLatest(other.stream, sum)
           .listen(null, onError: errors.add);
 
       source.addError(_NumberedException(1));
@@ -151,8 +150,7 @@ void main() {
         int combine(int a, int b) => a + b;
 
         var emittedValues = <int>[];
-        var transformed =
-            source.stream.transform(combineLatest(other.stream, combine));
+        var transformed = source.stream.combineLatest(other.stream, combine);
 
         var subscription = transformed.listen(emittedValues.add);
 

@@ -19,23 +19,19 @@ void main() {
       Stream<int> transformed;
       StreamSubscription<int> subscription;
 
-      void setUpStreams(StreamTransformer<int, int> transformer) {
-        valuesCanceled = false;
-        values = createController(streamType)
-          ..onCancel = () {
-            valuesCanceled = true;
-          };
-        emittedValues = [];
-        isDone = false;
-        transformed = values.stream.transform(transformer);
-        subscription = transformed.listen(emittedValues.add, onDone: () {
-          isDone = true;
-        });
-      }
-
       group('throttle', () {
         setUp(() async {
-          setUpStreams(throttle(const Duration(milliseconds: 5)));
+          valuesCanceled = false;
+          values = createController(streamType)
+            ..onCancel = () {
+              valuesCanceled = true;
+            };
+          emittedValues = [];
+          isDone = false;
+          transformed = values.stream.throttle(const Duration(milliseconds: 5));
+          subscription = transformed.listen(emittedValues.add, onDone: () {
+            isDone = true;
+          });
         });
 
         test('cancels values', () async {

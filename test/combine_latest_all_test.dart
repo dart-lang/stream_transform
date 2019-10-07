@@ -16,9 +16,8 @@ void main() {
       final first = StreamController<String>();
       final second = StreamController<String>();
       final third = StreamController<String>();
-      final combined = first.stream
-          .transform(combineLatestAll([second.stream, third.stream]))
-          .map((data) => data.join());
+      final combined = first.stream.combineLatestAll(
+          [second.stream, third.stream]).map((data) => data.join());
 
       // first:    a----b------------------c--------d---|
       // second:   --1---------2-----------------|
@@ -54,8 +53,7 @@ void main() {
     test('ends if a Stream closes without ever emitting a value', () async {
       final first = StreamController<String>();
       final second = StreamController<String>();
-      final combined =
-          first.stream.transform(combineLatestAll([second.stream]));
+      final combined = first.stream.combineLatestAll([second.stream]);
 
       // first:    -a------b-------|
       // second:   -----|
@@ -74,8 +72,7 @@ void main() {
       final first = StreamController<String>();
       final second = StreamController<String>();
       final combined = first.stream
-          .transform(combineLatestAll([second.stream]))
-          .map((data) => data.join());
+          .combineLatestAll([second.stream]).map((data) => data.join());
 
       // first:    -a---------|
       // second:   ----1---#
@@ -95,9 +92,8 @@ void main() {
       final second = StreamController<String>();
 
       var done = false;
-      first.stream
-          .transform(combineLatestAll([second.stream]))
-          .listen(null, onDone: () => done = true);
+      first.stream.combineLatestAll([second.stream]).listen(null,
+          onDone: () => done = true);
 
       // first:    -a---|
       // second:   --------1--|
@@ -123,8 +119,7 @@ void main() {
         final first = StreamController<String>.broadcast();
         final second = StreamController<String>.broadcast();
         final combined = first.stream
-            .transform(combineLatestAll([second.stream]))
-            .map((data) => data.join());
+            .combineLatestAll([second.stream]).map((data) => data.join());
 
         // first:    a------b----------------c------d----e---|
         // second:   --1---------2---3---4------5-|

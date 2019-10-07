@@ -41,7 +41,7 @@ void main() {
           errors = [];
           isDone = false;
           subscription = outer.stream
-              .transform(switchLatest())
+              .switchLatest()
               .listen(emittedValues.add, onError: errors.add, onDone: () {
             isDone = true;
           });
@@ -129,9 +129,7 @@ void main() {
       var outer = StreamController<List<int>>();
 
       var values = [];
-      outer.stream
-          .transform(switchMap((l) => Stream.fromIterable(l)))
-          .listen(values.add);
+      outer.stream.switchMap((l) => Stream.fromIterable(l)).listen(values.add);
 
       outer.add([1, 2, 3]);
       await Future(() {});
@@ -143,7 +141,7 @@ void main() {
     test('can create a broadcast stream', () async {
       var outer = StreamController.broadcast();
 
-      var transformed = outer.stream.transform(switchMap(null));
+      var transformed = outer.stream.switchMap(null);
 
       expect(transformed.isBroadcast, true);
     });

@@ -12,24 +12,22 @@ void main() {
   test('calls function for values', () async {
     var valuesSeen = [];
     var stream = Stream.fromIterable([1, 2, 3]);
-    await stream.transform(tap(valuesSeen.add)).last;
+    await stream.tap(valuesSeen.add).last;
     expect(valuesSeen, [1, 2, 3]);
   });
 
   test('forwards values', () async {
     var stream = Stream.fromIterable([1, 2, 3]);
-    var values = await stream.transform(tap((_) {})).toList();
+    var values = await stream.tap((_) {}).toList();
     expect(values, [1, 2, 3]);
   });
 
   test('calls function for errors', () async {
     dynamic error;
     var source = StreamController();
-    source.stream
-        .transform(tap((_) {}, onError: (e, st) {
-          error = e;
-        }))
-        .listen((_) {}, onError: (_) {});
+    source.stream.tap((_) {}, onError: (e, st) {
+      error = e;
+    }).listen((_) {}, onError: (_) {});
     source.addError('error');
     await Future(() {});
     expect(error, 'error');
@@ -38,8 +36,7 @@ void main() {
   test('forwards errors', () async {
     dynamic error;
     var source = StreamController();
-    source.stream.transform(tap((_) {}, onError: (e, st) {})).listen((_) {},
-        onError: (e) {
+    source.stream.tap((_) {}, onError: (e, st) {}).listen((_) {}, onError: (e) {
       error = e;
     });
     source.addError('error');
@@ -50,11 +47,9 @@ void main() {
   test('calls function on done', () async {
     var doneCalled = false;
     var source = StreamController();
-    source.stream
-        .transform(tap((_) {}, onDone: () {
-          doneCalled = true;
-        }))
-        .listen((_) {});
+    source.stream.tap((_) {}, onDone: () {
+      doneCalled = true;
+    }).listen((_) {});
     await source.close();
     expect(doneCalled, true);
   });
@@ -63,9 +58,9 @@ void main() {
       () async {
     var dataCallCount = 0;
     var source = StreamController.broadcast();
-    source.stream.transform(tap((_) {
+    source.stream.tap((_) {
       dataCallCount++;
-    }))
+    })
       ..listen((_) {})
       ..listen((_) {});
     source.add(1);
@@ -78,9 +73,9 @@ void main() {
       () async {
     var errorCallCount = 0;
     var source = StreamController.broadcast();
-    source.stream.transform(tap((_) {}, onError: (_, __) {
+    source.stream.tap((_) {}, onError: (_, __) {
       errorCallCount++;
-    }))
+    })
       ..listen((_) {}, onError: (_, __) {})
       ..listen((_) {}, onError: (_, __) {});
     source.addError('error');
@@ -92,9 +87,9 @@ void main() {
       () async {
     var doneCallCount = 0;
     var source = StreamController.broadcast();
-    source.stream.transform(tap((_) {}, onDone: () {
+    source.stream.tap((_) {}, onDone: () {
       doneCallCount++;
-    }))
+    })
       ..listen((_) {})
       ..listen((_) {});
     await source.close();
@@ -105,7 +100,7 @@ void main() {
     var source = StreamController.broadcast();
     var emittedValues1 = [];
     var emittedValues2 = [];
-    source.stream.transform(tap((_) {}))
+    source.stream.tap((_) {})
       ..listen(emittedValues1.add)
       ..listen(emittedValues2.add);
     source.add(1);
@@ -116,6 +111,6 @@ void main() {
 
   test('allows null callback', () async {
     var stream = Stream.fromIterable([1, 2, 3]);
-    await stream.transform(tap(null)).last;
+    await stream.tap(null).last;
   });
 }

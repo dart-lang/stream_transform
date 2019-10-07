@@ -14,7 +14,7 @@ void main() {
     test('produces intermediate values', () async {
       var source = Stream.fromIterable([1, 2, 3, 4]);
       int sum(int x, int y) => x + y;
-      var result = await source.transform(scan(0, sum)).toList();
+      var result = await source.scan(0, sum).toList();
 
       expect(result, [1, 3, 6, 10]);
     });
@@ -22,7 +22,7 @@ void main() {
     test('can create a broadcast stream', () {
       var source = StreamController.broadcast();
 
-      var transformed = source.stream.transform(scan(null, null));
+      var transformed = source.stream.scan(null, null);
 
       expect(transformed.isBroadcast, true);
     });
@@ -34,7 +34,7 @@ void main() {
 
       var errors = [];
 
-      source.stream.transform(scan(0, sum)).listen(null, onError: errors.add);
+      source.stream.scan(0, sum).listen(null, onError: errors.add);
 
       source.addError(StateError('fail'));
       await Future(() {});
@@ -46,7 +46,7 @@ void main() {
       test('returns a Stream of non-futures', () async {
         var source = Stream.fromIterable([1, 2, 3, 4]);
         Future<int> sum(int x, int y) async => x + y;
-        var result = await source.transform(scan(0, sum)).toList();
+        var result = await source.scan(0, sum).toList();
 
         expect(result, [1, 3, 6, 10]);
       });
@@ -54,9 +54,8 @@ void main() {
       test('can return a Stream of futures when specified', () async {
         var source = Stream.fromIterable([1, 2]);
         Future<int> sum(Future<int> x, int y) async => (await x) + y;
-        var result = await source
-            .transform(scan<int, Future<int>>(Future.value(0), sum))
-            .toList();
+        var result =
+            await source.scan<Future<int>>(Future.value(0), sum).toList();
 
         expect(result, [
           const TypeMatcher<Future<void>>(),
@@ -78,8 +77,7 @@ void main() {
 
         var results = <int>[];
 
-        unawaited(
-            source.stream.transform(scan(0, combine)).forEach(results.add));
+        unawaited(source.stream.scan(0, combine).forEach(results.add));
 
         source..add(1)..add(2);
         await Future(() {});
@@ -99,9 +97,7 @@ void main() {
 
         var errors = [];
 
-        source.stream
-            .transform(scan(0, combine))
-            .listen(null, onError: errors.add);
+        source.stream.scan(0, combine).listen(null, onError: errors.add);
 
         source.add(1);
         await Future(() {});

@@ -4,6 +4,25 @@
 
 import 'dart:async';
 
+extension FollowedBy<T> on Stream<T> {
+  /// Returns a stream which emits values and errors from [next] after the
+  /// original stream is complete.
+  ///
+  /// If the source stream never finishes, the [next] stream will never be
+  /// listened to.
+  ///
+  /// If the source stream is a broadcast stream, the result will be as well.
+  /// If a single-subscription follows a broadcast stream it may be listened
+  /// to and never canceled since there may be broadcast listeners added later.
+  ///
+  /// If a broadcast stream follows any other stream it will miss any events or
+  /// errors which occur before the first stream is done. If a broadcast stream
+  /// follows a single-subscription stream, pausing the stream while it is
+  /// listening to the second stream will cause events to be dropped rather than
+  /// buffered.
+  Stream<T> followedBy(Stream<T> next) => transform(_FollowedBy(next));
+}
+
 /// Starts emitting values from [next] after the original stream is complete.
 ///
 /// If the initial stream never finishes, the [next] stream will never be
@@ -16,6 +35,7 @@ import 'dart:async';
 /// occur before the first stream is done. If a broadcast stream follows a
 /// single-subscription stream, pausing the stream while it is listening to the
 /// second stream will cause events to be dropped rather than buffered.
+@Deprecated('Use the extension instead')
 StreamTransformer<T, T> followedBy<T>(Stream<T> next) => _FollowedBy<T>(next);
 
 class _FollowedBy<T> extends StreamTransformerBase<T, T> {

@@ -17,6 +17,7 @@ import 'dart:async';
 /// /// values.transform(utf8.decoder).transform(const LineSplitter())
 /// final splitDecoded = chainTransformers(utf8.decoder, const LineSplitter());
 /// ```
+@Deprecated('This utility should not be needed with extension methods')
 StreamTransformer<S, T> chainTransformers<S, I, T>(
         StreamTransformer<S, I> first, StreamTransformer<I, T> second) =>
     StreamTransformer.fromBind(

@@ -32,7 +32,7 @@ void main() {
         errors = [];
         isDone = false;
         closeTrigger = Completer();
-        transformed = values.stream.transform(takeUntil(closeTrigger.future));
+        transformed = values.stream.takeUntil(closeTrigger.future);
         subscription = transformed
             .listen(emittedValues.add, onError: errors.add, onDone: () {
           isDone = true;

@@ -41,7 +41,7 @@ void main() {
     emittedValues = [];
     errors = [];
     isDone = false;
-    transformed = values.stream.transform(buffer(trigger.stream));
+    transformed = values.stream.buffer(trigger.stream);
     subscription =
         transformed.listen(emittedValues.add, onError: errors.add, onDone: () {
       isDone = true;

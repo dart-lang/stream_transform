@@ -4,6 +4,19 @@
 
 import 'dart:async';
 
+extension WhereType<T> on Stream<T> {
+  /// Returns a stream which emits only the events which have type [S].
+  ///
+  /// If the source stream is a broadcast stream the result will be as well.
+  ///
+  /// Errors from the source stream are forwarded directly to the result stream.
+  ///
+  /// [S] should be a subtype of the stream's generic type, otherwise nothing of
+  /// type [S] could possibly be emitted, however there is no static or runtime
+  /// checking that this is the case.
+  Stream<S> whereType<S>() => transform(_WhereType<S>());
+}
+
 /// Emits only the events which have type [R].
 ///
 /// If the source stream is a broadcast stream the result will be as well.
@@ -19,6 +32,7 @@ import 'dart:async';
 /// [R] should be a subtype of the stream's generic type, otherwise nothing of
 /// type [R] could possibly be emitted, however there is no static or runtime
 /// checking that this is the case.
+@Deprecated('Use the extension instead')
 StreamTransformer<Null, R> whereType<R>() => _WhereType<R>();
 
 class _WhereType<R> extends StreamTransformerBase<Null, R> {

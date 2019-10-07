@@ -5,12 +5,53 @@ import 'dart:async';
 
 import 'from_handlers.dart';
 
+extension Debounce<T> on Stream<T> {
+  /// Returns a Stream which only emits when the source stream does not emit for
+  /// [duration].
+  ///
+  /// Values will always be delayed by at least [duration], and values which
+  /// come within this time will replace the old values, only the most
+  /// recent value will be emitted.
+  ///
+  /// If the source stream is a broadcast stream, the result will be as well.
+  /// Errors are forwarded immediately.
+  ///
+  /// If there is an event waiting during the debounce period when the source
+  /// stream closes the returned stream will wait to emit it following the
+  /// debounce period before closing. If there is no pending debounced event
+  /// when the source stream closes the returned stream will close immediately.
+  ///
+  /// To collect values emitted during the debounce period see [debounceBuffer].
+  Stream<T> debounce(Duration duration) =>
+      transform(_debounceAggregate(duration, _dropPrevious));
+
+  /// Returns a Stream which collects values until the source stream does not
+  /// emit for [duration] then emits the collected values.
+  ///
+  /// Values will always be delayed by at least [duration], and values which
+  /// come within this time will be aggregated into the same list.
+  ///
+  /// If the source stream is a broadcast stream, the result will be as well.
+  /// Errors are forwarded immediately.
+  ///
+  /// If there are events waiting during the debounce period when the source
+  /// stream closes the returned stream will wait to emit them following the
+  /// debounce period before closing. If there are no pending debounced events
+  /// when the source stream closes the returned stream will close immediately.
+  ///
+  /// To keep only the most recent event during the debounce perios see
+  /// [debounce].
+  Stream<List<T>> debounceBuffer(Duration duration) =>
+      transform(_debounceAggregate(duration, _collectToList));
+}
+
 /// Creates a StreamTransformer which only emits when the source stream does not
 /// emit for [duration].
 ///
 /// Source values will always be delayed by at least [duration], and values
 /// which come within this time will replace the old values, only the most
 /// recent value will be emitted.
+@Deprecated('Use the extension instead')
 StreamTransformer<T, T> debounce<T>(Duration duration) =>
     _debounceAggregate(duration, _dropPrevious);
 
@@ -19,6 +60,7 @@ StreamTransformer<T, T> debounce<T>(Duration duration) =>
 ///
 /// This differs from [debounce] in that values are aggregated instead of
 /// skipped.
+@Deprecated('Use the extension instead')
 StreamTransformer<T, List<T>> debounceBuffer<T>(Duration duration) =>
     _debounceAggregate(duration, _collectToList);
 

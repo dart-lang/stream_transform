@@ -20,25 +20,21 @@ void main() {
       Stream<int> transformed;
       StreamSubscription<int> subscription;
 
-      void setUpStreams(StreamTransformer<int, int> transformer) {
-        valuesCanceled = false;
-        values = createController(streamType)
-          ..onCancel = () {
-            valuesCanceled = true;
-          };
-        emittedValues = [];
-        errors = [];
-        isDone = false;
-        transformed = values.stream.transform(transformer);
-        subscription = transformed
-            .listen(emittedValues.add, onError: errors.add, onDone: () {
-          isDone = true;
-        });
-      }
-
       group('audit', () {
         setUp(() async {
-          setUpStreams(audit(const Duration(milliseconds: 5)));
+          valuesCanceled = false;
+          values = createController(streamType)
+            ..onCancel = () {
+              valuesCanceled = true;
+            };
+          emittedValues = [];
+          errors = [];
+          isDone = false;
+          transformed = values.stream.audit(const Duration(milliseconds: 5));
+          subscription = transformed
+              .listen(emittedValues.add, onError: errors.add, onDone: () {
+            isDone = true;
+          });
         });
 
         test('cancels values', () async {

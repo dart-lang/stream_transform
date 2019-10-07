@@ -11,19 +11,19 @@ import 'package:stream_transform/stream_transform.dart';
 void main() {
   test('forwards only events that match the type', () async {
     var values = Stream.fromIterable([1, 'a', 2, 'b']);
-    var filtered = values.transform(whereType<String>());
+    var filtered = values.whereType<String>();
     expect(await filtered.toList(), ['a', 'b']);
   });
 
   test('can result in empty stream', () async {
     var values = Stream.fromIterable([1, 2, 3, 4]);
-    var filtered = values.transform(whereType<String>());
+    var filtered = values.whereType<String>();
     expect(await filtered.isEmpty, true);
   });
 
   test('forwards values to multiple listeners', () async {
     var values = StreamController.broadcast();
-    var filtered = values.stream.transform(whereType<String>());
+    var filtered = values.stream.whereType<String>();
     var firstValues = [];
     var secondValues = [];
     filtered..listen(firstValues.add)..listen(secondValues.add);
@@ -35,7 +35,7 @@ void main() {
 
   test('closes streams with multiple listeners', () async {
     var values = StreamController.broadcast();
-    var filtered = values.stream.transform(whereType<String>());
+    var filtered = values.stream.whereType<String>();
     var firstDone = false;
     var secondDone = false;
     filtered

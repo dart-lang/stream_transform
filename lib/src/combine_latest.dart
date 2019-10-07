@@ -4,6 +4,76 @@
 
 import 'dart:async';
 
+extension CombineLatest<T> on Stream<T> {
+  /// Returns a stream which combines the latest value from the source stream
+  /// with the latest value from [other] using [combine].
+  ///
+  /// No event will be emitted until both the source stream and [other] have
+  /// each emitted at least one event. If either the source stream or [other]
+  /// emit multiple events before the other emits the first event, all but the
+  /// last value will be discarded. Once both streams have emitted at least
+  /// once, the result stream will emit any time either input stream emits.
+  ///
+  /// The result stream will not close until both the source stream and [other]
+  /// have closed.
+  ///
+  /// For example:
+  ///
+  ///     source.combineLatest(other, (a, b) => a + b);
+  ///
+  ///     source: --1--2--------4--|
+  ///     other:  -------3--|
+  ///     result: -------5------7--|
+  ///
+  /// Errors thrown by [combine], along with any errors on the source stream or
+  /// [other], are forwarded to the result stream.
+  ///
+  /// If the source stream is a broadcast stream, the result stream will be as
+  /// well, regardless of [other]'s type. If a single subscription stream is
+  /// combined with a broadcast stream it may never be canceled.
+  Stream<S> combineLatest<T2, S>(
+          Stream<T2> other, FutureOr<S> Function(T, T2) combine) =>
+      transform(_CombineLatest(other, combine));
+
+  /// Combine the latest value emitted from the source stream with the latest
+  /// values emitted from [others].
+  ///
+  /// [combineLatestAll] subscribes to the source stream and [others] and when
+  /// any one of the streams emits, the result stream will emit a [List<T>] of
+  /// the latest values emitted from all streams.
+  ///
+  /// No event will be emitted until all source streams emit at least once. If a
+  /// source stream emits multiple values before another starts emitting, all
+  /// but the last value will be discarded. Once all source streams have emitted
+  /// at least once, the result stream will emit any time any source stream
+  /// emits.
+  ///
+  /// The result stream will not close until all source streams have closed. When
+  /// a source stream closes, the result stream will continue to emit the last
+  /// value from the closed stream when the other source streams emit until the
+  /// result stream has closed. If a source stream closes without emitting any
+  /// value, the result stream will close as well.
+  ///
+  /// For example:
+  ///
+  ///     final combined = first
+  ///         .combineLatestAll([second, third])
+  ///         .map((data) => data.join());
+  ///
+  ///     first:    a----b------------------c--------d---|
+  ///     second:   --1---------2-----------------|
+  ///     third:    -------&----------%---|
+  ///     combined: -------b1&--b2&---b2%---c2%------d2%-|
+  ///
+  /// Errors thrown by any source stream will be forwarded to the result stream.
+  ///
+  /// If the source stream is a broadcast stream, the result stream will be as
+  /// well, regardless of the types of [others]. If a single subscription stream
+  /// is combined with a broadcast source stream, it may never be canceled.
+  Stream<List<T>> combineLatestAll(Iterable<Stream<T>> others) =>
+      transform(_CombineLatestAll<T>(others));
+}
+
 /// Combine the latest value from the source stream with the latest value from
 /// [other] using [combine].
 ///
@@ -31,6 +101,7 @@ import 'dart:async';
 /// If the source stream is a broadcast stream, the result stream will be as
 /// well, regardless of [other]'s type. If a single subscription stream is
 /// combined with a broadcast stream it may never be canceled.
+@Deprecated('Use the extension instead')
 StreamTransformer<S, R> combineLatest<S, T, R>(
         Stream<T> other, FutureOr<R> Function(S, T) combine) =>
     _CombineLatest(other, combine);
@@ -139,6 +210,113 @@ class _CombineLatest<S, T, R> extends StreamTransformerBase<S, R> {
         sourceSubscription = null;
         otherSubscription = null;
         return Future.wait([cancelSource, cancelOther]);
+      };
+    };
+    return controller.stream;
+  }
+}
+
+/// Combine the latest value emitted from the source stream with the latest
+/// values emitted from [others].
+///
+/// [combineLatestAll] subscribes to the source stream and [others] and when
+/// any one of the streams emits, the result stream will emit a [List<T>] of
+/// the latest values emitted from all streams.
+///
+/// The result stream will not emit until all source streams emit at least
+/// once. If a source stream emits multiple values before another starts
+/// emitting, all but the last value will be lost.
+///
+/// The result stream will not close until all source streams have closed. When
+/// a source stream closes, the result stream will continue to emit the last
+/// value from the closed stream when the other source streams emit until the
+/// result stream has closed. If a source stream closes without emitting any
+/// value, the result stream will close as well.
+///
+/// Errors thrown by any source stream will be forwarded to the result stream.
+///
+/// If the source stream is a broadcast stream, the result stream will be as
+/// well, regardless of the types of [others]. If a single subscription stream
+/// is combined with a broadcast source stream, it may never be canceled.
+///
+/// ## Example
+///
+/// (Suppose first, second, and third are Stream<String>)
+/// final combined = first
+///     .transform(combineLatestAll([second, third]))
+///     .map((data) => data.join());
+///
+/// first:    a----b------------------c--------d---|
+/// second:   --1---------2-----------------|
+/// third:    -------&----------%---|
+/// combined: -------b1&--b2&---b2%---c2%------d2%-|
+///
+@Deprecated('Use the extension instead')
+StreamTransformer<T, List<T>> combineLatestAll<T>(Iterable<Stream<T>> others) =>
+    _CombineLatestAll<T>(others);
+
+class _CombineLatestAll<T> extends StreamTransformerBase<T, List<T>> {
+  final Iterable<Stream<T>> _others;
+
+  _CombineLatestAll(this._others);
+
+  @override
+  Stream<List<T>> bind(Stream<T> source) {
+    final controller = source.isBroadcast
+        ? StreamController<List<T>>.broadcast(sync: true)
+        : StreamController<List<T>>(sync: true);
+
+    var allStreams = [source]..addAll(_others);
+    if (source.isBroadcast) {
+      allStreams = allStreams
+          .map((s) => s.isBroadcast ? s : s.asBroadcastStream())
+          .toList();
+    }
+
+    List<StreamSubscription<T>> subscriptions;
+
+    controller.onListen = () {
+      assert(subscriptions == null);
+
+      final latestData = List<T>(allStreams.length);
+      final hasEmitted = <int>{};
+      void handleData(int index, T data) {
+        latestData[index] = data;
+        hasEmitted.add(index);
+        if (hasEmitted.length == allStreams.length) {
+          controller.add(List.from(latestData));
+        }
+      }
+
+      var activeStreamCount = 0;
+      subscriptions = allStreams.map((stream) {
+        final index = activeStreamCount;
+        activeStreamCount++;
+        return stream.listen((data) => handleData(index, data),
+            onError: controller.addError, onDone: () {
+          if (--activeStreamCount <= 0 || !hasEmitted.contains(index)) {
+            controller.close();
+          }
+        });
+      }).toList();
+      if (!source.isBroadcast) {
+        controller
+          ..onPause = () {
+            for (var subscription in subscriptions) {
+              subscription.pause();
+            }
+          }
+          ..onResume = () {
+            for (var subscription in subscriptions) {
+              subscription.resume();
+            }
+          };
+      }
+      controller.onCancel = () {
+        final toCancel = subscriptions;
+        subscriptions = null;
+        if (activeStreamCount <= 0) return null;
+        return Future.wait(toCancel.map((s) => s.cancel()));
       };
     };
     return controller.stream;

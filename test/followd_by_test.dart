@@ -43,7 +43,7 @@ void main() {
           emittedValues = [];
           errors = [];
           isDone = false;
-          transformed = first.stream.transform(followedBy(second.stream));
+          transformed = first.stream.followedBy(second.stream);
           subscription = transformed
               .listen(emittedValues.add, onError: errors.add, onDone: () {
             isDone = true;

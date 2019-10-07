@@ -3,7 +3,7 @@ branches:
   only: [master]
 dart:
   - dev
-  - 2.2.0
+  # 2.2.0
 cache:
   directories:
     - $HOME/.pub-cache

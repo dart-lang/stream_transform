@@ -16,5 +16,6 @@ import 'dart:async';
 /// final sinkMapper = new StreamSinkTransformer.fromStreamTransformer(
 ///     map((v) => '$v'));
 /// ```
+@Deprecated('This utility should not be needed with extension methods')
 StreamTransformer<S, T> map<S, T>(T convert(S event)) =>
     StreamTransformer.fromBind((stream) => stream.map(convert));
