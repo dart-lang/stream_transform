@@ -1,4 +1,4 @@
-## 0.0.20-dev
+## 0.0.20
 
 -   Add extension methods for most transformers. These should be used in place
     of the current methods. All current implementations are deprecated and will
