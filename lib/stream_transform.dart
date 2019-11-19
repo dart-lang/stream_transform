@@ -3,10 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 
 export 'src/async_map.dart';
-export 'src/chain_transformers.dart';
 export 'src/combine_latest.dart';
 export 'src/concatenate.dart';
-export 'src/map.dart';
 export 'src/merge.dart';
 export 'src/rate_limit.dart';
 export 'src/scan.dart';

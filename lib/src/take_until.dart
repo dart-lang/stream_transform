@@ -16,16 +16,6 @@ extension TakeUntil<T> on Stream<T> {
   Stream<T> takeUntil(Future<void> trigger) => transform(_TakeUntil(trigger));
 }
 
-/// Emits values from the stream until [trigger] fires.
-///
-/// Completing [trigger] differs from canceling a subscription in that values
-/// which are emitted before the trigger, but have further asynchronous delays
-/// in transformations following the takeUtil, will still go through. Cancelling
-/// a subscription immediately stops values.
-@Deprecated('Use the extension instead')
-StreamTransformer<T, T> takeUntil<T>(Future<void> trigger) =>
-    _TakeUntil(trigger);
-
 class _TakeUntil<T> extends StreamTransformerBase<T, T> {
   final Future<void> _trigger;
 

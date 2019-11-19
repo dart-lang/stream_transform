@@ -1,3 +1,7 @@
+## 1.0.0
+
+-   Remove the top level methods and retain the extensions only.
+
 ## 0.0.20
 
 -   Add extension methods for most transformers. These should be used in place

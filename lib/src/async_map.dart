@@ -5,7 +5,6 @@
 import 'dart:async';
 
 import 'aggregate_sample.dart';
-import 'chain_transformers.dart';
 import 'from_handlers.dart';
 import 'rate_limit.dart';
 
@@ -112,62 +111,6 @@ extension AsyncMap<T> on Stream<T> {
   }
 }
 
-/// Like [Stream.asyncMap] but events are buffered until previous events have
-/// been processed by [convert].
-///
-/// If the source stream is a broadcast stream the result will be as well. When
-/// used with a broadcast stream behavior also differs from [Stream.asyncMap] in
-/// that the [convert] function is only called once per event, rather than once
-/// per listener per event.
-///
-/// The first event from the source stream is always passed to [convert] as a
-/// List with a single element. After that events are buffered until the
-/// previous Future returned from [convert] has fired.
-///
-/// Errors from the source stream are forwarded directly to the result stream.
-/// Errors during the conversion are also forwarded to the result stream and are
-/// considered completing work so the next values are let through.
-///
-/// The result stream will not close until the source stream closes and all
-/// pending conversions have finished.
-@Deprecated('Use the extension instead')
-StreamTransformer<S, T> asyncMapBuffer<S, T>(
-    Future<T> Function(List<S>) convert) {
-  var workFinished = StreamController<void>()
-    // Let the first event through.
-    ..add(null);
-  return chainTransformers(
-      buffer(workFinished.stream), _asyncMapThen(convert, workFinished.add));
-}
-
-/// Like [Stream.asyncMap] but events are discarded while work is happening in
-/// [convert].
-///
-/// If the source stream is a broadcast stream the result will be as well. When
-/// used with a broadcast stream behavior also differs from [Stream.asyncMap] in
-/// that the [convert] function is only called once per event, rather than once
-/// per listener per event.
-///
-/// If no work is happening when an event is emitted it will be immediately
-/// passed to [convert]. If there is ongoing work when an event is emitted it
-/// will be held until the work is finished. New events emitted will replace a
-/// pending event.
-///
-/// Errors from the source stream are forwarded directly to the result stream.
-/// Errors during the conversion are also forwarded to the result stream and are
-/// considered completing work so the next values are let through.
-///
-/// The result stream will not close until the source stream closes and all
-/// pending conversions have finished.
-@Deprecated('Use the extension instead')
-StreamTransformer<S, T> asyncMapSample<S, T>(Future<T> Function(S) convert) {
-  var workFinished = StreamController<void>()
-    // Let the first event through.
-    ..add(null);
-  return chainTransformers(AggregateSample(workFinished.stream, _dropPrevious),
-      _asyncMapThen(convert, workFinished.add));
-}
-
 T _dropPrevious<T>(T event, _) => event;
 
 /// Like [Stream.asyncMap] but the [convert] is only called once per event,
@@ -185,43 +128,5 @@ StreamTransformer<S, T> _asyncMapThen<S, T>(
     } else {
       sink.close();
     }
-  });
-}
-
-/// Like [Stream.asyncMap] but the [convert] callback may be called for an
-/// element before processing for the previous element is finished.
-///
-/// Events on the result stream will be emitted in the order that [convert]
-/// completed which may not match the order of the original stream.
-///
-/// If the source stream is a broadcast stream the result will be as well. When
-/// used with a broadcast stream behavior also differs from [Stream.asyncMap] in
-/// that the [convert] function is only called once per event, rather than once
-/// per listener per event. The [convert] callback won't be called for events
-/// while a broadcast stream has no listener.
-///
-/// Errors from the source stream are forwarded directly to the result stream.
-/// Errors during the conversion are also forwarded to the result stream.
-///
-/// The result stream will not close until the source stream closes and all
-/// pending conversions have finished.
-@Deprecated('Use the extension instead')
-StreamTransformer<S, T> concurrentAsyncMap<S, T>(FutureOr<T> convert(S event)) {
-  var valuesWaiting = 0;
-  var sourceDone = false;
-  return fromHandlers(handleData: (element, sink) {
-    valuesWaiting++;
-    () async {
-      try {
-        sink.add(await convert(element));
-      } catch (e, st) {
-        sink.addError(e, st);
-      }
-      valuesWaiting--;
-      if (valuesWaiting <= 0 && sourceDone) sink.close();
-    }();
-  }, handleDone: (sink) {
-    sourceDone = true;
-    if (valuesWaiting <= 0) sink.close();
   });
 }
