@@ -56,25 +56,6 @@ extension Merge<T> on Stream<T> {
   Stream<T> mergeAll(Iterable<Stream<T>> others) => transform(_Merge(others));
 }
 
-/// Emits values from the source stream and [other] in any order as they arrive.
-///
-/// If the source stream is a broadcast stream, the result stream will be as
-/// well, regardless of [other]'s type. If a single subscription stream is
-/// merged into a broadcast stream it may never be canceled.
-@Deprecated('Use the extension instead')
-StreamTransformer<T, T> merge<T>(Stream<T> other) => _Merge<T>([other]);
-
-/// Emits values from the source stream and all streams in [others] in any order
-/// as they arrive.
-///
-/// If the source stream is a broadcast stream, the result stream will be as
-/// well, regardless of the types of streams in [others]. If single
-/// subscription streams are merged into a broadcast stream they may never be
-/// canceled.
-@Deprecated('Use the extension instead')
-StreamTransformer<T, T> mergeAll<T>(Iterable<Stream<T>> others) =>
-    _Merge<T>(others);
-
 class _Merge<T> extends StreamTransformerBase<T, T> {
   final Iterable<Stream<T>> _others;
 

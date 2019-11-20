@@ -32,29 +32,6 @@ extension SwitchLatest<T> on Stream<Stream<T>> {
   Stream<T> switchLatest() => transform(_SwitchTransformer<T>());
 }
 
-/// Maps events to a Stream and emits values from the most recently created
-/// Stream.
-///
-/// When the source emits a value it will be converted to a [Stream] using
-/// [convert] and the output will switch to emitting events from that result.
-///
-/// If the source stream is a broadcast stream, the result stream will be as
-/// well, regardless of the types of the streams produced by [convert].
-@Deprecated('Use the extension instead')
-StreamTransformer<S, T> switchMap<S, T>(Stream<T> convert(S event)) =>
-    StreamTransformer.fromBind(
-        (source) => source.map(convert).transform(switchLatest()));
-
-/// Emits values from the most recently emitted Stream.
-///
-/// When the source emits a stream the output will switch to emitting events
-/// from that stream.
-///
-/// If the source stream is a broadcast stream, the result stream will be as
-/// well, regardless of the types of streams emitted.
-@Deprecated('Use the extension instead')
-StreamTransformer<Stream<T>, T> switchLatest<T>() => _SwitchTransformer<T>();
-
 class _SwitchTransformer<T> extends StreamTransformerBase<Stream<T>, T> {
   const _SwitchTransformer();
 
