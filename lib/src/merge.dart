@@ -105,7 +105,6 @@ class _Merge<T> extends StreamTransformerBase<T, T> {
         final subscription =
             stream.listen(controller.add, onError: controller.addError);
         subscription.onDone(() {
-          assert(subscriptions.contains(subscription));
           subscriptions.remove(subscription);
           if (subscriptions.isEmpty) controller.close();
         });
@@ -149,14 +148,12 @@ class _MergeExpanded<T> extends StreamTransformerBase<Stream<T>, T> {
         final subscription =
             inner.listen(controller.add, onError: controller.addError);
         subscription.onDone(() {
-          assert(subscriptions.contains(subscription));
           subscriptions.remove(subscription);
           if (subscriptions.isEmpty) controller.close();
         });
         subscriptions.add(subscription);
       }, onError: controller.addError);
       outerSubscription.onDone(() {
-        assert(subscriptions.contains(outerSubscription));
         subscriptions.remove(outerSubscription);
         if (subscriptions.isEmpty) controller.close();
       });
