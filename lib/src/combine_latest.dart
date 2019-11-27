@@ -192,22 +192,21 @@ class _CombineLatestAll<T> extends StreamTransformerBase<T, List<T>> {
   _CombineLatestAll(this._others);
 
   @override
-  Stream<List<T>> bind(Stream<T> source) {
-    final controller = source.isBroadcast
+  Stream<List<T>> bind(Stream<T> first) {
+    final controller = first.isBroadcast
         ? StreamController<List<T>>.broadcast(sync: true)
         : StreamController<List<T>>(sync: true);
 
-    var allStreams = [source]..addAll(_others);
-    if (source.isBroadcast) {
-      allStreams = allStreams
-          .map((s) => s.isBroadcast ? s : s.asBroadcastStream())
-          .toList();
-    }
-
-    List<StreamSubscription<T>> subscriptions;
+    final allStreams = [
+      first,
+      for (final other in _others)
+        !first.isBroadcast || other.isBroadcast
+            ? other
+            : other.asBroadcastStream(),
+    ];
 
     controller.onListen = () {
-      assert(subscriptions == null);
+      final subscriptions = <StreamSubscription<T>>[];
 
       final latestData = List<T>(allStreams.length);
       final hasEmitted = <int>{};
@@ -219,35 +218,39 @@ class _CombineLatestAll<T> extends StreamTransformerBase<T, List<T>> {
         }
       }
 
-      var activeStreamCount = 0;
-      subscriptions = allStreams.map((stream) {
-        final index = activeStreamCount;
-        activeStreamCount++;
-        return stream.listen((data) => handleData(index, data),
-            onError: controller.addError, onDone: () {
-          if (--activeStreamCount <= 0 || !hasEmitted.contains(index)) {
+      var streamId = 0;
+      for (final stream in allStreams) {
+        final index = streamId;
+
+        final subscription = stream.listen((data) => handleData(index, data),
+            onError: controller.addError);
+        subscription.onDone(() {
+          assert(subscriptions.contains(subscription));
+          subscriptions.remove(subscription);
+          if (subscriptions.isEmpty || !hasEmitted.contains(index)) {
             controller.close();
           }
         });
-      }).toList();
-      if (!source.isBroadcast) {
+        subscriptions.add(subscription);
+
+        streamId++;
+      }
+      if (!first.isBroadcast) {
         controller
           ..onPause = () {
-            for (var subscription in subscriptions) {
+            for (final subscription in subscriptions) {
               subscription.pause();
             }
           }
           ..onResume = () {
-            for (var subscription in subscriptions) {
+            for (final subscription in subscriptions) {
               subscription.resume();
             }
           };
       }
       controller.onCancel = () {
-        final toCancel = subscriptions;
-        subscriptions = null;
-        if (activeStreamCount <= 0) return null;
-        return Future.wait(toCancel.map((s) => s.cancel()));
+        if (subscriptions.isEmpty) return null;
+        return Future.wait(subscriptions.map((s) => s.cancel()));
       };
     };
     return controller.stream;

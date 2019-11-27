@@ -87,47 +87,45 @@ class _Merge<T> extends StreamTransformerBase<T, T> {
 
   @override
   Stream<T> bind(Stream<T> first) {
-    var controller = first.isBroadcast
+    final controller = first.isBroadcast
         ? StreamController<T>.broadcast(sync: true)
         : StreamController<T>(sync: true);
 
-    var allStreams = [first]..addAll(_others);
-    if (first.isBroadcast) {
-      allStreams = allStreams
-          .map((s) => s.isBroadcast ? s : s.asBroadcastStream())
-          .toList();
-    }
-
-    List<StreamSubscription<T>> subscriptions;
+    final allStreams = [
+      first,
+      for (final other in _others)
+        !first.isBroadcast || other.isBroadcast
+            ? other
+            : other.asBroadcastStream(),
+    ];
 
     controller.onListen = () {
-      assert(subscriptions == null);
-      var activeStreamCount = 0;
-      subscriptions = allStreams.map((stream) {
-        activeStreamCount++;
-        return stream.listen(controller.add, onError: controller.addError,
-            onDone: () {
-          if (--activeStreamCount <= 0) controller.close();
+      final subscriptions = <StreamSubscription<T>>[];
+      for (final stream in allStreams) {
+        final subscription =
+            stream.listen(controller.add, onError: controller.addError);
+        subscription.onDone(() {
+          subscriptions.remove(subscription);
+          if (subscriptions.isEmpty) controller.close();
         });
-      }).toList();
+        subscriptions.add(subscription);
+      }
       if (!first.isBroadcast) {
         controller
           ..onPause = () {
-            for (var subscription in subscriptions) {
+            for (final subscription in subscriptions) {
               subscription.pause();
             }
           }
           ..onResume = () {
-            for (var subscription in subscriptions) {
+            for (final subscription in subscriptions) {
               subscription.resume();
             }
           };
       }
       controller.onCancel = () {
-        var toCancel = subscriptions;
-        subscriptions = null;
-        if (activeStreamCount <= 0) return null;
-        return Future.wait(toCancel.map((s) => s.cancel()));
+        if (subscriptions.isEmpty) return null;
+        return Future.wait(subscriptions.map((s) => s.cancel()));
       };
     };
     return controller.stream;
@@ -150,14 +148,12 @@ class _MergeExpanded<T> extends StreamTransformerBase<Stream<T>, T> {
         final subscription =
             inner.listen(controller.add, onError: controller.addError);
         subscription.onDone(() {
-          assert(subscriptions.contains(subscription));
           subscriptions.remove(subscription);
           if (subscriptions.isEmpty) controller.close();
         });
         subscriptions.add(subscription);
       }, onError: controller.addError);
       outerSubscription.onDone(() {
-        assert(subscriptions.contains(outerSubscription));
         subscriptions.remove(outerSubscription);
         if (subscriptions.isEmpty) controller.close();
       });
