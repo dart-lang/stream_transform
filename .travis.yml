@@ -11,4 +11,4 @@ dart_task:
   - test
   - test -p chrome
   - dartfmt
-  - dartanalyzer
+  - dartanalyzer: --fatal-warnings --fatal-infos .
