@@ -1,3 +1,8 @@
+## 1.1.0
+
+-   Add `concurrentAsyncExpand` to interleave events emitted by multiple sub
+    streams created by a callback.
+
 ## 1.0.0
 
 -   Remove the top level methods and retain the extensions only.
