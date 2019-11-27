@@ -41,7 +41,7 @@ values that occur within a given duration.
 
 Appends the values of a stream after another stream finishes.
 
-## merge, mergeAll
+## merge, mergeAll, concurrentAsyncExpand
 
 Interleaves events from multiple streams into a single stream.
 

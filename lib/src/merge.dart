@@ -54,6 +54,30 @@ extension Merge<T> on Stream<T> {
   /// events emitted by that stream before the result stream has a subscriber
   /// will be discarded.
   Stream<T> mergeAll(Iterable<Stream<T>> others) => transform(_Merge(others));
+
+  /// Like [asyncExpand] but the [convert] callback may be called for an element
+  /// before the Stream emitted by the previous element has closed.
+  ///
+  /// Events on the result stream will be emitted in the order they are emitted
+  /// by the sub streams, which may not match the order of the original stream.
+  ///
+  /// Errors from [convert], the source stream, or any of the sub streams are
+  /// forwarded to the result stream.
+  ///
+  /// The result stream will not close until the source stream closes and all
+  /// sub streams have closed.
+  ///
+  /// If the source stream is a broadcast stream the result will be as well,
+  /// regardless of the types of streams created by [convert]. In this case,
+  /// some care should be taken:
+  /// -  If [convert] returns a single subscription stream it may be listened to
+  /// and never canceled.
+  /// -  For any period of time where there are no listeners on the result
+  /// stream, any sub streams from previously emitted events will be ignored,
+  /// regardless of whether they emit further events after a listener is added
+  /// back.
+  Stream<S> concurrentAsyncExpand<S>(Stream<S> Function(T) convert) =>
+      map(convert).transform(_MergeExpanded());
 }
 
 class _Merge<T> extends StreamTransformerBase<T, T> {
@@ -104,6 +128,55 @@ class _Merge<T> extends StreamTransformerBase<T, T> {
         subscriptions = null;
         if (activeStreamCount <= 0) return null;
         return Future.wait(toCancel.map((s) => s.cancel()));
+      };
+    };
+    return controller.stream;
+  }
+}
+
+class _MergeExpanded<T> extends StreamTransformerBase<Stream<T>, T> {
+  @override
+  Stream<T> bind(Stream<Stream<T>> streams) {
+    final controller = streams.isBroadcast
+        ? StreamController<T>.broadcast(sync: true)
+        : StreamController<T>(sync: true);
+
+    controller.onListen = () {
+      final subscriptions = <StreamSubscription<dynamic>>[];
+      final outerSubscription = streams.listen((inner) {
+        if (streams.isBroadcast && !inner.isBroadcast) {
+          inner = inner.asBroadcastStream();
+        }
+        final subscription =
+            inner.listen(controller.add, onError: controller.addError);
+        subscription.onDone(() {
+          assert(subscriptions.contains(subscription));
+          subscriptions.remove(subscription);
+          if (subscriptions.isEmpty) controller.close();
+        });
+        subscriptions.add(subscription);
+      }, onError: controller.addError);
+      outerSubscription.onDone(() {
+        assert(subscriptions.contains(outerSubscription));
+        subscriptions.remove(outerSubscription);
+        if (subscriptions.isEmpty) controller.close();
+      });
+      subscriptions.add(outerSubscription);
+      if (!streams.isBroadcast) {
+        controller
+          ..onPause = () {
+            for (final subscription in subscriptions) {
+              subscription.pause();
+            }
+          }
+          ..onResume = () {
+            for (final subscription in subscriptions) {
+              subscription.resume();
+            }
+          };
+      }
+      controller.onCancel = () {
+        return Future.wait(subscriptions.map((s) => s.cancel()));
       };
     };
     return controller.stream;
