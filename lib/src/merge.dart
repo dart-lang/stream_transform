@@ -137,7 +137,7 @@ class _Merge<T> extends StreamTransformerBase<T, T> {
 class _MergeExpanded<T> extends StreamTransformerBase<Stream<T>, T> {
   @override
   Stream<T> bind(Stream<Stream<T>> streams) {
-    var controller = streams.isBroadcast
+    final controller = streams.isBroadcast
         ? StreamController<T>.broadcast(sync: true)
         : StreamController<T>(sync: true);
 
@@ -165,12 +165,12 @@ class _MergeExpanded<T> extends StreamTransformerBase<Stream<T>, T> {
       if (!streams.isBroadcast) {
         controller
           ..onPause = () {
-            for (var subscription in subscriptions) {
+            for (final subscription in subscriptions) {
               subscription.pause();
             }
           }
           ..onResume = () {
-            for (var subscription in subscriptions) {
+            for (final subscription in subscriptions) {
               subscription.resume();
             }
           };
