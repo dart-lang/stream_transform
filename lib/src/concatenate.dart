@@ -75,17 +75,17 @@ class _FollowedBy<T> extends StreamTransformerBase<T, T> {
 
     Function currentDoneHandler;
 
-    listen() {
+    void listen() {
       subscription = currentStream.listen(controller.add,
           onError: controller.addError, onDone: () => currentDoneHandler());
     }
 
-    onSecondDone() {
+    void onSecondDone() {
       secondDone = true;
       controller.close();
     }
 
-    onFirstDone() {
+    void onFirstDone() {
       firstDone = true;
       currentStream = next;
       currentDoneHandler = onSecondDone;

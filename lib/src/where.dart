@@ -34,7 +34,7 @@ extension Where<T> on Stream<T> {
   ///
   /// The result stream will not close until the source stream closes and all
   /// pending [test] calls have finished.
-  Stream<T> asyncWhere(FutureOr<bool> test(T element)) {
+  Stream<T> asyncWhere(FutureOr<bool> Function(T) test) {
     var valuesWaiting = 0;
     var sourceDone = false;
     return transform(fromHandlers(handleData: (element, sink) {

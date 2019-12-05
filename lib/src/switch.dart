@@ -15,7 +15,7 @@ extension Switch<T> on Stream<T> {
   ///
   /// If the source stream is a broadcast stream, the result stream will be as
   /// well, regardless of the types of the streams produced by [convert].
-  Stream<S> switchMap<S>(Stream<S> convert(T event)) {
+  Stream<S> switchMap<S>(Stream<S> Function(T) convert) {
     return map(convert).switchLatest();
   }
 }

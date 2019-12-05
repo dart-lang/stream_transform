@@ -32,13 +32,13 @@ class AggregateSample<S, T> extends StreamTransformerBase<S, T> {
     StreamSubscription<S> valueSub;
     StreamSubscription<void> triggerSub;
 
-    emit() {
+    void emit() {
       controller.add(currentResults);
       currentResults = null;
       waitingForTrigger = true;
     }
 
-    onValue(S value) {
+    void onValue(S value) {
       currentResults = _aggregate(value, currentResults);
 
       if (!waitingForTrigger) emit();
@@ -49,7 +49,7 @@ class AggregateSample<S, T> extends StreamTransformerBase<S, T> {
       }
     }
 
-    onValuesDone() {
+    void onValuesDone() {
       isValueDone = true;
       if (currentResults == null) {
         triggerSub?.cancel();
@@ -57,7 +57,7 @@ class AggregateSample<S, T> extends StreamTransformerBase<S, T> {
       }
     }
 
-    onTrigger(_) {
+    void onTrigger(_) {
       waitingForTrigger = false;
 
       if (currentResults != null) emit();
@@ -68,7 +68,7 @@ class AggregateSample<S, T> extends StreamTransformerBase<S, T> {
       }
     }
 
-    onTriggerDone() {
+    void onTriggerDone() {
       isTriggerDone = true;
       if (waitingForTrigger) {
         valueSub?.cancel();
