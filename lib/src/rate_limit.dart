@@ -146,7 +146,7 @@ T _dropPrevious<T>(T element, _) => element;
 /// Creates a StreamTransformer which aggregates values until the source stream
 /// does not emit for [duration], then emits the aggregated values.
 StreamTransformer<T, R> _debounceAggregate<T, R>(
-    Duration duration, R collect(T element, R soFar)) {
+    Duration duration, R Function(T element, R soFar) collect) {
   Timer timer;
   R soFar;
   var shouldClose = false;

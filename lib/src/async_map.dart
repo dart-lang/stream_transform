@@ -89,7 +89,7 @@ extension AsyncMap<T> on Stream<T> {
   ///
   /// The result stream will not close until the source stream closes and all
   /// pending conversions have finished.
-  Stream<S> concurrentAsyncMap<S>(FutureOr<S> convert(T event)) {
+  Stream<S> concurrentAsyncMap<S>(FutureOr<S> Function(T) convert) {
     var valuesWaiting = 0;
     var sourceDone = false;
     return transform(fromHandlers(handleData: (element, sink) {
@@ -116,7 +116,7 @@ T _dropPrevious<T>(T event, _) => event;
 /// rather than once per listener, and [then] is called after completing the
 /// work.
 StreamTransformer<S, T> _asyncMapThen<S, T>(
-    Future<T> convert(S event), void Function(void) then) {
+    Future<T> Function(S) convert, void Function(void) then) {
   Future<void> pendingEvent;
   return fromHandlers(handleData: (event, sink) {
     pendingEvent =

@@ -18,7 +18,7 @@ void main() {
   List<int> emittedValues;
   bool isDone;
 
-  setupForStreamType(
+  void setupForStreamType(
       String streamType, Stream<int> Function(Stream<int>) transform) {
     emittedValues = [];
     isDone = false;

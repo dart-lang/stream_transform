@@ -14,7 +14,7 @@ extension Scan<T> on Stream<T> {
   /// called for elements in order, and the result stream always maintains the
   /// same order as the original.
   Stream<S> scan<S>(
-      S initialValue, FutureOr<S> combine(S previousValue, T element)) {
+      S initialValue, FutureOr<S> Function(S soFar, T element) combine) {
     var accumulated = initialValue;
     return asyncMap((value) {
       var result = combine(accumulated, value);
