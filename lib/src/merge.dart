@@ -124,8 +124,12 @@ class _Merge<T> extends StreamTransformerBase<T, T> {
           };
       }
       controller.onCancel = () {
-        if (subscriptions.isEmpty) return null;
-        return Future.wait(subscriptions.map((s) => s.cancel()));
+        var cancels = subscriptions
+            .map((s) => s.cancel())
+            .where((f) => f != null)
+            .toList();
+        if (cancels.isEmpty) return null;
+        return Future.wait(cancels).then((_) => null);
       };
     };
     return controller.stream;
@@ -172,7 +176,12 @@ class _MergeExpanded<T> extends StreamTransformerBase<Stream<T>, T> {
           };
       }
       controller.onCancel = () {
-        return Future.wait(subscriptions.map((s) => s.cancel()));
+        var cancels = subscriptions
+            .map((s) => s.cancel())
+            .where((f) => f != null)
+            .toList();
+        if (cancels.isEmpty) return null;
+        return Future.wait(cancels).then((_) => null);
       };
     };
     return controller.stream;

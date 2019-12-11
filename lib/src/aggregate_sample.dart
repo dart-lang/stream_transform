@@ -107,8 +107,10 @@ class AggregateSample<S, T> extends StreamTransformerBase<S, T> {
         } else {
           triggerSub.pause();
         }
-        if (toCancel.isEmpty) return null;
-        return Future.wait(toCancel.map((s) => s.cancel()));
+        var cancels =
+            toCancel.map((s) => s.cancel()).where((f) => f != null).toList();
+        if (cancels.isEmpty) return null;
+        return Future.wait(cancels).then((_) => null);
       };
     };
     return controller.stream;

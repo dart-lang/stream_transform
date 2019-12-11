@@ -1,3 +1,10 @@
+## 1.1.1
+
+-   Fix a bug in `asyncMapSample`, `buffer`, `combineLatest`,
+    `combineLatestAll`, `merge`, and `mergeAll` which would cause an exception
+    when cancelling a subscription after using the transformer if the original
+    stream(s) returned `null` from cancelling their subscriptions.
+
 ## 1.1.0
 
 -   Add `concurrentAsyncExpand` to interleave events emitted by multiple sub

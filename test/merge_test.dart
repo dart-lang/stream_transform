@@ -8,6 +8,8 @@ import 'package:test/test.dart';
 
 import 'package:stream_transform/stream_transform.dart';
 
+import 'utils.dart';
+
 void main() {
   group('merge', () {
     test('includes all values', () async {
@@ -137,5 +139,16 @@ void main() {
       expect(firstListenerValues, [1, 2, 3]);
       expect(secondListenerValues, [1, 2, 3, 4, 5, 6]);
     });
+  });
+
+  test('handles null response rom cancel', () async {
+    var source = StreamController<int>();
+    var other = StreamController<int>();
+
+    var subscription = NullOnCancelStream(source.stream)
+        .merge(NullOnCancelStream(other.stream))
+        .listen(null);
+
+    await subscription.cancel();
   });
 }
