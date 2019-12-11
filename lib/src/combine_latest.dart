@@ -175,11 +175,11 @@ class _CombineLatest<S, T, R> extends StreamTransformerBase<S, R> {
           };
       }
       controller.onCancel = () {
-        var cancelSource = sourceSubscription.cancel();
-        var cancelOther = otherSubscription.cancel();
+        var cancels = [sourceSubscription.cancel(), otherSubscription.cancel()]
+            .where((f) => f != null);
         sourceSubscription = null;
         otherSubscription = null;
-        return Future.wait([cancelSource, cancelOther]);
+        return Future.wait(cancels).then((_) => null);
       };
     };
     return controller.stream;
@@ -249,8 +249,12 @@ class _CombineLatestAll<T> extends StreamTransformerBase<T, List<T>> {
           };
       }
       controller.onCancel = () {
-        if (subscriptions.isEmpty) return null;
-        return Future.wait(subscriptions.map((s) => s.cancel()));
+        var cancels = subscriptions
+            .map((s) => s.cancel())
+            .where((f) => f != null)
+            .toList();
+        if (cancels.isEmpty) return null;
+        return Future.wait(cancels).then((_) => null);
       };
     };
     return controller.stream;

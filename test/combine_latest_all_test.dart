@@ -8,6 +8,8 @@ import 'package:test/test.dart';
 
 import 'package:stream_transform/stream_transform.dart';
 
+import 'utils.dart';
+
 Future<void> tick() => Future(() {});
 
 void main() {
@@ -163,5 +165,15 @@ void main() {
         await first.close();
       });
     });
+  });
+
+  test('handles null response from cancel', () async {
+    var source = StreamController<int>();
+    var other = StreamController<int>();
+
+    var subscription = NullOnCancelStream(source.stream)
+        .combineLatestAll([NullOnCancelStream(other.stream)]).listen(null);
+
+    await subscription.cancel();
   });
 }

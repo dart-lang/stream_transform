@@ -184,4 +184,19 @@ void main() {
       });
     }
   }
+
+  test('hendles null response from cancel', () async {
+    var source = StreamController<int>();
+    var other = StreamController<int>();
+
+    var subscription = NullOnCancelStream(source.stream)
+        .concurrentAsyncExpand((_) => NullOnCancelStream(other.stream))
+        .listen(null);
+
+    source.add(1);
+
+    await Future<void>(() {});
+
+    await subscription.cancel();
+  });
 }

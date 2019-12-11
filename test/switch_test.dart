@@ -146,4 +146,17 @@ void main() {
       expect(transformed.isBroadcast, true);
     });
   });
+
+  test('handles null response from cancel', () async {
+    var outer = StreamController<Stream<int>>();
+    var inner = StreamController<int>();
+
+    var subscription =
+        NullOnCancelStream(outer.stream).switchLatest().listen(null);
+
+    outer.add(NullOnCancelStream(inner.stream));
+    await Future<void>(() {});
+
+    await subscription.cancel();
+  });
 }

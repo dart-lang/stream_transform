@@ -200,4 +200,13 @@ void main() {
       }
     });
   }
+  test('handles null response from cancel', () async {
+    var controller = StreamController<int>();
+
+    var subscription = NullOnCancelStream(controller.stream)
+        .asyncMapSample((_) async {})
+        .listen(null);
+
+    await subscription.cancel();
+  });
 }

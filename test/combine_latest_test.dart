@@ -9,6 +9,8 @@ import 'package:test/test.dart';
 
 import 'package:stream_transform/stream_transform.dart';
 
+import 'utils.dart';
+
 void main() {
   group('combineLatest', () {
     test('flows through combine callback', () async {
@@ -167,6 +169,17 @@ void main() {
         expect(emittedValues, [3, 5]);
       });
     });
+  });
+
+  test('handles null response from cancel', () async {
+    var source = StreamController<int>();
+    var other = StreamController<int>();
+
+    var subscription = NullOnCancelStream(source.stream)
+        .combineLatest(NullOnCancelStream(other.stream), (a, b) => null)
+        .listen(null);
+
+    await subscription.cancel();
   });
 }
 
