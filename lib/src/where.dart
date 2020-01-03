@@ -17,7 +17,7 @@ extension Where<T> on Stream<T> {
   /// [S] should be a subtype of the stream's generic type, otherwise nothing of
   /// type [S] could possibly be emitted, however there is no static or runtime
   /// checking that this is the case.
-  Stream<S> whereType<S>() => transform(_WhereType<S>());
+  Stream<S> whereType<S>() => where((e) => e is S).cast<S>();
 
   /// Like [where] but allows the [test] to return a [Future].
   ///
@@ -52,38 +52,5 @@ extension Where<T> on Stream<T> {
       sourceDone = true;
       if (valuesWaiting <= 0) sink.close();
     }));
-  }
-}
-
-class _WhereType<R> extends StreamTransformerBase<Null, R> {
-  @override
-  Stream<R> bind(Stream<Object> source) {
-    var controller = source.isBroadcast
-        ? StreamController<R>.broadcast(sync: true)
-        : StreamController<R>(sync: true);
-
-    StreamSubscription<Object> subscription;
-    controller.onListen = () {
-      assert(subscription == null);
-      subscription = source.listen(
-          (value) {
-            if (value is R) controller.add(value);
-          },
-          onError: controller.addError,
-          onDone: () {
-            subscription = null;
-            controller.close();
-          });
-      if (!source.isBroadcast) {
-        controller
-          ..onPause = subscription.pause
-          ..onResume = subscription.resume;
-      }
-      controller.onCancel = () {
-        subscription?.cancel();
-        subscription = null;
-      };
-    };
-    return controller.stream;
   }
 }
