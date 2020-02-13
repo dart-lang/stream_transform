@@ -9,8 +9,10 @@ import 'from_handlers.dart';
 
 /// Utilities to rate limit events.
 ///
-/// - [debounce] - emit the _first_ event at the _end_ of the period.
-/// - [debounceBuffer] - emit _all_ events at the _end_ of the period.
+/// - [debounce] - emit the _last_ event at the _end_ of a series of closely
+///   spaced events.
+/// - [debounceBuffer] - emit _all_ events at the _end_ of a series of closely
+///   spaced events.
 /// - [throttle] - emit the _first_ event at the _beginning_ of the period.
 /// - [audit] - emit the _last_ event at the _end_ of the period.
 /// - [buffer] - emit _all_ events on a _trigger_.
