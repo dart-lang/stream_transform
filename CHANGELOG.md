@@ -1,3 +1,5 @@
+## 1.1.2-dev
+
 ## 1.1.1
 
 -   Fix a bug in `asyncMapSample`, `buffer`, `combineLatest`,
