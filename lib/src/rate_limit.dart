@@ -9,7 +9,7 @@ import 'from_handlers.dart';
 
 /// Utilities to rate limit events.
 ///
-/// - [debounce] - emit the _last_ event at the _end_ of a series of closely
+/// - [debounce] - emit the the _first_ or _last_ event of a series of closely
 ///   spaced events.
 /// - [debounceBuffer] - emit _all_ events at the _end_ of a series of closely
 ///   spaced events.
@@ -17,24 +17,47 @@ import 'from_handlers.dart';
 /// - [audit] - emit the _last_ event at the _end_ of the period.
 /// - [buffer] - emit _all_ events on a _trigger_.
 extension RateLimit<T> on Stream<T> {
-  /// Returns a Stream which only emits when the source stream does not emit for
-  /// [duration].
+  /// Returns a Stream which suppresses events with less inter-event spacing
+  /// than [duration].
   ///
-  /// Values will always be delayed by at least [duration], and values which
-  /// come within this time will replace the old values, only the most
-  /// recent value will be emitted.
+  /// Events which are emitted with less than [duration] elapsed between them
+  /// are considered to be part of the same "series". If [leading] is `true`,
+  /// the first event of this series is emitted immediately. If [trailing] is
+  /// `true` the last event of this series is emitted with a delay of at least
+  /// [duration]. By default only trailing events are emitted, both arguments
+  /// must be specified with `leading: true, trailing: false` to emit only
+  /// leading events.
   ///
   /// If the source stream is a broadcast stream, the result will be as well.
   /// Errors are forwarded immediately.
   ///
-  /// If there is an event waiting during the debounce period when the source
-  /// stream closes the returned stream will wait to emit it following the
-  /// debounce period before closing. If there is no pending debounced event
+  /// If there is a trailing event waiting during the debounce period when the
+  /// source stream closes the returned stream will wait to emit it following
+  /// the debounce period before closing. If there is no pending debounced event
   /// when the source stream closes the returned stream will close immediately.
   ///
+  /// For example:
+  ///
+  ///     source.debouce(Duration(seconds: 1));
+  ///
+  ///     source: 1-2-3---4---5-6-|
+  ///     result: ------3---4-----6|
+  ///
+  ///     source.debouce(Duration(seconds: 1), leading: true, trailing: false);
+  ///
+  ///     source: 1-2-3---4---5-6-|
+  ///     result: 1-------4---5---|
+  ///
+  ///     source.debouce(Duration(seconds: 1), leading: true);
+  ///
+  ///     source: 1-2-3---4---5-6-|
+  ///     result: 1-----3-4---5---6|
+  ///
   /// To collect values emitted during the debounce period see [debounceBuffer].
-  Stream<T> debounce(Duration duration) =>
-      transform(_debounceAggregate(duration, _dropPrevious));
+  Stream<T> debounce(Duration duration,
+          {bool leading = false, bool trailing = true}) =>
+      transform(_debounceAggregate(duration, _dropPrevious,
+          leading: leading, trailing: trailing));
 
   /// Returns a Stream which collects values until the source stream does not
   /// emit for [duration] then emits the collected values.
@@ -53,7 +76,8 @@ extension RateLimit<T> on Stream<T> {
   /// To keep only the most recent event during the debounce perios see
   /// [debounce].
   Stream<List<T>> debounceBuffer(Duration duration) =>
-      transform(_debounceAggregate(duration, _collectToList));
+      transform(_debounceAggregate(duration, _collectToList,
+          leading: false, trailing: true));
 
   /// Returns a stream which only emits once per [duration], at the beginning of
   /// the period.
@@ -148,25 +172,34 @@ T _dropPrevious<T>(T element, _) => element;
 /// Creates a StreamTransformer which aggregates values until the source stream
 /// does not emit for [duration], then emits the aggregated values.
 StreamTransformer<T, R> _debounceAggregate<T, R>(
-    Duration duration, R Function(T element, R soFar) collect) {
+    Duration duration, R Function(T element, R soFar) collect,
+    {bool leading, bool trailing}) {
   Timer timer;
   R soFar;
   var shouldClose = false;
+  var emittedLatestAsLeading = false;
   return fromHandlers(handleData: (T value, EventSink<R> sink) {
     timer?.cancel();
-    timer = Timer(duration, () {
+    soFar = collect(value, soFar);
+    if (timer == null && leading) {
+      emittedLatestAsLeading = true;
       sink.add(soFar);
+    } else {
+      emittedLatestAsLeading = false;
+    }
+    timer = Timer(duration, () {
+      if (trailing && !emittedLatestAsLeading) sink.add(soFar);
       if (shouldClose) {
         sink.close();
       }
       soFar = null;
       timer = null;
     });
-    soFar = collect(value, soFar);
   }, handleDone: (EventSink<R> sink) {
-    if (soFar != null) {
+    if (soFar != null && trailing) {
       shouldClose = true;
     } else {
+      timer?.cancel();
       sink.close();
     }
   });
