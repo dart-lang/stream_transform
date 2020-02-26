@@ -1,4 +1,6 @@
-## 1.1.2-dev
+## 1.2.0-dev
+
+-  Add support for emitting the "leading" event in `debounce`.
 
 ## 1.1.1
 

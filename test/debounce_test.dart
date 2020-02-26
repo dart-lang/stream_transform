@@ -12,7 +12,7 @@ import 'utils.dart';
 void main() {
   for (var streamType in streamTypes) {
     group('Stream type [$streamType]', () {
-      group('debounce', () {
+      group('debounce - trailing', () {
         StreamController<int> values;
         List<int> emittedValues;
         bool valuesCanceled;
@@ -84,6 +84,96 @@ void main() {
             await waitForTimer(5);
             expect(emittedValues, [2]);
             expect(otherValues, [2]);
+          });
+        }
+      });
+
+      group('debounce - leading', () {
+        StreamController<int> values;
+        List<int> emittedValues;
+        Stream<int> transformed;
+        bool isDone;
+
+        setUp(() async {
+          values = createController(streamType);
+          emittedValues = [];
+          isDone = false;
+          transformed = values.stream.debounce(const Duration(milliseconds: 5),
+              leading: true, trailing: false)
+            ..listen(emittedValues.add, onDone: () {
+              isDone = true;
+            });
+        });
+
+        test('swallows values that come faster than duration', () async {
+          values..add(1)..add(2);
+          await values.close();
+          expect(emittedValues, [1]);
+        });
+
+        test('outputs multiple values spaced further than duration', () async {
+          values.add(1);
+          await waitForTimer(5);
+          values.add(2);
+          await waitForTimer(5);
+          expect(emittedValues, [1, 2]);
+        });
+
+        if (streamType == 'broadcast') {
+          test('multiple listeners all get values', () async {
+            var otherValues = [];
+            transformed.listen(otherValues.add);
+            values..add(1)..add(2);
+            await waitForTimer(5);
+            expect(emittedValues, [1]);
+            expect(otherValues, [1]);
+          });
+        }
+
+        test('closes output immediately if not waiting for trailing value',
+            () async {
+          values.add(1);
+          await values.close();
+          expect(isDone, true);
+        });
+      });
+
+      group('debounce - leading and trailing', () {
+        StreamController<int> values;
+        List<int> emittedValues;
+        Stream<int> transformed;
+
+        setUp(() async {
+          values = createController(streamType);
+          emittedValues = [];
+          transformed = values.stream.debounce(const Duration(milliseconds: 5),
+              leading: true, trailing: true)
+            ..listen(emittedValues.add);
+        });
+
+        test('swallows values that come faster than duration', () async {
+          values..add(1)..add(2)..add(3);
+          await values.close();
+          await waitForTimer(5);
+          expect(emittedValues, [1, 3]);
+        });
+
+        test('outputs multiple values spaced further than duration', () async {
+          values.add(1);
+          await waitForTimer(5);
+          values.add(2);
+          await waitForTimer(5);
+          expect(emittedValues, [1, 2]);
+        });
+
+        if (streamType == 'broadcast') {
+          test('multiple listeners all get values', () async {
+            var otherValues = [];
+            transformed.listen(otherValues.add);
+            values..add(1)..add(2);
+            await waitForTimer(5);
+            expect(emittedValues, [1, 2]);
+            expect(otherValues, [1, 2]);
           });
         }
       });
