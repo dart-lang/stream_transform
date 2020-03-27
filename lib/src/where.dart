@@ -17,7 +17,10 @@ extension Where<T> on Stream<T> {
   /// [S] should be a subtype of the stream's generic type, otherwise nothing of
   /// type [S] could possibly be emitted, however there is no static or runtime
   /// checking that this is the case.
-  Stream<S> whereType<S>() => where((e) => e is S).cast<S>();
+  Stream<S> whereType<S>() =>
+      transform(StreamTransformer.fromHandlers(handleData: (event, sink) {
+        if (event is S) sink.add(event);
+      }));
 
   /// Like [where] but allows the [test] to return a [Future].
   ///

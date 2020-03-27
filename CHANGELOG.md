@@ -1,3 +1,5 @@
+## 1.2.1-dev
+
 ## 1.2.0
 
 -  Add support for emitting the "leading" event in `debounce`.
