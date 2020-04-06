@@ -84,17 +84,56 @@ extension RateLimit<T> on Stream<T> {
   ///
   /// Events emitted by the source stream within [duration] following an emitted
   /// event will be discarded. Errors are always forwarded immediately.
-  Stream<T> throttle(Duration duration) {
+  Stream<T> throttle(Duration duration,
+      {bool trailingCall = false, bool trailing = false}) {
     Timer timer;
+    T recentData;
+    var triggerTrailingCall = false;
+    var shouldClose = false;
 
-    return transform(fromHandlers(handleData: (data, sink) {
-      if (timer == null) {
-        sink.add(data);
-        timer = Timer(duration, () {
-          timer = null;
-        });
-      }
-    }));
+    void Function(T data, EventSink<T> sink) throttleHandler;
+    if (trailingCall) {
+      throttleHandler = (data, sink) {
+        recentData = data;
+        if (timer == null) {
+          sink.add(recentData);
+          if (shouldClose) {
+            sink.close();
+          } else {
+            timer = Timer(duration, () {
+              timer = null;
+              if (triggerTrailingCall) {
+                triggerTrailingCall = false;
+                throttleHandler(recentData, sink);
+              }
+            });
+          }
+        } else {
+          triggerTrailingCall = true;
+        }
+      };
+    } else {
+      throttleHandler = (data, sink) {
+        if (timer == null) {
+          sink.add(data);
+          timer = Timer(duration, () {
+            timer = null;
+          });
+        }
+      };
+    }
+
+    return transform(fromHandlers(
+      handleData: throttleHandler,
+      handleDone: (EventSink<T> sink) {
+        if (trailingCall && trailing) {
+          shouldClose = true;
+        } else {
+          timer?.cancel();
+          sink.close();
+        }
+      },
+    ));
   }
 
   /// Returns a Stream which only emits once per [duration], at the end of the
