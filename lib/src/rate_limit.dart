@@ -38,17 +38,17 @@ extension RateLimit<T> on Stream<T> {
   ///
   /// For example:
   ///
-  ///     source.debouce(Duration(seconds: 1));
+  ///     source.debounce(Duration(seconds: 1));
   ///
   ///     source: 1-2-3---4---5-6-|
   ///     result: ------3---4-----6|
   ///
-  ///     source.debouce(Duration(seconds: 1), leading: true, trailing: false);
+  ///     source.debounce(Duration(seconds: 1), leading: true, trailing: false);
   ///
   ///     source: 1-2-3---4---5-6-|
   ///     result: 1-------4---5---|
   ///
-  ///     source.debouce(Duration(seconds: 1), leading: true);
+  ///     source.debounce(Duration(seconds: 1), leading: true);
   ///
   ///     source: 1-2-3---4---5-6-|
   ///     result: 1-----3-4---5---6|
