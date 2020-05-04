@@ -1,7 +1,3 @@
-// Copyright (c) 2019, the Dart project authors.  Please see the AUTHORS file
-// for details. All rights reserved. Use of this source code is governed by a
-// BSD-style license that can be found in the LICENSE file.
-
 import 'dart:async';
 
 import 'package:stream_transform/stream_transform.dart';
@@ -13,7 +9,7 @@ void main() {
   test('forwards errors from the convert callback', () async {
     var errors = <String>[];
     var source = Stream.fromIterable([1, 2, 3]);
-    source.concurrentAsyncExpand((i) {
+    source.sequentialAsyncExpand((i) {
       // ignore: only_throw_errors
       throw 'Error: $i';
     }).listen((_) {}, onError: errors.add);
@@ -23,7 +19,7 @@ void main() {
 
   for (var outerType in streamTypes) {
     for (var innerType in streamTypes) {
-      group('concurrentAsyncExpand $outerType to $innerType', () {
+      group('sequentialAsyncExpand $outerType to $innerType', () {
         StreamController<int> outerController;
         bool outerCanceled;
         List<StreamController<String>> innerControllers;
@@ -45,7 +41,7 @@ void main() {
           emittedValues = [];
           errors = [];
           isDone = false;
-          transformed = outerController.stream.concurrentAsyncExpand((i) {
+          transformed = outerController.stream.sequentialAsyncExpand((i) {
             var index = innerControllers.length;
             innerCanceled.add(false);
             innerControllers.add(createController<String>(innerType)
@@ -60,7 +56,25 @@ void main() {
           });
         });
 
-        test('interleaves events from sub streams', () async {
+        test('emits events when sub streams emit events', () async {
+          outerController.add(1);
+          await Future<void>(() {});
+          expect(emittedValues, isEmpty);
+          expect(innerControllers, hasLength(1));
+          innerControllers[0]..add('First')..add('First again');
+          await Future<void>(() {});
+          expect(emittedValues, hasLength(2));
+
+          outerController.add(2);
+          await Future<void>(() {});
+          expect(innerControllers, hasLength(2));
+          innerControllers[1].add('Second');
+          await Future<void>(() {});
+
+          expect(emittedValues, ['First', 'First again', 'Second']);
+        });
+
+        test('does not interleave events from sub streams', () async {
           outerController..add(1)..add(2);
           await Future<void>(() {});
           expect(emittedValues, isEmpty);
@@ -69,7 +83,7 @@ void main() {
           innerControllers[1].add('Second');
           innerControllers[0].add('First again');
           await Future<void>(() {});
-          expect(emittedValues, ['First', 'Second', 'First again']);
+          expect(emittedValues, ['Second']);
         });
 
         test('forwards errors from outer stream', () async {
@@ -78,13 +92,12 @@ void main() {
           expect(errors, ['Error']);
         });
 
-        test('forwards errors from inner streams', () async {
-          outerController..add(1)..add(2);
+        test('forwards errors from inner stream', () async {
+          outerController.add(1);
           await Future<void>(() {});
-          innerControllers[0].addError('Error 1');
-          innerControllers[1].addError('Error 2');
+          innerControllers[0].addError('Error');
           await Future<void>(() {});
-          expect(errors, ['Error 1', 'Error 2']);
+          expect(errors, ['Error']);
         });
 
         test('can continue handling events after an error in outer stream',
@@ -98,6 +111,22 @@ void main() {
           expect(emittedValues, ['First']);
           expect(errors, ['Error']);
         });
+
+        if (outerType != 'broadcast') {
+          test('cancels previous inner subscriptions', () async {
+            outerController.add(1);
+            await Future<void>(() {});
+            final previousController = innerControllers.last;
+            outerController.add(2);
+            await Future<void>(() {});
+            expect(previousController.hasListener, isFalse);
+            expect(innerCanceled, [true, false]);
+
+            outerController.add(3);
+            await Future<void>(() {});
+            expect(innerCanceled, [true, true, false]);
+          });
+        }
 
         test('cancels outer subscription if output canceled', () async {
           await subscription.cancel();
@@ -115,7 +144,7 @@ void main() {
           });
         }
 
-        test('stays open if any inner stream is still open', () async {
+        test('stays open if inner stream is still open', () async {
           outerController.add(1);
           await outerController.close();
           await Future<void>(() {});
@@ -130,7 +159,7 @@ void main() {
           expect(isDone, false);
         });
 
-        test('closes after all inner streams and outer stream close', () async {
+        test('closes after inner stream and outer stream close', () async {
           outerController.add(1);
           await Future<void>(() {});
           await innerControllers[0].close();
@@ -164,19 +193,19 @@ void main() {
           });
 
           test('can cancel and relisten', () async {
-            outerController..add(1)..add(2);
+            outerController.add(1);
             await Future(() {});
             innerControllers[0].add('First');
-            innerControllers[1].add('Second');
+            innerControllers[0].add('Second');
             await Future(() {});
             await subscription.cancel();
             innerControllers[0].add('Ignored');
             await Future(() {});
             subscription = transformed.listen(emittedValues.add);
             innerControllers[0].add('Also ignored');
-            outerController.add(3);
+            outerController.add(2);
             await Future(() {});
-            innerControllers[2].add('More');
+            innerControllers[1].add('More');
             await Future(() {});
             expect(emittedValues, ['First', 'Second', 'More']);
           });
@@ -185,12 +214,12 @@ void main() {
     }
   }
 
-  test('hendles null response from cancel', () async {
+  test('handles null response from cancel', () async {
     var source = StreamController<int>();
     var other = StreamController<int>();
 
     var subscription = NullOnCancelStream(source.stream)
-        .concurrentAsyncExpand((_) => NullOnCancelStream(other.stream))
+        .sequentialAsyncExpand((_) => NullOnCancelStream(other.stream))
         .listen(null);
 
     source.add(1);
