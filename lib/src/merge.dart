@@ -274,4 +274,3 @@ class _MergeExpandedCancelPrevious<T>
     return controller.stream;
   }
 }
-
