@@ -4,6 +4,8 @@
 
 import 'dart:async';
 
+import 'package:stream_transform/src/merge.dart';
+
 /// A utility to take events from the most recent sub stream returned by a
 /// callback.
 extension Switch<T> on Stream<T> {
@@ -12,9 +14,30 @@ extension Switch<T> on Stream<T> {
   ///
   /// When the source emits a value it will be converted to a [Stream] using
   /// [convert] and the output will switch to emitting events from that result.
+  /// Like [asyncExpand] but the [Stream] emitted by a previous element
+  /// will be ignored as soon as the source stream emits a new event.
   ///
-  /// If the source stream is a broadcast stream, the result stream will be as
-  /// well, regardless of the types of the streams produced by [convert].
+  /// This means that the source stream is not paused until a sub stream
+  /// returned from the [convert] callback is done. Instead, the subscription
+  /// to the sub stream is canceled as soon as the source stream emits a new event.
+  ///
+  /// Errors from [convert], the source stream, or any of the sub streams are
+  /// forwarded to the result stream.
+  ///
+  /// The result stream will not close until the source stream closes and
+  /// the current sub stream have closed.
+  ///
+  /// If the source stream is a broadcast stream, the result will be as well,
+  /// regardless of the types of streams created by [convert]. In this case,
+  /// some care should be taken:
+  ///
+  ///  * If [convert] returns a single subscription stream it may be listened to
+  /// and never canceled.
+  ///
+  /// See also:
+  ///
+  /// * [concurrentAsyncExpand], which emits events from all sub streams
+  ///   concurrently instead of cancelling subscriptions to previous subs streams.
   Stream<S> switchMap<S>(Stream<S> Function(T) convert) {
     return map(convert).switchLatest();
   }

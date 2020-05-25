@@ -4,6 +4,8 @@
 
 import 'dart:async';
 
+import 'package:stream_transform/src/switch.dart';
+
 /// Utilities to interleave events from multiple streams.
 extension Merge<T> on Stream<T> {
   /// Returns a stream which emits values and errors from the source stream and
@@ -79,37 +81,10 @@ extension Merge<T> on Stream<T> {
   ///
   /// See also:
   ///
-  ///  * [sequentialAsyncExpand], which cancels subscriptions to the previous sub
+  ///  * [switchMap], which cancels subscriptions to the previous sub
   ///    stream instead of concurrently emitting events from all sub streams.
   Stream<S> concurrentAsyncExpand<S>(Stream<S> Function(T) convert) =>
       map(convert).transform(_MergeExpanded());
-
-  /// Like [asyncExpand] but the [Stream] emitted by a previous element
-  /// will be ignored as soon as the source stream emits a new event.
-  ///
-  /// This means that the source stream is not paused until a sub stream
-  /// returned from the [convert] callback is done. Instead, the subscription
-  /// to the sub stream is canceled as soon as the source stream emits a new event.
-  ///
-  /// Errors from [convert], the source stream, or any of the sub streams are
-  /// forwarded to the result stream.
-  ///
-  /// The result stream will not close until the source stream closes and
-  /// the current sub stream have closed.
-  ///
-  /// If the source stream is a broadcast stream, the result will be as well,
-  /// regardless of the types of streams created by [convert]. In this case,
-  /// some care should be taken:
-  ///
-  ///  * If [convert] returns a single subscription stream it may be listened to
-  /// and never canceled.
-  ///
-  /// See also:
-  ///
-  /// * [concurrentAsyncExpand], which emits events from all sub streams
-  ///   concurrently instead of cancelling subscriptions to previous subs streams.
-  Stream<S> sequentialAsyncExpand<S>(Stream<S> Function(T) convert) =>
-      map(convert).transform(_MergeExpandedCancelPrevious());
 }
 
 class _Merge<T> extends StreamTransformerBase<T, T> {
@@ -216,61 +191,6 @@ class _MergeExpanded<T> extends StreamTransformerBase<Stream<T>, T> {
         return Future.wait(cancels).then((_) => null);
       };
     };
-    return controller.stream;
-  }
-}
-
-class _MergeExpandedCancelPrevious<T>
-    extends StreamTransformerBase<Stream<T>, T> {
-  @override
-  Stream<T> bind(Stream<Stream<T>> streams) {
-    final controller = streams.isBroadcast
-        ? StreamController<T>.broadcast(sync: true)
-        : StreamController<T>(sync: true);
-
-    controller.onListen = () {
-      StreamSubscription<T> innerSubscription;
-      StreamSubscription<Stream<T>> outerSubscription;
-
-      outerSubscription = streams.listen((inner) {
-        // Cancel previous sub stream subscription
-        innerSubscription?.cancel();
-
-        if (streams.isBroadcast && !inner.isBroadcast) {
-          inner = inner.asBroadcastStream();
-        }
-        innerSubscription =
-            inner.listen(controller.add, onError: controller.addError);
-
-        innerSubscription.onDone(() {
-          innerSubscription = null;
-          if (outerSubscription == null) controller.close();
-        });
-      }, onError: controller.addError);
-
-      outerSubscription.onDone(() {
-        outerSubscription = null;
-        if (innerSubscription == null) controller.close();
-      });
-
-      if (!streams.isBroadcast) {
-        controller
-          ..onPause = () {
-            outerSubscription?.pause();
-            innerSubscription?.pause();
-          }
-          ..onResume = () {
-            outerSubscription?.pause();
-            innerSubscription?.pause();
-          };
-      }
-
-      controller.onCancel = () async {
-        await outerSubscription?.cancel();
-        await innerSubscription?.cancel();
-      };
-    };
-
     return controller.stream;
   }
 }

@@ -1,8 +1,6 @@
 ## 1.2.1-dev
 
-* Add `sequentialAsyncExpand` to sequentially emit events emitted by multiple
-  sub streams created by a callback without previous sub streams
-  blocking the source stream and without interleaving events from previous sub streams.
+* Improve tests of `switchMap` and improve documentation with links and clarification.
 
 ## 1.2.0
 

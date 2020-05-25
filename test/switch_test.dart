@@ -145,18 +145,29 @@ void main() {
 
       expect(transformed.isBroadcast, true);
     });
-  });
 
-  test('handles null response from cancel', () async {
-    var outer = StreamController<Stream<int>>();
-    var inner = StreamController<int>();
+    test('handles null response from cancel', () async {
+      var outer = StreamController<Stream<int>>();
+      var inner = StreamController<int>();
 
-    var subscription =
-        NullOnCancelStream(outer.stream).switchLatest().listen(null);
+      var subscription =
+          NullOnCancelStream(outer.stream).switchLatest().listen(null);
 
-    outer.add(NullOnCancelStream(inner.stream));
-    await Future<void>(() {});
+      outer.add(NullOnCancelStream(inner.stream));
+      await Future<void>(() {});
 
-    await subscription.cancel();
+      await subscription.cancel();
+    });
+
+    test('forwards errors from the convert callback', () async {
+      var errors = <String>[];
+      var source = Stream.fromIterable([1, 2, 3]);
+      source.switchMap((i) {
+        // ignore: only_throw_errors
+        throw 'Error: $i';
+      }).listen((_) {}, onError: errors.add);
+      await Future<void>(() {});
+      expect(errors, ['Error: 1', 'Error: 2', 'Error: 3']);
+    });
   });
 }
