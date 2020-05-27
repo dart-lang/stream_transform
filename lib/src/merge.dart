@@ -4,6 +4,8 @@
 
 import 'dart:async';
 
+import 'package:stream_transform/src/switch.dart';
+
 /// Utilities to interleave events from multiple streams.
 extension Merge<T> on Stream<T> {
   /// Returns a stream which emits values and errors from the source stream and
@@ -56,7 +58,7 @@ extension Merge<T> on Stream<T> {
   Stream<T> mergeAll(Iterable<Stream<T>> others) => transform(_Merge(others));
 
   /// Like [asyncExpand] but the [convert] callback may be called for an element
-  /// before the Stream emitted by the previous element has closed.
+  /// before the [Stream] emitted by the previous element has closed.
   ///
   /// Events on the result stream will be emitted in the order they are emitted
   /// by the sub streams, which may not match the order of the original stream.
@@ -67,7 +69,7 @@ extension Merge<T> on Stream<T> {
   /// The result stream will not close until the source stream closes and all
   /// sub streams have closed.
   ///
-  /// If the source stream is a broadcast stream the result will be as well,
+  /// If the source stream is a broadcast stream, the result will be as well,
   /// regardless of the types of streams created by [convert]. In this case,
   /// some care should be taken:
   /// -  If [convert] returns a single subscription stream it may be listened to
@@ -76,6 +78,11 @@ extension Merge<T> on Stream<T> {
   /// stream, any sub streams from previously emitted events will be ignored,
   /// regardless of whether they emit further events after a listener is added
   /// back.
+  ///
+  /// See also:
+  ///
+  ///  * [switchMap], which cancels subscriptions to the previous sub
+  ///    stream instead of concurrently emitting events from all sub streams.
   Stream<S> concurrentAsyncExpand<S>(Stream<S> Function(T) convert) =>
       map(convert).transform(_MergeExpanded());
 }
