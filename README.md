@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/dart-lang/stream_transform.svg?branch=master)](https://travis-ci.org/dart-lang/stream_transform)
+[![Pub package](https://img.shields.io/pub/v/stream_transform.svg)](https://pub.dev/packages/stream_transform)
+
 Extension methods on `Stream` adding common transform operators.
 
 # Operators
