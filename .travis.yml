@@ -3,7 +3,7 @@ branches:
   only: [master]
 dart:
   - dev
-  - 2.6.0
+  - 2.7.0
 cache:
   directories:
     - $HOME/.pub-cache
@@ -18,6 +18,6 @@ matrix:
     - dart: dev
       dart_task:
         dartanalyzer: --fatal-warnings --fatal-infos .
-    - dart: 2.6.0
+    - dart: 2.7.0
       dart_task:
         dartanalyzer: --fatal-warnings .
