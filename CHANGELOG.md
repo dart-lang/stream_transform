@@ -1,6 +1,7 @@
 ## 1.2.1-dev
 
-* Improve tests of `switchMap` and improve documentation with links and clarification.
+- Improve tests of `switchMap` and improve documentation with links and
+  clarification.
 
 ## 1.2.0
 
