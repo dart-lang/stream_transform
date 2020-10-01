@@ -16,11 +16,11 @@ extension Merge<T> on Stream<T> {
   ///
   /// For example:
   ///
-  ///    final result = source.merge(other);
+  ///     final result = source.merge(other);
   ///
-  ///    source:  1--2-----3--|
-  ///    other:   ------4-------5--|
-  ///    result:  1--2--4--3----5--|
+  ///     source:  1--2-----3--|
+  ///     other:   ------4-------5--|
+  ///     result:  1--2--4--3----5--|
   ///
   /// If the source stream is a broadcast stream, the result stream will be as
   /// well, regardless of [other]'s type. If a single subscription stream is
@@ -40,12 +40,12 @@ extension Merge<T> on Stream<T> {
   ///
   /// For example:
   ///
-  ///    final result = first.mergeAll([second, third]);
+  ///     final result = first.mergeAll([second, third]);
   ///
-  ///    first:   1--2--------3--|
-  ///    second:  ---------4-------5--|
-  ///    third:   ------6---------------7--|
-  ///    result:  1--2--6--4--3----5----7--|
+  ///     first:   1--2--------3--|
+  ///     second:  ---------4-------5--|
+  ///     third:   ------6---------------7--|
+  ///     result:  1--2--6--4--3----5----7--|
   ///
   /// If the source stream is a broadcast stream, the result stream will be as
   /// well, regardless the types of streams in [others]. If a single
