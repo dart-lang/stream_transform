@@ -22,7 +22,7 @@ void main() {
     test('can create a broadcast stream', () {
       var source = StreamController.broadcast();
 
-      var transformed = source.stream.scan(null, null);
+      var transformed = source.stream.scan(null, (_, __) {});
 
       expect(transformed.isBroadcast, true);
     });

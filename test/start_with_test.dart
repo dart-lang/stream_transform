@@ -11,12 +11,12 @@ import 'package:stream_transform/stream_transform.dart';
 import 'utils.dart';
 
 void main() {
-  StreamController<int> values;
-  Stream<int> transformed;
-  StreamSubscription<int> subscription;
+  late StreamController<int> values;
+  late Stream<int> transformed;
+  late StreamSubscription<int> subscription;
 
-  List<int> emittedValues;
-  bool isDone;
+  late List<int> emittedValues;
+  late bool isDone;
 
   void setupForStreamType(
       String streamType, Stream<int> Function(Stream<int>) transform) {
@@ -102,7 +102,7 @@ void main() {
 
     for (var startingStreamType in streamTypes) {
       group('startWithStream [$startingStreamType] then [$streamType]', () {
-        StreamController<int> starting;
+        late StreamController<int> starting;
         setUp(() async {
           starting = createController(startingStreamType);
           setupForStreamType(

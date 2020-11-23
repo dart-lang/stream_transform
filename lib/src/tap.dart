@@ -22,9 +22,9 @@ extension Tap<T> on Stream<T> {
   ///
   /// The callbacks may not be called until the tapped stream has a listener,
   /// and may not be called after the listener has canceled the subscription.
-  Stream<T> tap(void Function(T) onValue,
-          {void Function(Object, StackTrace) onError,
-          void Function() onDone}) =>
+  Stream<T> tap(void Function(T)? onValue,
+          {void Function(Object, StackTrace)? onError,
+          void Function()? onDone}) =>
       transform(fromHandlers(handleData: (value, sink) {
         try {
           onValue?.call(value);

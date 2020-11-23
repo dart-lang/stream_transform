@@ -13,17 +13,17 @@ void main() {
   for (var firstType in streamTypes) {
     for (var secondType in streamTypes) {
       group('followedBy [$firstType] with [$secondType]', () {
-        StreamController<int> first;
-        StreamController<int> second;
+        late StreamController<int> first;
+        late StreamController<int> second;
 
-        List<int> emittedValues;
-        bool firstCanceled;
-        bool secondCanceled;
-        bool secondListened;
-        bool isDone;
-        List<String> errors;
-        Stream<int> transformed;
-        StreamSubscription<int> subscription;
+        late List<int> emittedValues;
+        late bool firstCanceled;
+        late bool secondCanceled;
+        late bool secondListened;
+        late bool isDone;
+        late List<String> errors;
+        late Stream<int> transformed;
+        late StreamSubscription<int> subscription;
 
         setUp(() async {
           firstCanceled = false;

@@ -7,9 +7,9 @@ import 'dart:async';
 /// Like [new StreamTransformer.fromHandlers] but the handlers are called once
 /// per event rather than once per listener for broadcast streams.
 StreamTransformer<S, T> fromHandlers<S, T>(
-        {void Function(S, EventSink<T>) handleData,
-        void Function(Object, StackTrace, EventSink<T>) handleError,
-        void Function(EventSink<T>) handleDone}) =>
+        {void Function(S, EventSink<T>)? handleData,
+        void Function(Object, StackTrace, EventSink<T>)? handleError,
+        void Function(EventSink<T>)? handleDone}) =>
     _StreamTransformer(
         handleData: handleData,
         handleError: handleError,
@@ -21,9 +21,9 @@ class _StreamTransformer<S, T> extends StreamTransformerBase<S, T> {
   final void Function(Object, StackTrace, EventSink<T>) _handleError;
 
   _StreamTransformer(
-      {void Function(S, EventSink<T>) handleData,
-      void Function(Object, StackTrace, EventSink<T>) handleError,
-      void Function(EventSink<T>) handleDone})
+      {void Function(S, EventSink<T>)? handleData,
+      void Function(Object, StackTrace, EventSink<T>)? handleError,
+      void Function(EventSink<T>)? handleDone})
       : _handleData = handleData ?? _defaultHandleData,
         _handleError = handleError ?? _defaultHandleError,
         _handleDone = handleDone ?? _defaultHandleDone;
@@ -47,12 +47,12 @@ class _StreamTransformer<S, T> extends StreamTransformerBase<S, T> {
         ? StreamController<T>.broadcast(sync: true)
         : StreamController<T>(sync: true);
 
-    StreamSubscription<S> subscription;
+    StreamSubscription<S>? subscription;
     controller.onListen = () {
       assert(subscription == null);
       var valuesDone = false;
       subscription = values.listen((value) => _handleData(value, controller),
-          onError: (error, StackTrace stackTrace) {
+          onError: (Object error, StackTrace stackTrace) {
         _handleError(error, stackTrace, controller);
       }, onDone: () {
         valuesDone = true;
@@ -60,13 +60,13 @@ class _StreamTransformer<S, T> extends StreamTransformerBase<S, T> {
       });
       if (!values.isBroadcast) {
         controller
-          ..onPause = subscription.pause
-          ..onResume = subscription.resume;
+          ..onPause = subscription!.pause
+          ..onResume = subscription!.resume;
       }
       controller.onCancel = () {
         var toCancel = subscription;
         subscription = null;
-        if (!valuesDone) return toCancel.cancel();
+        if (!valuesDone) return toCancel!.cancel();
         return null;
       };
     };

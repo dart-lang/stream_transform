@@ -12,13 +12,13 @@ import 'utils.dart';
 void main() {
   for (var streamType in streamTypes) {
     group('Stream type [$streamType]', () {
-      StreamController<int> values;
-      List<int> emittedValues;
-      bool valuesCanceled;
-      bool isDone;
-      List<String> errors;
-      Stream<int> transformed;
-      StreamSubscription<int> subscription;
+      late StreamController<int> values;
+      late List<int> emittedValues;
+      late bool valuesCanceled;
+      late bool isDone;
+      late List<String> errors;
+      late Stream<int> transformed;
+      late StreamSubscription<int> subscription;
 
       group('audit', () {
         setUp(() async {

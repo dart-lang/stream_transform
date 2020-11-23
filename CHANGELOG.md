@@ -1,5 +1,6 @@
-## 1.2.1-dev
+## 2.0.0-nullsafety.0-dev
 
+- Migrate to null safety.
 - Improve tests of `switchMap` and improve documentation with links and
   clarification.
 

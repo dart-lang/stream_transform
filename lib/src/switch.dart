@@ -65,7 +65,7 @@ class _SwitchTransformer<T> extends StreamTransformerBase<Stream<T>, T> {
         : StreamController<T>(sync: true);
 
     controller.onListen = () {
-      StreamSubscription<T> innerSubscription;
+      StreamSubscription<T>? innerSubscription;
       var outerStreamDone = false;
 
       final outerSubscription = outer.listen(
@@ -96,8 +96,10 @@ class _SwitchTransformer<T> extends StreamTransformerBase<Stream<T>, T> {
       controller.onCancel = () {
         var cancels = [
           if (!outerStreamDone) outerSubscription.cancel(),
-          if (innerSubscription != null) innerSubscription.cancel(),
-        ].where((f) => f != null);
+          if (innerSubscription != null) innerSubscription!.cancel(),
+        ]
+          // Handle opt-out nulls
+          ..removeWhere((Object? f) => f == null);
         if (cancels.isEmpty) return null;
         return Future.wait(cancels).then((_) => null);
       };

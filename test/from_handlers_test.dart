@@ -9,13 +9,13 @@ import 'package:test/test.dart';
 import 'package:stream_transform/src/from_handlers.dart';
 
 void main() {
-  StreamController<int> values;
-  List<int> emittedValues;
-  bool valuesCanceled;
-  bool isDone;
-  List<String> errors;
-  Stream<int> transformed;
-  StreamSubscription<int> subscription;
+  late StreamController<int> values;
+  late List<int> emittedValues;
+  late bool valuesCanceled;
+  late bool isDone;
+  late List<String> errors;
+  late Stream<int> transformed;
+  late StreamSubscription<int> subscription;
 
   void setUpForController(StreamController<int> controller,
       StreamTransformer<int, int> transformer) {
@@ -68,10 +68,10 @@ void main() {
     });
 
     group('broadcast stream with muliple listeners', () {
-      List<int> emittedValues2;
-      List<String> errors2;
-      bool isDone2;
-      StreamSubscription<int> subscription2;
+      late List<int> emittedValues2;
+      late List<String> errors2;
+      late bool isDone2;
+      late StreamSubscription<int> subscription2;
 
       setUp(() {
         setUpForController(StreamController.broadcast(), fromHandlers());
@@ -133,9 +133,9 @@ void main() {
     });
 
     group('broadcast stream with multiple listeners', () {
-      int dataCallCount;
-      int doneCallCount;
-      int errorCallCount;
+      late int dataCallCount;
+      late int doneCallCount;
+      late int errorCallCount;
 
       setUp(() async {
         dataCallCount = 0;

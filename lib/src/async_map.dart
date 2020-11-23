@@ -117,13 +117,13 @@ T _dropPrevious<T>(T event, _) => event;
 /// work.
 StreamTransformer<S, T> _asyncMapThen<S, T>(
     Future<T> Function(S) convert, void Function(void) then) {
-  Future<void> pendingEvent;
+  Future<void>? pendingEvent;
   return fromHandlers(handleData: (event, sink) {
     pendingEvent =
         convert(event).then(sink.add).catchError(sink.addError).then(then);
   }, handleDone: (sink) {
     if (pendingEvent != null) {
-      pendingEvent.then((_) => sink.close());
+      pendingEvent!.then((_) => sink.close());
     } else {
       sink.close();
     }

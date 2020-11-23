@@ -9,7 +9,7 @@ import 'package:stream_transform/stream_transform.dart';
 void main() {
   var firstInput = document.querySelector('#first_input') as InputElement;
   var secondInput = document.querySelector('#second_input') as InputElement;
-  var output = document.querySelector('#output');
+  var output = document.querySelector('#output')!;
 
   _inputValues(firstInput)
       .combineLatest(_inputValues(secondInput),
@@ -21,6 +21,6 @@ void main() {
   });
 }
 
-Stream<String> _inputValues(InputElement element) => element.onKeyUp
+Stream<String?> _inputValues(InputElement element) => element.onKeyUp
     .debounce(const Duration(milliseconds: 100))
     .map((_) => element.value);

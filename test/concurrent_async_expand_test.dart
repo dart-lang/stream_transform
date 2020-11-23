@@ -24,15 +24,15 @@ void main() {
   for (var outerType in streamTypes) {
     for (var innerType in streamTypes) {
       group('concurrentAsyncExpand $outerType to $innerType', () {
-        StreamController<int> outerController;
-        bool outerCanceled;
-        List<StreamController<String>> innerControllers;
-        List<bool> innerCanceled;
-        List<String> emittedValues;
-        bool isDone;
-        List<String> errors;
-        Stream<String> transformed;
-        StreamSubscription<String> subscription;
+        late StreamController<int> outerController;
+        late bool outerCanceled;
+        late List<StreamController<String>> innerControllers;
+        late List<bool> innerCanceled;
+        late List<String> emittedValues;
+        late bool isDone;
+        late List<String> errors;
+        late Stream<String> transformed;
+        late StreamSubscription<String> subscription;
 
         setUp(() {
           outerController = createController(outerType)
@@ -184,19 +184,4 @@ void main() {
       });
     }
   }
-
-  test('hendles null response from cancel', () async {
-    var source = StreamController<int>();
-    var other = StreamController<int>();
-
-    var subscription = NullOnCancelStream(source.stream)
-        .concurrentAsyncExpand((_) => NullOnCancelStream(other.stream))
-        .listen(null);
-
-    source.add(1);
-
-    await Future<void>(() {});
-
-    await subscription.cancel();
-  });
 }
