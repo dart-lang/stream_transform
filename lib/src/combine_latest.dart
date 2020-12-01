@@ -257,6 +257,7 @@ class _CombineLatestAll<T> extends StreamTransformerBase<T, List<T>> {
         var cancels = [for (var s in subscriptions) s.cancel()]
           // Handle opt-out nulls
           ..removeWhere((Object? f) => f == null);
+        if (cancels.isEmpty) return null;
         return Future.wait(cancels).then((_) => null);
       };
     };

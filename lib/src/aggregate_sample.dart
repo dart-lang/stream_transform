@@ -44,7 +44,7 @@ class AggregateSample<S, T> extends StreamTransformerBase<S, T> {
       if (!waitingForTrigger) emit();
 
       if (isTriggerDone) {
-        valueSub?.cancel();
+        valueSub!.cancel();
         controller.close();
       }
     }
@@ -63,7 +63,7 @@ class AggregateSample<S, T> extends StreamTransformerBase<S, T> {
       if (currentResults != null) emit();
 
       if (isValueDone) {
-        triggerSub?.cancel();
+        triggerSub!.cancel();
         controller.close();
       }
     }
