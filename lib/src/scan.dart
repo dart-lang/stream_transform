@@ -21,7 +21,7 @@ extension Scan<T> on Stream<T> {
       if (result is Future<S>) {
         return result.then((r) => accumulated = r);
       } else {
-        return accumulated = result as S;
+        return accumulated = result;
       }
     });
   }

@@ -14,16 +14,16 @@ void main() {
   for (var outerType in streamTypes) {
     for (var innerType in streamTypes) {
       group('Outer type: [$outerType], Inner type: [$innerType]', () {
-        StreamController<int> first;
-        StreamController<int> second;
-        StreamController<Stream<int>> outer;
+        late StreamController<int> first;
+        late StreamController<int> second;
+        late StreamController<Stream<int>> outer;
 
-        List<int> emittedValues;
-        bool firstCanceled;
-        bool outerCanceled;
-        bool isDone;
-        List<String> errors;
-        StreamSubscription<int> subscription;
+        late List<int> emittedValues;
+        late bool firstCanceled;
+        late bool outerCanceled;
+        late bool isDone;
+        late List<String> errors;
+        late StreamSubscription<int> subscription;
 
         setUp(() async {
           firstCanceled = false;
@@ -141,22 +141,9 @@ void main() {
     test('can create a broadcast stream', () async {
       var outer = StreamController.broadcast();
 
-      var transformed = outer.stream.switchMap(null);
+      var transformed = outer.stream.switchMap((_) => const Stream.empty());
 
       expect(transformed.isBroadcast, true);
-    });
-
-    test('handles null response from cancel', () async {
-      var outer = StreamController<Stream<int>>();
-      var inner = StreamController<int>();
-
-      var subscription =
-          NullOnCancelStream(outer.stream).switchLatest().listen(null);
-
-      outer.add(NullOnCancelStream(inner.stream));
-      await Future<void>(() {});
-
-      await subscription.cancel();
     });
 
     test('forwards errors from the convert callback', () async {

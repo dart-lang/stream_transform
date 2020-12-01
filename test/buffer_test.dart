@@ -10,16 +10,16 @@ import 'package:stream_transform/stream_transform.dart';
 import 'utils.dart';
 
 void main() {
-  StreamController<void> trigger;
-  StreamController<int> values;
-  List<List<int>> emittedValues;
-  bool valuesCanceled;
-  bool triggerCanceled;
-  bool triggerPaused;
-  bool isDone;
-  List<String> errors;
-  Stream<List<int>> transformed;
-  StreamSubscription<List<int>> subscription;
+  late StreamController<void> trigger;
+  late StreamController<int> values;
+  late List<List<int>> emittedValues;
+  late bool valuesCanceled;
+  late bool triggerCanceled;
+  late bool triggerPaused;
+  late bool isDone;
+  late List<String> errors;
+  late Stream<List<int>> transformed;
+  late StreamSubscription<List<int>> subscription;
 
   void setUpForStreamTypes(String triggerType, String valuesType) {
     valuesCanceled = false;
@@ -243,13 +243,4 @@ void main() {
       ]);
     });
   }
-
-  test('handles null response from cancel', () async {
-    var controller = StreamController<int>();
-    var trigger = StreamController<void>();
-    var subscription = NullOnCancelStream(controller.stream)
-        .buffer(trigger.stream)
-        .listen(null);
-    await subscription.cancel();
-  });
 }

@@ -11,16 +11,16 @@ import 'package:stream_transform/stream_transform.dart';
 import 'utils.dart';
 
 void main() {
-  StreamController<int> controller;
-  List<String> emittedValues;
-  bool valuesCanceled;
-  bool isDone;
-  List<String> errors;
-  Stream<String> transformed;
-  StreamSubscription<String> subscription;
+  late StreamController<int> controller;
+  late List<String> emittedValues;
+  late bool valuesCanceled;
+  late bool isDone;
+  late List<String> errors;
+  late Stream<String> transformed;
+  late StreamSubscription<String> subscription;
 
-  List<Completer<String>> finishWork;
-  List<dynamic> values;
+  late List<Completer<String>> finishWork;
+  late List<dynamic> values;
 
   Future<String> convert(int value) {
     values.add(value);
@@ -127,7 +127,7 @@ void main() {
           await controller.close();
           expect(isDone, false);
           expect(otherDone, false);
-          finishWork.first.complete();
+          finishWork.first.complete('');
           await Future(() {});
           expect(isDone, true);
           expect(otherDone, true);

@@ -27,7 +27,7 @@ class _TakeUntil<T> extends StreamTransformerBase<T, T> {
         ? StreamController<T>.broadcast(sync: true)
         : StreamController<T>(sync: true);
 
-    StreamSubscription<T> subscription;
+    StreamSubscription<T>? subscription;
     var isDone = false;
     _trigger.then((_) {
       if (isDone) return;
@@ -46,12 +46,12 @@ class _TakeUntil<T> extends StreamTransformerBase<T, T> {
       });
       if (!values.isBroadcast) {
         controller
-          ..onPause = subscription.pause
-          ..onResume = subscription.resume;
+          ..onPause = subscription!.pause
+          ..onResume = subscription!.resume;
       }
       controller.onCancel = () {
         if (isDone) return null;
-        var toCancel = subscription;
+        var toCancel = subscription!;
         subscription = null;
         return toCancel.cancel();
       };

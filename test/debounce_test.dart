@@ -13,13 +13,13 @@ void main() {
   for (var streamType in streamTypes) {
     group('Stream type [$streamType]', () {
       group('debounce - trailing', () {
-        StreamController<int> values;
-        List<int> emittedValues;
-        bool valuesCanceled;
-        bool isDone;
-        List<String> errors;
-        StreamSubscription<int> subscription;
-        Stream<int> transformed;
+        late StreamController<int> values;
+        late List<int> emittedValues;
+        late bool valuesCanceled;
+        late bool isDone;
+        late List<String> errors;
+        late StreamSubscription<int> subscription;
+        late Stream<int> transformed;
 
         setUp(() async {
           valuesCanceled = false;
@@ -89,10 +89,10 @@ void main() {
       });
 
       group('debounce - leading', () {
-        StreamController<int> values;
-        List<int> emittedValues;
-        Stream<int> transformed;
-        bool isDone;
+        late StreamController<int> values;
+        late List<int> emittedValues;
+        late Stream<int> transformed;
+        late bool isDone;
 
         setUp(() async {
           values = createController(streamType);
@@ -139,9 +139,9 @@ void main() {
       });
 
       group('debounce - leading and trailing', () {
-        StreamController<int> values;
-        List<int> emittedValues;
-        Stream<int> transformed;
+        late StreamController<int> values;
+        late List<int> emittedValues;
+        late Stream<int> transformed;
 
         setUp(() async {
           values = createController(streamType);
@@ -179,10 +179,10 @@ void main() {
       });
 
       group('debounceBuffer', () {
-        StreamController<int> values;
-        List<List<int>> emittedValues;
-        List<String> errors;
-        Stream<List<int>> transformed;
+        late StreamController<int> values;
+        late List<List<int>> emittedValues;
+        late List<String> errors;
+        late Stream<List<int>> transformed;
 
         setUp(() async {
           values = createController(streamType);

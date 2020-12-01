@@ -85,7 +85,7 @@ extension RateLimit<T> on Stream<T> {
   /// Events emitted by the source stream within [duration] following an emitted
   /// event will be discarded. Errors are always forwarded immediately.
   Stream<T> throttle(Duration duration) {
-    Timer timer;
+    Timer? timer;
 
     return transform(fromHandlers(handleData: (data, sink) {
       if (timer == null) {
@@ -125,7 +125,7 @@ extension RateLimit<T> on Stream<T> {
   ///     source: a------b--c----d--|
   ///     output: -----a------c--------d|
   Stream<T> audit(Duration duration) {
-    Timer timer;
+    Timer? timer;
     var shouldClose = false;
     T recentData;
 
@@ -161,7 +161,7 @@ extension RateLimit<T> on Stream<T> {
       transform(AggregateSample<T, List<T>>(trigger, _collect));
 }
 
-List<T> _collectToList<T>(T element, List<T> soFar) {
+List<T> _collectToList<T>(T element, List<T>? soFar) {
   soFar ??= <T>[];
   soFar.add(element);
   return soFar;
@@ -172,10 +172,10 @@ T _dropPrevious<T>(T element, _) => element;
 /// Creates a StreamTransformer which aggregates values until the source stream
 /// does not emit for [duration], then emits the aggregated values.
 StreamTransformer<T, R> _debounceAggregate<T, R>(
-    Duration duration, R Function(T element, R soFar) collect,
-    {bool leading, bool trailing}) {
-  Timer timer;
-  R soFar;
+    Duration duration, R Function(T element, R? soFar) collect,
+    {required bool leading, required bool trailing}) {
+  Timer? timer;
+  R? soFar;
   var shouldClose = false;
   var emittedLatestAsLeading = false;
   return fromHandlers(handleData: (T value, EventSink<R> sink) {
@@ -183,12 +183,12 @@ StreamTransformer<T, R> _debounceAggregate<T, R>(
     soFar = collect(value, soFar);
     if (timer == null && leading) {
       emittedLatestAsLeading = true;
-      sink.add(soFar);
+      sink.add(soFar as R);
     } else {
       emittedLatestAsLeading = false;
     }
     timer = Timer(duration, () {
-      if (trailing && !emittedLatestAsLeading) sink.add(soFar);
+      if (trailing && !emittedLatestAsLeading) sink.add(soFar as R);
       if (shouldClose) {
         sink.close();
       }
@@ -205,4 +205,4 @@ StreamTransformer<T, R> _debounceAggregate<T, R>(
   });
 }
 
-List<T> _collect<T>(T event, List<T> soFar) => (soFar ?? <T>[])..add(event);
+List<T> _collect<T>(T event, List<T>? soFar) => (soFar ?? <T>[])..add(event);

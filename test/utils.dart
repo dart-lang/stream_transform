@@ -4,8 +4,6 @@
 
 import 'dart:async';
 
-import 'package:async/async.dart';
-
 /// Cycle the event loop to ensure timers are started, then wait for a delay
 /// longer than [milliseconds] to allow for the timer to fire.
 Future<void> waitForTimer(int milliseconds) =>
@@ -25,26 +23,3 @@ StreamController<T> createController<T>(String streamType) {
 }
 
 const streamTypes = ['single subscription', 'broadcast'];
-
-class NullOnCancelStream<T> extends StreamView<T> {
-  final Stream<T> _stream;
-
-  NullOnCancelStream(this._stream) : super(_stream);
-
-  @override
-  StreamSubscription<T> listen(void Function(T) onData,
-          {Function onError, void Function() onDone, bool cancelOnError}) =>
-      _NullOnCancelSubscription(_stream.listen(onData,
-          onError: onError, onDone: onDone, cancelOnError: cancelOnError));
-}
-
-class _NullOnCancelSubscription<T> extends DelegatingStreamSubscription<T> {
-  final StreamSubscription<T> _subscription;
-  _NullOnCancelSubscription(this._subscription) : super(_subscription);
-
-  @override
-  Future<void> cancel() {
-    _subscription.cancel();
-    return null;
-  }
-}

@@ -15,7 +15,7 @@ import 'dart:async';
 /// the output.
 class AggregateSample<S, T> extends StreamTransformerBase<S, T> {
   final Stream<void> _trigger;
-  final T Function(S, T) _aggregate;
+  final T Function(S, T?) _aggregate;
 
   AggregateSample(this._trigger, this._aggregate);
 
@@ -25,15 +25,15 @@ class AggregateSample<S, T> extends StreamTransformerBase<S, T> {
         ? StreamController<T>.broadcast(sync: true)
         : StreamController<T>(sync: true);
 
-    T currentResults;
+    T? currentResults;
     var waitingForTrigger = true;
     var isTriggerDone = false;
     var isValueDone = false;
-    StreamSubscription<S> valueSub;
-    StreamSubscription<void> triggerSub;
+    StreamSubscription<S>? valueSub;
+    StreamSubscription<void>? triggerSub;
 
     void emit() {
-      controller.add(currentResults);
+      controller.add(currentResults!);
       currentResults = null;
       waitingForTrigger = true;
     }
@@ -44,7 +44,7 @@ class AggregateSample<S, T> extends StreamTransformerBase<S, T> {
       if (!waitingForTrigger) emit();
 
       if (isTriggerDone) {
-        valueSub.cancel();
+        valueSub!.cancel();
         controller.close();
       }
     }
@@ -63,7 +63,7 @@ class AggregateSample<S, T> extends StreamTransformerBase<S, T> {
       if (currentResults != null) emit();
 
       if (isValueDone) {
-        triggerSub.cancel();
+        triggerSub!.cancel();
         controller.close();
       }
     }
@@ -80,8 +80,9 @@ class AggregateSample<S, T> extends StreamTransformerBase<S, T> {
       assert(valueSub == null);
       valueSub = values.listen(onValue,
           onError: controller.addError, onDone: onValuesDone);
-      if (triggerSub != null) {
-        if (triggerSub.isPaused) triggerSub.resume();
+      final priorTriggerSub = triggerSub;
+      if (priorTriggerSub != null) {
+        if (priorTriggerSub.isPaused) priorTriggerSub.resume();
       } else {
         triggerSub = _trigger.listen(onTrigger,
             onError: controller.addError, onDone: onTriggerDone);
@@ -98,17 +99,16 @@ class AggregateSample<S, T> extends StreamTransformerBase<S, T> {
           };
       }
       controller.onCancel = () {
-        var toCancel = <StreamSubscription<void>>[];
-        if (!isValueDone) toCancel.add(valueSub);
+        var cancels = <Future<void>>[if (!isValueDone) valueSub!.cancel()];
         valueSub = null;
         if (_trigger.isBroadcast || !values.isBroadcast) {
-          if (!isTriggerDone) toCancel.add(triggerSub);
+          if (!isTriggerDone) cancels.add(triggerSub!.cancel());
           triggerSub = null;
         } else {
-          triggerSub.pause();
+          triggerSub!.pause();
         }
-        var cancels =
-            toCancel.map((s) => s.cancel()).where((f) => f != null).toList();
+        // Handle opt-out nulls
+        cancels.removeWhere((Object? f) => f == null);
         if (cancels.isEmpty) return null;
         return Future.wait(cancels).then((_) => null);
       };

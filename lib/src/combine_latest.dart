@@ -92,14 +92,14 @@ class _CombineLatest<S, T, R> extends StreamTransformerBase<S, R> {
         ? _other.asBroadcastStream()
         : _other;
 
-    StreamSubscription<S> sourceSubscription;
-    StreamSubscription<T> otherSubscription;
+    StreamSubscription<S>? sourceSubscription;
+    StreamSubscription<T>? otherSubscription;
 
     var sourceDone = false;
     var otherDone = false;
 
-    S latestSource;
-    T latestOther;
+    late S latestSource;
+    late T latestOther;
 
     var sourceStarted = false;
     var otherStarted = false;
@@ -114,16 +114,16 @@ class _CombineLatest<S, T, R> extends StreamTransformerBase<S, R> {
         return;
       }
       if (result is Future<R>) {
-        sourceSubscription.pause();
-        otherSubscription.pause();
+        sourceSubscription!.pause();
+        otherSubscription!.pause();
         result
             .then(controller.add, onError: controller.addError)
             .whenComplete(() {
-          sourceSubscription.resume();
-          otherSubscription.resume();
+          sourceSubscription!.resume();
+          otherSubscription!.resume();
         });
       } else {
-        controller.add(result as R);
+        controller.add(result);
       }
     }
 
@@ -142,7 +142,7 @@ class _CombineLatest<S, T, R> extends StreamTransformerBase<S, R> {
               controller.close();
             } else if (!sourceStarted) {
               // Nothing can ever be emitted
-              otherSubscription.cancel();
+              otherSubscription!.cancel();
               controller.close();
             }
           });
@@ -159,24 +159,28 @@ class _CombineLatest<S, T, R> extends StreamTransformerBase<S, R> {
               controller.close();
             } else if (!otherStarted) {
               // Nothing can ever be emitted
-              sourceSubscription.cancel();
+              sourceSubscription!.cancel();
               controller.close();
             }
           });
       if (!source.isBroadcast) {
         controller
           ..onPause = () {
-            sourceSubscription.pause();
-            otherSubscription.pause();
+            sourceSubscription!.pause();
+            otherSubscription!.pause();
           }
           ..onResume = () {
-            sourceSubscription.resume();
-            otherSubscription.resume();
+            sourceSubscription!.resume();
+            otherSubscription!.resume();
           };
       }
       controller.onCancel = () {
-        var cancels = [sourceSubscription.cancel(), otherSubscription.cancel()]
-            .where((f) => f != null);
+        var cancels = [
+          sourceSubscription!.cancel(),
+          otherSubscription!.cancel()
+        ]
+          // Handle opt-out nulls
+          ..removeWhere((Object? f) => f == null);
         sourceSubscription = null;
         otherSubscription = null;
         return Future.wait(cancels).then((_) => null);
@@ -208,7 +212,7 @@ class _CombineLatestAll<T> extends StreamTransformerBase<T, List<T>> {
     controller.onListen = () {
       final subscriptions = <StreamSubscription<T>>[];
 
-      final latestData = List<T>(allStreams.length);
+      final latestData = List<T?>.filled(allStreams.length, null);
       final hasEmitted = <int>{};
       void handleData(int index, T data) {
         latestData[index] = data;
@@ -249,10 +253,10 @@ class _CombineLatestAll<T> extends StreamTransformerBase<T, List<T>> {
           };
       }
       controller.onCancel = () {
-        var cancels = subscriptions
-            .map((s) => s.cancel())
-            .where((f) => f != null)
-            .toList();
+        if (subscriptions.isEmpty) return null;
+        var cancels = [for (var s in subscriptions) s.cancel()]
+          // Handle opt-out nulls
+          ..removeWhere((Object? f) => f == null);
         if (cancels.isEmpty) return null;
         return Future.wait(cancels).then((_) => null);
       };
