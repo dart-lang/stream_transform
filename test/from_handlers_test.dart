@@ -18,7 +18,7 @@ void main() {
   late StreamSubscription<int> subscription;
 
   void setUpForController(StreamController<int> controller,
-      StreamTransformer<int, int> transformer) {
+      Stream<int> Function(Stream<int>) transform) {
     valuesCanceled = false;
     values = controller
       ..onCancel = () {
@@ -27,7 +27,7 @@ void main() {
     emittedValues = [];
     errors = [];
     isDone = false;
-    transformed = values.stream.transform(transformer);
+    transformed = transform(values.stream);
     subscription =
         transformed.listen(emittedValues.add, onError: errors.add, onDone: () {
       isDone = true;
@@ -37,7 +37,7 @@ void main() {
   group('default from_handlers', () {
     group('Single subscription stream', () {
       setUp(() {
-        setUpForController(StreamController(), fromHandlers());
+        setUpForController(StreamController(), (s) => s.transformByHandlers());
       });
 
       test('has correct stream type', () {
@@ -74,7 +74,8 @@ void main() {
       late StreamSubscription<int> subscription2;
 
       setUp(() {
-        setUpForController(StreamController.broadcast(), fromHandlers());
+        setUpForController(
+            StreamController.broadcast(), (s) => s.transformByHandlers());
         emittedValues2 = [];
         errors2 = [];
         isDone2 = false;
@@ -120,10 +121,11 @@ void main() {
   group('custom handlers', () {
     group('single subscription', () {
       setUp(() async {
-        setUpForController(StreamController(),
-            fromHandlers(handleData: (value, sink) {
-          sink.add(value + 1);
-        }));
+        setUpForController(
+            StreamController(),
+            (s) => s.transformByHandlers(onData: (value, sink) {
+                  sink.add(value + 1);
+                }));
       });
       test('uses transform from handleData', () async {
         values..add(1)..add(2);
@@ -143,14 +145,14 @@ void main() {
         errorCallCount = 0;
         setUpForController(
             StreamController.broadcast(),
-            fromHandlers(handleData: (value, sink) {
-              dataCallCount++;
-            }, handleError: (error, stackTrace, sink) {
-              errorCallCount++;
-              sink.addError(error, stackTrace);
-            }, handleDone: (sink) {
-              doneCallCount++;
-            }));
+            (s) => s.transformByHandlers(onData: (value, sink) {
+                  dataCallCount++;
+                }, onError: (error, stackTrace, sink) {
+                  errorCallCount++;
+                  sink.addError(error, stackTrace);
+                }, onDone: (sink) {
+                  doneCallCount++;
+                }));
         transformed.listen((_) {}, onError: (_, __) {});
       });
 

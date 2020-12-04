@@ -17,10 +17,9 @@ extension Where<T> on Stream<T> {
   /// [S] should be a subtype of the stream's generic type, otherwise nothing of
   /// type [S] could possibly be emitted, however there is no static or runtime
   /// checking that this is the case.
-  Stream<S> whereType<S>() =>
-      transform(StreamTransformer.fromHandlers(handleData: (event, sink) {
+  Stream<S> whereType<S>() => transformByHandlers(onData: (event, sink) {
         if (event is S) sink.add(event);
-      }));
+      });
 
   /// Like [where] but allows the [test] to return a [Future].
   ///
@@ -40,7 +39,7 @@ extension Where<T> on Stream<T> {
   Stream<T> asyncWhere(FutureOr<bool> Function(T) test) {
     var valuesWaiting = 0;
     var sourceDone = false;
-    return transform(fromHandlers(handleData: (element, sink) {
+    return transformByHandlers(onData: (element, sink) {
       valuesWaiting++;
       () async {
         try {
@@ -51,9 +50,9 @@ extension Where<T> on Stream<T> {
         valuesWaiting--;
         if (valuesWaiting <= 0 && sourceDone) sink.close();
       }();
-    }, handleDone: (sink) {
+    }, onDone: (sink) {
       sourceDone = true;
       if (valuesWaiting <= 0) sink.close();
-    }));
+    });
   }
 }

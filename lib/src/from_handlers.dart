@@ -4,46 +4,21 @@
 
 import 'dart:async';
 
-/// Like [new StreamTransformer.fromHandlers] but the handlers are called once
-/// per event rather than once per listener for broadcast streams.
-StreamTransformer<S, T> fromHandlers<S, T>(
-        {void Function(S, EventSink<T>)? handleData,
-        void Function(Object, StackTrace, EventSink<T>)? handleError,
-        void Function(EventSink<T>)? handleDone}) =>
-    _StreamTransformer(
-        handleData: handleData,
-        handleError: handleError,
-        handleDone: handleDone);
+extension TransformByHandlers<S> on Stream<S> {
+  /// Transform a stream by callbacks.
+  ///
+  /// This is similar to `transform(StreamTransformer.fromHandler(...))` except
+  /// that the handlers are called once per event rather than called for the
+  /// same event for each listener on a broadcast stream.
+  Stream<T> transformByHandlers<T>(
+      {void Function(S, EventSink<T>)? onData,
+      void Function(Object, StackTrace, EventSink<T>)? onError,
+      void Function(EventSink<T>)? onDone}) {
+    final handleData = onData ?? _defaultHandleData;
+    final handleError = onError ?? _defaultHandleError;
+    final handleDone = onDone ?? _defaultHandleDone;
 
-class _StreamTransformer<S, T> extends StreamTransformerBase<S, T> {
-  final void Function(S, EventSink<T>) _handleData;
-  final void Function(EventSink<T>) _handleDone;
-  final void Function(Object, StackTrace, EventSink<T>) _handleError;
-
-  _StreamTransformer(
-      {void Function(S, EventSink<T>)? handleData,
-      void Function(Object, StackTrace, EventSink<T>)? handleError,
-      void Function(EventSink<T>)? handleDone})
-      : _handleData = handleData ?? _defaultHandleData,
-        _handleError = handleError ?? _defaultHandleError,
-        _handleDone = handleDone ?? _defaultHandleDone;
-
-  static void _defaultHandleData<S, T>(S value, EventSink<T> sink) {
-    sink.add(value as T);
-  }
-
-  static void _defaultHandleError<T>(
-      Object error, StackTrace stackTrace, EventSink<T> sink) {
-    sink.addError(error, stackTrace);
-  }
-
-  static void _defaultHandleDone<T>(EventSink<T> sink) {
-    sink.close();
-  }
-
-  @override
-  Stream<T> bind(Stream<S> values) {
-    var controller = values.isBroadcast
+    var controller = isBroadcast
         ? StreamController<T>.broadcast(sync: true)
         : StreamController<T>(sync: true);
 
@@ -51,14 +26,14 @@ class _StreamTransformer<S, T> extends StreamTransformerBase<S, T> {
     controller.onListen = () {
       assert(subscription == null);
       var valuesDone = false;
-      subscription = values.listen((value) => _handleData(value, controller),
+      subscription = listen((value) => handleData(value, controller),
           onError: (Object error, StackTrace stackTrace) {
-        _handleError(error, stackTrace, controller);
+        handleError(error, stackTrace, controller);
       }, onDone: () {
         valuesDone = true;
-        _handleDone(controller);
+        handleDone(controller);
       });
-      if (!values.isBroadcast) {
+      if (!isBroadcast) {
         controller
           ..onPause = subscription!.pause
           ..onResume = subscription!.resume;
@@ -71,5 +46,18 @@ class _StreamTransformer<S, T> extends StreamTransformerBase<S, T> {
       };
     };
     return controller.stream;
+  }
+
+  static void _defaultHandleData<S, T>(S value, EventSink<T> sink) {
+    sink.add(value as T);
+  }
+
+  static void _defaultHandleError<T>(
+      Object error, StackTrace stackTrace, EventSink<T> sink) {
+    sink.addError(error, stackTrace);
+  }
+
+  static void _defaultHandleDone<T>(EventSink<T> sink) {
+    sink.close();
   }
 }

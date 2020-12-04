@@ -4,32 +4,27 @@
 
 import 'dart:async';
 
-/// A StreamTransformer which aggregates values and emits when it sees a value
-/// on [_trigger].
-///
-/// If there are no pending values when [_trigger] emits the first value on the
-/// source Stream will immediately flow through. Otherwise, the pending values
-/// and released when [_trigger] emits.
-///
-/// Errors from the source stream or the trigger are immediately forwarded to
-/// the output.
-class AggregateSample<S, T> extends StreamTransformerBase<S, T> {
-  final Stream<void> _trigger;
-  final T Function(S, T?) _aggregate;
+extension AggregateSample<T> on Stream<T> {
+  /// Aggregates values and emits when it sees a value on [trigger].
+  ///
+  /// If there are no pending values when [trigger] emits, the next value on the
+  /// source Stream will be passed to [aggregate] and emitted on the result
+  /// stream immediately. Otherwise, the pending values are released when
+  /// [trigger] emits.
+  ///
+  /// Errors from the source stream or the trigger are immediately forwarded to
+  /// the output.
+  Stream<S> aggregateSample<S>(
+      Stream<void> trigger, S Function(T, S?) aggregate) {
+    var controller = isBroadcast
+        ? StreamController<S>.broadcast(sync: true)
+        : StreamController<S>(sync: true);
 
-  AggregateSample(this._trigger, this._aggregate);
-
-  @override
-  Stream<T> bind(Stream<S> values) {
-    var controller = values.isBroadcast
-        ? StreamController<T>.broadcast(sync: true)
-        : StreamController<T>(sync: true);
-
-    T? currentResults;
+    S? currentResults;
     var waitingForTrigger = true;
     var isTriggerDone = false;
     var isValueDone = false;
-    StreamSubscription<S>? valueSub;
+    StreamSubscription<T>? valueSub;
     StreamSubscription<void>? triggerSub;
 
     void emit() {
@@ -38,8 +33,8 @@ class AggregateSample<S, T> extends StreamTransformerBase<S, T> {
       waitingForTrigger = true;
     }
 
-    void onValue(S value) {
-      currentResults = _aggregate(value, currentResults);
+    void onValue(T value) {
+      currentResults = aggregate(value, currentResults);
 
       if (!waitingForTrigger) emit();
 
@@ -78,16 +73,16 @@ class AggregateSample<S, T> extends StreamTransformerBase<S, T> {
 
     controller.onListen = () {
       assert(valueSub == null);
-      valueSub = values.listen(onValue,
-          onError: controller.addError, onDone: onValuesDone);
+      valueSub =
+          listen(onValue, onError: controller.addError, onDone: onValuesDone);
       final priorTriggerSub = triggerSub;
       if (priorTriggerSub != null) {
         if (priorTriggerSub.isPaused) priorTriggerSub.resume();
       } else {
-        triggerSub = _trigger.listen(onTrigger,
+        triggerSub = trigger.listen(onTrigger,
             onError: controller.addError, onDone: onTriggerDone);
       }
-      if (!values.isBroadcast) {
+      if (!isBroadcast) {
         controller
           ..onPause = () {
             valueSub?.pause();
@@ -101,7 +96,7 @@ class AggregateSample<S, T> extends StreamTransformerBase<S, T> {
       controller.onCancel = () {
         var cancels = <Future<void>>[if (!isValueDone) valueSub!.cancel()];
         valueSub = null;
-        if (_trigger.isBroadcast || !values.isBroadcast) {
+        if (trigger.isBroadcast || !isBroadcast) {
           if (!isTriggerDone) cancels.add(triggerSub!.cancel());
           triggerSub = null;
         } else {

@@ -41,8 +41,7 @@ extension AsyncMap<T> on Stream<T> {
     var workFinished = StreamController<void>()
       // Let the first event through.
       ..add(null);
-    return buffer(workFinished.stream)
-        .transform(_asyncMapThen(convert, workFinished.add));
+    return buffer(workFinished.stream)._asyncMapThen(convert, workFinished.add);
   }
 
   /// Like [asyncMap] but events are discarded while work is happening in
@@ -68,8 +67,8 @@ extension AsyncMap<T> on Stream<T> {
     var workFinished = StreamController<void>()
       // Let the first event through.
       ..add(null);
-    return transform(AggregateSample(workFinished.stream, _dropPrevious))
-        .transform(_asyncMapThen(convert, workFinished.add));
+    return aggregateSample(workFinished.stream, _dropPrevious)
+        ._asyncMapThen(convert, workFinished.add);
   }
 
   /// Like [asyncMap] but the [convert] callback may be called for an element
@@ -92,7 +91,7 @@ extension AsyncMap<T> on Stream<T> {
   Stream<S> concurrentAsyncMap<S>(FutureOr<S> Function(T) convert) {
     var valuesWaiting = 0;
     var sourceDone = false;
-    return transform(fromHandlers(handleData: (element, sink) {
+    return transformByHandlers(onData: (element, sink) {
       valuesWaiting++;
       () async {
         try {
@@ -103,29 +102,29 @@ extension AsyncMap<T> on Stream<T> {
         valuesWaiting--;
         if (valuesWaiting <= 0 && sourceDone) sink.close();
       }();
-    }, handleDone: (sink) {
+    }, onDone: (sink) {
       sourceDone = true;
       if (valuesWaiting <= 0) sink.close();
-    }));
+    });
+  }
+
+  /// Like [Stream.asyncMap] but the [convert] is only called once per event,
+  /// rather than once per listener, and [then] is called after completing the
+  /// work.
+  Stream<S> _asyncMapThen<S>(
+      Future<S> Function(T) convert, void Function(void) then) {
+    Future<void>? pendingEvent;
+    return transformByHandlers(onData: (event, sink) {
+      pendingEvent =
+          convert(event).then(sink.add).catchError(sink.addError).then(then);
+    }, onDone: (sink) {
+      if (pendingEvent != null) {
+        pendingEvent!.then((_) => sink.close());
+      } else {
+        sink.close();
+      }
+    });
   }
 }
 
 T _dropPrevious<T>(T event, _) => event;
-
-/// Like [Stream.asyncMap] but the [convert] is only called once per event,
-/// rather than once per listener, and [then] is called after completing the
-/// work.
-StreamTransformer<S, T> _asyncMapThen<S, T>(
-    Future<T> Function(S) convert, void Function(void) then) {
-  Future<void>? pendingEvent;
-  return fromHandlers(handleData: (event, sink) {
-    pendingEvent =
-        convert(event).then(sink.add).catchError(sink.addError).then(then);
-  }, handleDone: (sink) {
-    if (pendingEvent != null) {
-      pendingEvent!.then((_) => sink.close());
-    } else {
-      sink.close();
-    }
-  });
-}

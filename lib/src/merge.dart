@@ -30,7 +30,7 @@ extension Merge<T> on Stream<T> {
   /// If a broadcast stream is merged into a single-subscription stream any
   /// events emitted by [other] before the result stream has a subscriber will
   /// be discarded.
-  Stream<T> merge(Stream<T> other) => transform(_Merge([other]));
+  Stream<T> merge(Stream<T> other) => mergeAll([other]);
 
   /// Returns a stream which emits values and errors from the source stream and
   /// any stream in [others] in any order as they arrive.
@@ -55,7 +55,52 @@ extension Merge<T> on Stream<T> {
   /// If a broadcast stream is merged into a single-subscription stream any
   /// events emitted by that stream before the result stream has a subscriber
   /// will be discarded.
-  Stream<T> mergeAll(Iterable<Stream<T>> others) => transform(_Merge(others));
+  Stream<T> mergeAll(Iterable<Stream<T>> others) {
+    final controller = isBroadcast
+        ? StreamController<T>.broadcast(sync: true)
+        : StreamController<T>(sync: true);
+
+    final allStreams = [
+      this,
+      for (final other in others)
+        !isBroadcast || other.isBroadcast ? other : other.asBroadcastStream(),
+    ];
+
+    controller.onListen = () {
+      final subscriptions = <StreamSubscription<T>>[];
+      for (final stream in allStreams) {
+        final subscription =
+            stream.listen(controller.add, onError: controller.addError);
+        subscription.onDone(() {
+          subscriptions.remove(subscription);
+          if (subscriptions.isEmpty) controller.close();
+        });
+        subscriptions.add(subscription);
+      }
+      if (!isBroadcast) {
+        controller
+          ..onPause = () {
+            for (final subscription in subscriptions) {
+              subscription.pause();
+            }
+          }
+          ..onResume = () {
+            for (final subscription in subscriptions) {
+              subscription.resume();
+            }
+          };
+      }
+      controller.onCancel = () {
+        if (subscriptions.isEmpty) return null;
+        var cancels = [for (var s in subscriptions) s.cancel()]
+          // Handle opt-out nulls
+          ..removeWhere((Object? f) => f == null);
+        if (cancels.isEmpty) return null;
+        return Future.wait(cancels).then((_) => null);
+      };
+    };
+    return controller.stream;
+  }
 
   /// Like [asyncExpand] but the [convert] callback may be called for an element
   /// before the [Stream] emitted by the previous element has closed.
@@ -84,76 +129,19 @@ extension Merge<T> on Stream<T> {
   ///  * [switchMap], which cancels subscriptions to the previous sub
   ///    stream instead of concurrently emitting events from all sub streams.
   Stream<S> concurrentAsyncExpand<S>(Stream<S> Function(T) convert) =>
-      map(convert).transform(_MergeExpanded());
+      map(convert).mergeExpanded();
 }
 
-class _Merge<T> extends StreamTransformerBase<T, T> {
-  final Iterable<Stream<T>> _others;
-
-  _Merge(this._others);
-
-  @override
-  Stream<T> bind(Stream<T> first) {
-    final controller = first.isBroadcast
-        ? StreamController<T>.broadcast(sync: true)
-        : StreamController<T>(sync: true);
-
-    final allStreams = [
-      first,
-      for (final other in _others)
-        !first.isBroadcast || other.isBroadcast
-            ? other
-            : other.asBroadcastStream(),
-    ];
-
-    controller.onListen = () {
-      final subscriptions = <StreamSubscription<T>>[];
-      for (final stream in allStreams) {
-        final subscription =
-            stream.listen(controller.add, onError: controller.addError);
-        subscription.onDone(() {
-          subscriptions.remove(subscription);
-          if (subscriptions.isEmpty) controller.close();
-        });
-        subscriptions.add(subscription);
-      }
-      if (!first.isBroadcast) {
-        controller
-          ..onPause = () {
-            for (final subscription in subscriptions) {
-              subscription.pause();
-            }
-          }
-          ..onResume = () {
-            for (final subscription in subscriptions) {
-              subscription.resume();
-            }
-          };
-      }
-      controller.onCancel = () {
-        if (subscriptions.isEmpty) return null;
-        var cancels = [for (var s in subscriptions) s.cancel()]
-          // Handle opt-out nulls
-          ..removeWhere((Object? f) => f == null);
-        if (cancels.isEmpty) return null;
-        return Future.wait(cancels).then((_) => null);
-      };
-    };
-    return controller.stream;
-  }
-}
-
-class _MergeExpanded<T> extends StreamTransformerBase<Stream<T>, T> {
-  @override
-  Stream<T> bind(Stream<Stream<T>> streams) {
-    final controller = streams.isBroadcast
+extension _MergeExpanded<T> on Stream<Stream<T>> {
+  Stream<T> mergeExpanded() {
+    final controller = isBroadcast
         ? StreamController<T>.broadcast(sync: true)
         : StreamController<T>(sync: true);
 
     controller.onListen = () {
       final subscriptions = <StreamSubscription<dynamic>>[];
-      final outerSubscription = streams.listen((inner) {
-        if (streams.isBroadcast && !inner.isBroadcast) {
+      final outerSubscription = listen((inner) {
+        if (isBroadcast && !inner.isBroadcast) {
           inner = inner.asBroadcastStream();
         }
         final subscription =
@@ -169,7 +157,7 @@ class _MergeExpanded<T> extends StreamTransformerBase<Stream<T>, T> {
         if (subscriptions.isEmpty) controller.close();
       });
       subscriptions.add(outerSubscription);
-      if (!streams.isBroadcast) {
+      if (!isBroadcast) {
         controller
           ..onPause = () {
             for (final subscription in subscriptions) {

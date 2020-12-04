@@ -25,20 +25,20 @@ extension Tap<T> on Stream<T> {
   Stream<T> tap(void Function(T)? onValue,
           {void Function(Object, StackTrace)? onError,
           void Function()? onDone}) =>
-      transform(fromHandlers(handleData: (value, sink) {
+      transformByHandlers(onData: (value, sink) {
         try {
           onValue?.call(value);
         } catch (_) {/*Ignore*/}
         sink.add(value);
-      }, handleError: (error, stackTrace, sink) {
+      }, onError: (error, stackTrace, sink) {
         try {
           onError?.call(error, stackTrace);
         } catch (_) {/*Ignore*/}
         sink.addError(error, stackTrace);
-      }, handleDone: (sink) {
+      }, onDone: (sink) {
         try {
           onDone?.call();
         } catch (_) {/*Ignore*/}
         sink.close();
-      }));
+      });
 }
