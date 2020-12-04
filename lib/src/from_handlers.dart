@@ -5,6 +5,11 @@
 import 'dart:async';
 
 extension TransformByHandlers<S> on Stream<S> {
+  /// Transform a stream by callbacks.
+  ///
+  /// This is similar to `transform(StreamTransformer.fromHandler(...))` except
+  /// that the handlers are called once per event rather than called for the
+  /// same event for each listener on a broadcast stream.
   Stream<T> transformByHandlers<T>(
       {void Function(S, EventSink<T>)? onData,
       void Function(Object, StackTrace, EventSink<T>)? onError,
