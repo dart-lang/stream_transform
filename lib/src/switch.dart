@@ -52,15 +52,8 @@ extension SwitchLatest<T> on Stream<Stream<T>> {
   ///
   /// If the source stream is a broadcast stream, the result stream will be as
   /// well, regardless of the types of streams emitted.
-  Stream<T> switchLatest() => transform(_SwitchTransformer<T>());
-}
-
-class _SwitchTransformer<T> extends StreamTransformerBase<Stream<T>, T> {
-  const _SwitchTransformer();
-
-  @override
-  Stream<T> bind(Stream<Stream<T>> outer) {
-    var controller = outer.isBroadcast
+  Stream<T> switchLatest() {
+    var controller = isBroadcast
         ? StreamController<T>.broadcast(sync: true)
         : StreamController<T>(sync: true);
 
@@ -68,7 +61,7 @@ class _SwitchTransformer<T> extends StreamTransformerBase<Stream<T>, T> {
       StreamSubscription<T>? innerSubscription;
       var outerStreamDone = false;
 
-      final outerSubscription = outer.listen(
+      final outerSubscription = listen(
           (innerStream) {
             innerSubscription?.cancel();
             innerSubscription = innerStream.listen(controller.add,
@@ -82,7 +75,7 @@ class _SwitchTransformer<T> extends StreamTransformerBase<Stream<T>, T> {
             outerStreamDone = true;
             if (innerSubscription == null) controller.close();
           });
-      if (!outer.isBroadcast) {
+      if (!isBroadcast) {
         controller
           ..onPause = () {
             innerSubscription?.pause();

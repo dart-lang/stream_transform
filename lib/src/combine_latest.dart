@@ -34,8 +34,110 @@ extension CombineLatest<T> on Stream<T> {
   /// well, regardless of [other]'s type. If a single subscription stream is
   /// combined with a broadcast stream it may never be canceled.
   Stream<S> combineLatest<T2, S>(
-          Stream<T2> other, FutureOr<S> Function(T, T2) combine) =>
-      transform(_CombineLatest(other, combine));
+      Stream<T2> other, FutureOr<S> Function(T, T2) combine) {
+    final controller = isBroadcast
+        ? StreamController<S>.broadcast(sync: true)
+        : StreamController<S>(sync: true);
+
+    other =
+        (isBroadcast && !other.isBroadcast) ? other.asBroadcastStream() : other;
+
+    StreamSubscription<T>? sourceSubscription;
+    StreamSubscription<T2>? otherSubscription;
+
+    var sourceDone = false;
+    var otherDone = false;
+
+    late T latestSource;
+    late T2 latestOther;
+
+    var sourceStarted = false;
+    var otherStarted = false;
+
+    void emitCombined() {
+      if (!sourceStarted || !otherStarted) return;
+      FutureOr<S> result;
+      try {
+        result = combine(latestSource, latestOther);
+      } catch (e, s) {
+        controller.addError(e, s);
+        return;
+      }
+      if (result is Future<S>) {
+        sourceSubscription!.pause();
+        otherSubscription!.pause();
+        result
+            .then(controller.add, onError: controller.addError)
+            .whenComplete(() {
+          sourceSubscription!.resume();
+          otherSubscription!.resume();
+        });
+      } else {
+        controller.add(result);
+      }
+    }
+
+    controller.onListen = () {
+      assert(sourceSubscription == null);
+      sourceSubscription = listen(
+          (s) {
+            sourceStarted = true;
+            latestSource = s;
+            emitCombined();
+          },
+          onError: controller.addError,
+          onDone: () {
+            sourceDone = true;
+            if (otherDone) {
+              controller.close();
+            } else if (!sourceStarted) {
+              // Nothing can ever be emitted
+              otherSubscription!.cancel();
+              controller.close();
+            }
+          });
+      otherSubscription = other.listen(
+          (o) {
+            otherStarted = true;
+            latestOther = o;
+            emitCombined();
+          },
+          onError: controller.addError,
+          onDone: () {
+            otherDone = true;
+            if (sourceDone) {
+              controller.close();
+            } else if (!otherStarted) {
+              // Nothing can ever be emitted
+              sourceSubscription!.cancel();
+              controller.close();
+            }
+          });
+      if (!isBroadcast) {
+        controller
+          ..onPause = () {
+            sourceSubscription!.pause();
+            otherSubscription!.pause();
+          }
+          ..onResume = () {
+            sourceSubscription!.resume();
+            otherSubscription!.resume();
+          };
+      }
+      controller.onCancel = () {
+        var cancels = [
+          sourceSubscription!.cancel(),
+          otherSubscription!.cancel()
+        ]
+          // Handle opt-out nulls
+          ..removeWhere((Object? f) => f == null);
+        sourceSubscription = null;
+        otherSubscription = null;
+        return Future.wait(cancels).then((_) => null);
+      };
+    };
+    return controller.stream;
+  }
 
   /// Combine the latest value emitted from the source stream with the latest
   /// values emitted from [others].
@@ -72,141 +174,15 @@ extension CombineLatest<T> on Stream<T> {
   /// If the source stream is a broadcast stream, the result stream will be as
   /// well, regardless of the types of [others]. If a single subscription stream
   /// is combined with a broadcast source stream, it may never be canceled.
-  Stream<List<T>> combineLatestAll(Iterable<Stream<T>> others) =>
-      transform(_CombineLatestAll<T>(others));
-}
-
-class _CombineLatest<S, T, R> extends StreamTransformerBase<S, R> {
-  final Stream<T> _other;
-  final FutureOr<R> Function(S, T) _combine;
-
-  _CombineLatest(this._other, this._combine);
-
-  @override
-  Stream<R> bind(Stream<S> source) {
-    final controller = source.isBroadcast
-        ? StreamController<R>.broadcast(sync: true)
-        : StreamController<R>(sync: true);
-
-    final other = (source.isBroadcast && !_other.isBroadcast)
-        ? _other.asBroadcastStream()
-        : _other;
-
-    StreamSubscription<S>? sourceSubscription;
-    StreamSubscription<T>? otherSubscription;
-
-    var sourceDone = false;
-    var otherDone = false;
-
-    late S latestSource;
-    late T latestOther;
-
-    var sourceStarted = false;
-    var otherStarted = false;
-
-    void emitCombined() {
-      if (!sourceStarted || !otherStarted) return;
-      FutureOr<R> result;
-      try {
-        result = _combine(latestSource, latestOther);
-      } catch (e, s) {
-        controller.addError(e, s);
-        return;
-      }
-      if (result is Future<R>) {
-        sourceSubscription!.pause();
-        otherSubscription!.pause();
-        result
-            .then(controller.add, onError: controller.addError)
-            .whenComplete(() {
-          sourceSubscription!.resume();
-          otherSubscription!.resume();
-        });
-      } else {
-        controller.add(result);
-      }
-    }
-
-    controller.onListen = () {
-      assert(sourceSubscription == null);
-      sourceSubscription = source.listen(
-          (s) {
-            sourceStarted = true;
-            latestSource = s;
-            emitCombined();
-          },
-          onError: controller.addError,
-          onDone: () {
-            sourceDone = true;
-            if (otherDone) {
-              controller.close();
-            } else if (!sourceStarted) {
-              // Nothing can ever be emitted
-              otherSubscription!.cancel();
-              controller.close();
-            }
-          });
-      otherSubscription = other.listen(
-          (o) {
-            otherStarted = true;
-            latestOther = o;
-            emitCombined();
-          },
-          onError: controller.addError,
-          onDone: () {
-            otherDone = true;
-            if (sourceDone) {
-              controller.close();
-            } else if (!otherStarted) {
-              // Nothing can ever be emitted
-              sourceSubscription!.cancel();
-              controller.close();
-            }
-          });
-      if (!source.isBroadcast) {
-        controller
-          ..onPause = () {
-            sourceSubscription!.pause();
-            otherSubscription!.pause();
-          }
-          ..onResume = () {
-            sourceSubscription!.resume();
-            otherSubscription!.resume();
-          };
-      }
-      controller.onCancel = () {
-        var cancels = [
-          sourceSubscription!.cancel(),
-          otherSubscription!.cancel()
-        ]
-          // Handle opt-out nulls
-          ..removeWhere((Object? f) => f == null);
-        sourceSubscription = null;
-        otherSubscription = null;
-        return Future.wait(cancels).then((_) => null);
-      };
-    };
-    return controller.stream;
-  }
-}
-
-class _CombineLatestAll<T> extends StreamTransformerBase<T, List<T>> {
-  final Iterable<Stream<T>> _others;
-
-  _CombineLatestAll(this._others);
-
-  @override
-  Stream<List<T>> bind(Stream<T> first) {
-    final controller = first.isBroadcast
+  Stream<List<T>> combineLatestAll(Iterable<Stream<T>> others) {
+    final controller = isBroadcast
         ? StreamController<List<T>>.broadcast(sync: true)
         : StreamController<List<T>>(sync: true);
 
     final allStreams = [
-      first,
-      for (final other in _others)
-        !first.isBroadcast || other.isBroadcast
-            ? other
-            : other.asBroadcastStream(),
+      this,
+      for (final other in others)
+        !isBroadcast || other.isBroadcast ? other : other.asBroadcastStream(),
     ];
 
     controller.onListen = () {
@@ -239,7 +215,7 @@ class _CombineLatestAll<T> extends StreamTransformerBase<T, List<T>> {
 
         streamId++;
       }
-      if (!first.isBroadcast) {
+      if (!isBroadcast) {
         controller
           ..onPause = () {
             for (final subscription in subscriptions) {

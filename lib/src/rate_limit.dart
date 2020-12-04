@@ -56,8 +56,8 @@ extension RateLimit<T> on Stream<T> {
   /// To collect values emitted during the debounce period see [debounceBuffer].
   Stream<T> debounce(Duration duration,
           {bool leading = false, bool trailing = true}) =>
-      transform(_debounceAggregate(duration, _dropPrevious,
-          leading: leading, trailing: trailing));
+      _debounceAggregate(duration, _dropPrevious,
+          leading: leading, trailing: trailing);
 
   /// Returns a Stream which collects values until the source stream does not
   /// emit for [duration] then emits the collected values.
@@ -76,8 +76,7 @@ extension RateLimit<T> on Stream<T> {
   /// To keep only the most recent event during the debounce perios see
   /// [debounce].
   Stream<List<T>> debounceBuffer(Duration duration) =>
-      transform(_debounceAggregate(duration, _collectToList,
-          leading: false, trailing: true));
+      _debounceAggregate(duration, _collect, leading: false, trailing: true);
 
   /// Returns a stream which only emits once per [duration], at the beginning of
   /// the period.
@@ -87,14 +86,14 @@ extension RateLimit<T> on Stream<T> {
   Stream<T> throttle(Duration duration) {
     Timer? timer;
 
-    return transform(fromHandlers(handleData: (data, sink) {
+    return transformByHandlers(onData: (data, sink) {
       if (timer == null) {
         sink.add(data);
         timer = Timer(duration, () {
           timer = null;
         });
       }
-    }));
+    });
   }
 
   /// Returns a Stream which only emits once per [duration], at the end of the
@@ -129,7 +128,7 @@ extension RateLimit<T> on Stream<T> {
     var shouldClose = false;
     T recentData;
 
-    return transform(fromHandlers(handleData: (T data, EventSink<T> sink) {
+    return transformByHandlers(onData: (data, sink) {
       recentData = data;
       timer ??= Timer(duration, () {
         sink.add(recentData);
@@ -138,13 +137,13 @@ extension RateLimit<T> on Stream<T> {
           sink.close();
         }
       });
-    }, handleDone: (EventSink<T> sink) {
+    }, onDone: (sink) {
       if (timer != null) {
         shouldClose = true;
       } else {
         sink.close();
       }
-    }));
+    });
   }
 
   /// Returns a Stream  which collects values and emits when it sees a value on
@@ -158,51 +157,44 @@ extension RateLimit<T> on Stream<T> {
   /// Errors from the source stream or the trigger are immediately forwarded to
   /// the output.
   Stream<List<T>> buffer(Stream<void> trigger) =>
-      transform(AggregateSample<T, List<T>>(trigger, _collect));
-}
+      aggregateSample<List<T>>(trigger, _collect);
 
-List<T> _collectToList<T>(T element, List<T>? soFar) {
-  soFar ??= <T>[];
-  soFar.add(element);
-  return soFar;
+  /// Aggregates values until the source stream does not emit for [duration],
+  /// then emits the aggregated values.
+  Stream<S> _debounceAggregate<S>(
+      Duration duration, S Function(T element, S? soFar) collect,
+      {required bool leading, required bool trailing}) {
+    Timer? timer;
+    S? soFar;
+    var shouldClose = false;
+    var emittedLatestAsLeading = false;
+    return transformByHandlers(onData: (value, sink) {
+      timer?.cancel();
+      soFar = collect(value, soFar);
+      if (timer == null && leading) {
+        emittedLatestAsLeading = true;
+        sink.add(soFar as S);
+      } else {
+        emittedLatestAsLeading = false;
+      }
+      timer = Timer(duration, () {
+        if (trailing && !emittedLatestAsLeading) sink.add(soFar as S);
+        if (shouldClose) {
+          sink.close();
+        }
+        soFar = null;
+        timer = null;
+      });
+    }, onDone: (EventSink<S> sink) {
+      if (soFar != null && trailing) {
+        shouldClose = true;
+      } else {
+        timer?.cancel();
+        sink.close();
+      }
+    });
+  }
 }
 
 T _dropPrevious<T>(T element, _) => element;
-
-/// Creates a StreamTransformer which aggregates values until the source stream
-/// does not emit for [duration], then emits the aggregated values.
-StreamTransformer<T, R> _debounceAggregate<T, R>(
-    Duration duration, R Function(T element, R? soFar) collect,
-    {required bool leading, required bool trailing}) {
-  Timer? timer;
-  R? soFar;
-  var shouldClose = false;
-  var emittedLatestAsLeading = false;
-  return fromHandlers(handleData: (T value, EventSink<R> sink) {
-    timer?.cancel();
-    soFar = collect(value, soFar);
-    if (timer == null && leading) {
-      emittedLatestAsLeading = true;
-      sink.add(soFar as R);
-    } else {
-      emittedLatestAsLeading = false;
-    }
-    timer = Timer(duration, () {
-      if (trailing && !emittedLatestAsLeading) sink.add(soFar as R);
-      if (shouldClose) {
-        sink.close();
-      }
-      soFar = null;
-      timer = null;
-    });
-  }, handleDone: (EventSink<R> sink) {
-    if (soFar != null && trailing) {
-      shouldClose = true;
-    } else {
-      timer?.cancel();
-      sink.close();
-    }
-  });
-}
-
 List<T> _collect<T>(T event, List<T>? soFar) => (soFar ?? <T>[])..add(event);
