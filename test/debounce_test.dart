@@ -231,4 +231,9 @@ void main() {
       });
     });
   }
+  test('allows nulls', () async {
+    final values = Stream<int?>.fromIterable([null]);
+    final transformed = values.debounce(const Duration(milliseconds: 1));
+    expect(await transformed.toList(), [null]);
+  });
 }

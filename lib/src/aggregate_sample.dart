@@ -21,6 +21,7 @@ extension AggregateSample<T> on Stream<T> {
         : StreamController<S>(sync: true);
 
     S? currentResults;
+    var hasCurrentResults = false;
     var waitingForTrigger = true;
     var isTriggerDone = false;
     var isValueDone = false;
@@ -28,13 +29,15 @@ extension AggregateSample<T> on Stream<T> {
     StreamSubscription<void>? triggerSub;
 
     void emit() {
-      controller.add(currentResults!);
+      controller.add(currentResults as S);
       currentResults = null;
+      hasCurrentResults = false;
       waitingForTrigger = true;
     }
 
     void onValue(T value) {
       currentResults = aggregate(value, currentResults);
+      hasCurrentResults = true;
 
       if (!waitingForTrigger) emit();
 
@@ -46,7 +49,7 @@ extension AggregateSample<T> on Stream<T> {
 
     void onValuesDone() {
       isValueDone = true;
-      if (currentResults == null) {
+      if (!hasCurrentResults) {
         triggerSub?.cancel();
         controller.close();
       }
@@ -55,7 +58,7 @@ extension AggregateSample<T> on Stream<T> {
     void onTrigger(_) {
       waitingForTrigger = false;
 
-      if (currentResults != null) emit();
+      if (hasCurrentResults) emit();
 
       if (isValueDone) {
         triggerSub!.cancel();

@@ -200,4 +200,9 @@ void main() {
       }
     });
   }
+
+  test('allows nulls', () async {
+    var stream = Stream<int?>.value(null);
+    await stream.asyncMapSample(expectAsync1((_) async {})).drain();
+  });
 }
