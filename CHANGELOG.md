@@ -3,6 +3,7 @@
 - Migrate to null safety.
 - Improve tests of `switchMap` and improve documentation with links and
   clarification.
+- Add `trailing` argument to `throttle`.
 
 ## 1.2.0
 

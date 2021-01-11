@@ -19,7 +19,7 @@ void main() {
       late Stream<int> transformed;
       late StreamSubscription<int> subscription;
 
-      group('throttle', () {
+      group('throttle - trailing: false', () {
         setUp(() async {
           valuesCanceled = false;
           values = createController(streamType)
@@ -64,12 +64,70 @@ void main() {
 
         if (streamType == 'broadcast') {
           test('multiple listeners all get values', () async {
-            var otherValues = [];
+            var otherValues = <int>[];
             transformed.listen(otherValues.add);
             values.add(1);
             await Future(() {});
             expect(emittedValues, [1]);
             expect(otherValues, [1]);
+          });
+        }
+      });
+
+      group('throttle - trailing: true', () {
+        setUp(() async {
+          valuesCanceled = false;
+          values = createController(streamType)
+            ..onCancel = () {
+              valuesCanceled = true;
+            };
+          emittedValues = [];
+          isDone = false;
+          transformed = values.stream
+              .throttle(const Duration(milliseconds: 5), trailing: true);
+          subscription = transformed.listen(emittedValues.add, onDone: () {
+            isDone = true;
+          });
+        });
+
+        test('emits both first and last in a period', () async {
+          values..add(1)..add(2);
+          await values.close();
+          await waitForTimer(5);
+          expect(emittedValues, [1, 2]);
+        });
+
+        test('swallows values that are not the latest in a period', () async {
+          values..add(1)..add(2)..add(3);
+          await values.close();
+          await waitForTimer(5);
+          expect(emittedValues, [1, 3]);
+        });
+
+        test('waits to output the last value even if the stream closes',
+            () async {
+          values..add(1)..add(2);
+          await values.close();
+          await Future(() {});
+          expect(isDone, false);
+          expect(emittedValues, [1],
+              reason: 'Should not be emitted until after duration');
+          await waitForTimer(5);
+          expect(emittedValues, [1, 2]);
+          expect(isDone, true);
+        });
+
+        if (streamType == 'broadcast') {
+          test('multiple listeners all get values', () async {
+            var otherValues = <int>[];
+            transformed.listen(otherValues.add);
+            values..add(1)..add(2);
+            await Future(() {});
+            expect(emittedValues, [1]);
+            expect(otherValues, [1]);
+            await waitForTimer(5);
+            expect(emittedValues, [1, 2]);
+            expect(otherValues, [1, 2]);
           });
         }
       });
