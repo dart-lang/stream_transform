@@ -240,27 +240,33 @@ extension RateLimit<T> on Stream<T> {
       {required bool leading, required bool trailing}) {
     Timer? timer;
     S? soFar;
+    var hasPending = false;
     var shouldClose = false;
     var emittedLatestAsLeading = false;
+
     return transformByHandlers(onData: (value, sink) {
+      void emit() {
+        sink.add(soFar as S);
+        soFar = null;
+        hasPending = false;
+      }
+
       timer?.cancel();
       soFar = collect(value, soFar);
+      hasPending = true;
       if (timer == null && leading) {
         emittedLatestAsLeading = true;
-        sink.add(soFar as S);
+        emit();
       } else {
         emittedLatestAsLeading = false;
       }
       timer = Timer(duration, () {
-        if (trailing && !emittedLatestAsLeading) sink.add(soFar as S);
-        if (shouldClose) {
-          sink.close();
-        }
-        soFar = null;
+        if (trailing && !emittedLatestAsLeading) emit();
+        if (shouldClose) sink.close();
         timer = null;
       });
     }, onDone: (EventSink<S> sink) {
-      if (soFar != null && trailing) {
+      if (hasPending && trailing) {
         shouldClose = true;
       } else {
         timer?.cancel();
