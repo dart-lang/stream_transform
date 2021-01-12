@@ -99,7 +99,7 @@ extension RateLimit<T> on Stream<T> {
   /// the period. If the source stream is consistently emitting events with less
   /// than [duration] between events, the time between events on the result
   /// stream will be [duration]. If the source stream closes the result stream
-  /// will wait to emit any pending events before closing.
+  /// will wait to emit a pending event before closing.
   ///
   /// For example:
   ///
