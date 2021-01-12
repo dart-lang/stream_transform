@@ -117,6 +117,13 @@ void main() {
           expect(isDone, true);
         });
 
+        test('closes immediately if there is no pending value', () async {
+          values.add(1);
+          await values.close();
+          await Future(() {});
+          expect(isDone, true);
+        });
+
         if (streamType == 'broadcast') {
           test('multiple listeners all get values', () async {
             var otherValues = <int>[];
