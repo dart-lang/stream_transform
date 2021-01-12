@@ -73,7 +73,7 @@ extension RateLimit<T> on Stream<T> {
   /// debounce period before closing. If there are no pending debounced events
   /// when the source stream closes the returned stream will close immediately.
   ///
-  /// To keep only the most recent event during the debounce perios see
+  /// To keep only the most recent event during the debounce period see
   /// [debounce].
   Stream<List<T>> debounceBuffer(Duration duration) =>
       _debounceAggregate(duration, _collect, leading: false, trailing: true);
@@ -81,9 +81,46 @@ extension RateLimit<T> on Stream<T> {
   /// Returns a stream which only emits once per [duration], at the beginning of
   /// the period.
   ///
-  /// Events emitted by the source stream within [duration] following an emitted
-  /// event will be discarded. Errors are always forwarded immediately.
-  Stream<T> throttle(Duration duration) {
+  /// No events will ever be emitted within [duration] of another event on the
+  /// result stream.
+  /// If the source stream is a broadcast stream, the result will be as well.
+  /// Errors are forwarded immediately.
+  ///
+  /// If [trailing] is `false`, source events emitted during the [duration]
+  /// period following a result event are discarded. The result stream will not
+  /// emit an event until the source stream emits an event following the
+  /// throttled period. If the source stream is consistently emitting events
+  /// with less than [duration] between events, the time between events on the
+  /// result stream may still be more than [duration]. The result stream will
+  /// close immediately when the source stream closes.
+  ///
+  /// If [trailing] is `true`, the latest source event emitted during the
+  /// [duration] period following an result event is held and emitted following
+  /// the period. If the source stream is consistently emitting events with less
+  /// than [duration] between events, the time between events on the result
+  /// stream will be [duration]. If the source stream closes the result stream
+  /// will wait to emit a pending event before closing.
+  ///
+  /// For example:
+  ///
+  ///     source.throtte(Duration(seconds: 6));
+  ///
+  ///     source: 1-2-3---4-5-6---7-8-|
+  ///     result: 1-------4-------7---|
+  ///
+  ///     source.throttle(Duration(seconds: 6), trailing: true);
+  ///
+  ///     source: 1-2-3---4-5----6--|
+  ///     result: 1-----3-----5-----6|
+  ///
+  ///     source.throttle(Duration(seconds: 6), trailing: true);
+  ///
+  ///     source: 1-2-----------3|
+  ///     result: 1-----2-------3|
+  Stream<T> throttle(Duration duration, {bool trailing = false}) =>
+      trailing ? _throttleTrailing(duration) : _throttle(duration);
+
+  Stream<T> _throttle(Duration duration) {
     Timer? timer;
 
     return transformByHandlers(onData: (data, sink) {
@@ -93,6 +130,43 @@ extension RateLimit<T> on Stream<T> {
           timer = null;
         });
       }
+    });
+  }
+
+  Stream<T> _throttleTrailing(Duration duration) {
+    Timer? timer;
+    T? pending;
+    var hasPending = false;
+    var isDone = false;
+
+    return transformByHandlers(onData: (data, sink) {
+      void onTimer() {
+        if (hasPending) {
+          sink.add(pending as T);
+          if (isDone) {
+            sink.close();
+          } else {
+            timer = Timer(duration, onTimer);
+            hasPending = false;
+            pending = null;
+          }
+        } else {
+          timer = null;
+        }
+      }
+
+      if (timer == null) {
+        sink.add(data);
+        timer = Timer(duration, onTimer);
+      } else {
+        hasPending = true;
+        pending = data;
+      }
+    }, onDone: (sink) {
+      isDone = true;
+      if (hasPending) return; // Will be closed by timer.
+      timer?.cancel();
+      timer = null;
     });
   }
 
