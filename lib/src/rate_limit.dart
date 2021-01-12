@@ -165,6 +165,7 @@ extension RateLimit<T> on Stream<T> {
     }, onDone: (sink) {
       isDone = true;
       if (hasPending) return; // Will be closed by timer.
+      sink.close();
       timer?.cancel();
       timer = null;
     });
