@@ -1,7 +1,7 @@
 name: stream_transform
 description: A collection of utilities to transform and manipulate streams.
 homepage: https://github.com/dart-lang/stream_transform
-version: 2.0.0-nullsafety.0-dev
+version: 2.0.0-nullsafety.0
 
 environment:
   sdk: ">=2.12.0-0 <3.0.0"
