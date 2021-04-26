@@ -4,9 +4,8 @@
 
 import 'dart:async';
 
-import 'package:test/test.dart';
-
 import 'package:stream_transform/src/from_handlers.dart';
+import 'package:test/test.dart';
 
 void main() {
   late StreamController<int> values;

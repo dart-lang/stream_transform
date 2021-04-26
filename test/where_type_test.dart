@@ -4,9 +4,8 @@
 
 import 'dart:async';
 
-import 'package:test/test.dart';
-
 import 'package:stream_transform/stream_transform.dart';
+import 'package:test/test.dart';
 
 void main() {
   test('forwards only events that match the type', () async {
