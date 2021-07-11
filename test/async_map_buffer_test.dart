@@ -71,7 +71,9 @@ void main() {
       test('buffers values while work is ongoing', () async {
         values.add(1);
         await Future(() {});
-        values..add(2)..add(3);
+        values
+          ..add(2)
+          ..add(3);
         await Future(() {});
         finishWork!.complete('');
         await Future(() {});

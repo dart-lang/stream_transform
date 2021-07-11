@@ -39,8 +39,14 @@ void main() {
     var filtered = values.stream.asyncWhere((e) async => e > 2);
     var firstValues = [];
     var secondValues = [];
-    filtered..listen(firstValues.add)..listen(secondValues.add);
-    values..add(1)..add(2)..add(3)..add(4);
+    filtered
+      ..listen(firstValues.add)
+      ..listen(secondValues.add);
+    values
+      ..add(1)
+      ..add(2)
+      ..add(3)
+      ..add(4);
     await Future(() {});
     expect(firstValues, [3, 4]);
     expect(secondValues, [3, 4]);

@@ -61,7 +61,9 @@ void main() {
         });
 
         test('interleaves events from sub streams', () async {
-          outerController..add(1)..add(2);
+          outerController
+            ..add(1)
+            ..add(2);
           await Future<void>(() {});
           expect(emittedValues, isEmpty);
           expect(innerControllers, hasLength(2));
@@ -79,7 +81,9 @@ void main() {
         });
 
         test('forwards errors from inner streams', () async {
-          outerController..add(1)..add(2);
+          outerController
+            ..add(1)
+            ..add(2);
           await Future<void>(() {});
           innerControllers[0].addError('Error 1');
           innerControllers[1].addError('Error 2');
@@ -108,7 +112,9 @@ void main() {
           // A single subscription inner stream in a broadcast outer stream is
           // not canceled.
           test('cancels inner subscriptions if output canceled', () async {
-            outerController..add(1)..add(2);
+            outerController
+              ..add(1)
+              ..add(2);
             await Future<void>(() {});
             await subscription.cancel();
             expect(innerCanceled, [true, true]);
@@ -164,7 +170,9 @@ void main() {
           });
 
           test('can cancel and relisten', () async {
-            outerController..add(1)..add(2);
+            outerController
+              ..add(1)
+              ..add(2);
             await Future(() {});
             innerControllers[0].add('First');
             innerControllers[1].add('Second');

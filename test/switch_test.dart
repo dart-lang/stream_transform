@@ -49,12 +49,16 @@ void main() {
         test('forwards events', () async {
           outer.add(first.stream);
           await Future(() {});
-          first..add(1)..add(2);
+          first
+            ..add(1)
+            ..add(2);
           await Future(() {});
 
           outer.add(second.stream);
           await Future(() {});
-          second..add(3)..add(4);
+          second
+            ..add(3)
+            ..add(4);
           await Future(() {});
 
           expect(emittedValues, [1, 2, 3, 4]);
