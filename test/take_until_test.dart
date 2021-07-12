@@ -44,7 +44,9 @@ void main() {
       });
 
       test('lets values through before trigger', () async {
-        values..add(1)..add(2);
+        values
+          ..add(1)
+          ..add(2);
         await Future(() {});
         expect(emittedValues, [1, 2]);
       });
@@ -76,7 +78,9 @@ void main() {
         test('multiple listeners all get values', () async {
           var otherValues = [];
           transformed.listen(otherValues.add);
-          values..add(1)..add(2);
+          values
+            ..add(1)
+            ..add(2);
           await Future(() {});
           expect(emittedValues, [1, 2]);
           expect(otherValues, [1, 2]);

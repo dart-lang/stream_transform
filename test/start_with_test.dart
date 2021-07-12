@@ -32,7 +32,9 @@ void main() {
       setUp(() => setupForStreamType(streamType, (s) => s.startWith(1)));
 
       test('outputs all values', () async {
-        values..add(2)..add(3);
+        values
+          ..add(2)
+          ..add(3);
         await Future(() {});
         expect(emittedValues, [1, 2, 3]);
       });
@@ -70,7 +72,9 @@ void main() {
       });
 
       test('outputs all values', () async {
-        values..add(3)..add(4);
+        values
+          ..add(3)
+          ..add(4);
         await Future(() {});
         expect(emittedValues, [1, 2, 3, 4]);
       });
@@ -109,9 +113,13 @@ void main() {
         });
 
         test('outputs all values', () async {
-          starting..add(1)..add(2);
+          starting
+            ..add(1)
+            ..add(2);
           await starting.close();
-          values..add(3)..add(4);
+          values
+            ..add(3)
+            ..add(4);
           await Future(() {});
           expect(emittedValues, [1, 2, 3, 4]);
         });
@@ -132,13 +140,17 @@ void main() {
             subscription = transformed.listen(emittedValues.add);
             starting.add(2);
             await starting.close();
-            values..add(3)..add(4);
+            values
+              ..add(3)
+              ..add(4);
             await Future(() {});
             expect(emittedValues, [1, 2, 3, 4]);
           });
 
           test('can cancel and relisten during values', () async {
-            starting..add(1)..add(2);
+            starting
+              ..add(1)
+              ..add(2);
             await starting.close();
             values.add(3);
             await Future(() {});

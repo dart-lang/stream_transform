@@ -40,7 +40,9 @@ void main() {
         });
 
         test('swallows values that come faster than duration', () async {
-          values..add(1)..add(2);
+          values
+            ..add(1)
+            ..add(2);
           await values.close();
           await waitForTimer(5);
           expect(emittedValues, [1]);
@@ -91,14 +93,19 @@ void main() {
         });
 
         test('emits both first and last in a period', () async {
-          values..add(1)..add(2);
+          values
+            ..add(1)
+            ..add(2);
           await values.close();
           await waitForTimer(5);
           expect(emittedValues, [1, 2]);
         });
 
         test('swallows values that are not the latest in a period', () async {
-          values..add(1)..add(2)..add(3);
+          values
+            ..add(1)
+            ..add(2)
+            ..add(3);
           await values.close();
           await waitForTimer(5);
           expect(emittedValues, [1, 3]);
@@ -106,7 +113,9 @@ void main() {
 
         test('waits to output the last value even if the stream closes',
             () async {
-          values..add(1)..add(2);
+          values
+            ..add(1)
+            ..add(2);
           await values.close();
           await Future(() {});
           expect(isDone, false);
@@ -128,7 +137,9 @@ void main() {
           test('multiple listeners all get values', () async {
             var otherValues = <int>[];
             transformed.listen(otherValues.add);
-            values..add(1)..add(2);
+            values
+              ..add(1)
+              ..add(2);
             await Future(() {});
             expect(emittedValues, [1]);
             expect(otherValues, [1]);

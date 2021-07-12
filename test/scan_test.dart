@@ -78,7 +78,9 @@ void main() {
 
         unawaited(source.stream.scan(0, combine).forEach(results.add));
 
-        source..add(1)..add(2);
+        source
+          ..add(1)
+          ..add(2);
         await Future(() {});
         expect(calledWith, [1]);
         expect(results, isEmpty);

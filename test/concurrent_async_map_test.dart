@@ -59,7 +59,10 @@ void main() {
       });
 
       test('allows calls to convert before the last one finished', () async {
-        controller..add(1)..add(2)..add(3);
+        controller
+          ..add(1)
+          ..add(2)
+          ..add(3);
         await Future(() {});
         expect(values, [1, 2, 3]);
       });

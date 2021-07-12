@@ -50,10 +50,14 @@ void main() {
         });
 
         test('adds all values from both streams', () async {
-          first..add(1)..add(2);
+          first
+            ..add(1)
+            ..add(2);
           await first.close();
           await Future(() {});
-          second..add(3)..add(4);
+          second
+            ..add(3)
+            ..add(4);
           await Future(() {});
           expect(emittedValues, [1, 2, 3, 4]);
         });

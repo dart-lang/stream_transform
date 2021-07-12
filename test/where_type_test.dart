@@ -25,8 +25,14 @@ void main() {
     var filtered = values.stream.whereType<String>();
     var firstValues = [];
     var secondValues = [];
-    filtered..listen(firstValues.add)..listen(secondValues.add);
-    values..add(1)..add('a')..add(2)..add('b');
+    filtered
+      ..listen(firstValues.add)
+      ..listen(secondValues.add);
+    values
+      ..add(1)
+      ..add('a')
+      ..add(2)
+      ..add('b');
     await Future(() {});
     expect(firstValues, ['a', 'b']);
     expect(secondValues, ['a', 'b']);
@@ -40,7 +46,9 @@ void main() {
     filtered
       ..listen(null, onDone: () => firstDone = true)
       ..listen(null, onDone: () => secondDone = true);
-    values..add(1)..add('a');
+    values
+      ..add(1)
+      ..add('a');
     await values.close();
     expect(firstDone, true);
     expect(secondDone, true);
