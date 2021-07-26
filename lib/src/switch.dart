@@ -62,8 +62,8 @@ extension SwitchLatest<T> on Stream<Stream<T>> {
       var outerStreamDone = false;
 
       final outerSubscription = listen(
-          (innerStream) {
-            innerSubscription?.cancel();
+          (innerStream) async {
+            await innerSubscription?.cancel();
             innerSubscription = innerStream.listen(controller.add,
                 onError: controller.addError, onDone: () {
               innerSubscription = null;

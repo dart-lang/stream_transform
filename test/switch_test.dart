@@ -113,6 +113,23 @@ void main() {
           expect(firstCanceled, true);
         });
 
+        test('waits for cancel before listening to subsequent stream',
+            () async {
+          var cancelWork = Completer<void>();
+          first.onCancel = () => cancelWork.future;
+          outer.add(first.stream);
+          await Future(() {});
+
+          var cancelDone = false;
+          second.onListen = expectAsync0(() {
+            expect(cancelDone, true);
+          });
+          outer.add(second.stream);
+          await Future(() {});
+          cancelWork.complete();
+          cancelDone = true;
+        });
+
         test('cancels listener on current and outer stream on cancel',
             () async {
           outer.add(first.stream);
