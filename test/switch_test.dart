@@ -128,7 +128,10 @@ void main() {
           await Future(() {});
           cancelWork.complete();
           cancelDone = true;
-        });
+        },
+            skip: innerType == 'broadcast'
+                ? 'Broadcast streams do not forward cancelation future'
+                : false);
 
         test('cancels listener on current and outer stream on cancel',
             () async {
