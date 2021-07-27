@@ -61,20 +61,38 @@ extension SwitchLatest<T> on Stream<Stream<T>> {
       StreamSubscription<T>? innerSubscription;
       var outerStreamDone = false;
 
-      final outerSubscription = listen(
-          (innerStream) {
-            innerSubscription?.cancel();
-            innerSubscription = innerStream.listen(controller.add,
-                onError: controller.addError, onDone: () {
-              innerSubscription = null;
-              if (outerStreamDone) controller.close();
-            });
-          },
-          onError: controller.addError,
-          onDone: () {
-            outerStreamDone = true;
-            if (innerSubscription == null) controller.close();
+      void listenToInnerStream(Stream<T> innerStream) {
+        assert(innerSubscription == null);
+        var subscription = innerStream
+            .listen(controller.add, onError: controller.addError, onDone: () {
+          innerSubscription = null;
+          if (outerStreamDone) controller.close();
+        });
+        // If a pause happens during an innerSubscription.cancel,
+        // we still listen to the next stream when the cancel is done.
+        // Then we immediately pause it again here.
+        if (controller.isPaused) subscription.pause();
+        innerSubscription = subscription;
+      }
+
+      final outerSubscription =
+          listen(null, onError: controller.addError, onDone: () {
+        outerStreamDone = true;
+        if (innerSubscription == null) controller.close();
+      });
+      outerSubscription.onData((innerStream) {
+        var currentSubscription = innerSubscription;
+        if (currentSubscription != null) {
+          innerSubscription = null;
+          outerSubscription.pause();
+          currentSubscription.cancel().whenComplete(() {
+            outerSubscription.resume();
+            listenToInnerStream(innerStream);
           });
+          return;
+        }
+        listenToInnerStream(innerStream);
+      });
       if (!isBroadcast) {
         controller
           ..onPause = () {
