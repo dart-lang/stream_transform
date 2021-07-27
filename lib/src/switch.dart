@@ -60,15 +60,55 @@ extension SwitchLatest<T> on Stream<Stream<T>> {
     controller.onListen = () {
       StreamSubscription<T>? innerSubscription;
       var outerStreamDone = false;
+      Stream<T>? pendingStream;
+
+      void listenToInnerStream(Stream<T> innerStream) {
+        assert(innerSubscription == null);
+        assert(pendingStream == null);
+        var subscription = innerStream
+            .listen(controller.add, onError: controller.addError, onDone: () {
+          innerSubscription = null;
+          if (outerStreamDone) controller.close();
+        });
+        // If a pause happens during an innerSubscription.cancel,
+        // we still listen to the next stream when the cancel is done.
+        // Then we immediately pause it again here.
+        if (controller.isPaused) subscription.pause();
+        innerSubscription = subscription;
+      }
 
       final outerSubscription = listen(
           (innerStream) {
-            innerSubscription?.cancel();
-            innerSubscription = innerStream.listen(controller.add,
-                onError: controller.addError, onDone: () {
+            // In one of three states:
+            // * No current inner stream, no pending stream.
+            // * Currently active inner stream, no pending stream.
+            // * No current active stream (being cancelled), pending stream.
+            if (pendingStream != null) {
+              assert(innerSubscription == null);
+              // A second (or later) stream arrived while we were cancelling the
+              // most recent active inner stream.
+              // Make that the next stream to listen to.
+              pendingStream = innerStream;
+              return;
+            }
+            var subscription = innerSubscription;
+            if (subscription != null) {
+              // Cancelling an existing subscription.
+              // Clear the subscription and store next stream cancelled.
               innerSubscription = null;
-              if (outerStreamDone) controller.close();
-            });
+              pendingStream = innerStream;
+              subscription.cancel().whenComplete(() {
+                var nextStream = pendingStream;
+                pendingStream = null;
+                if (nextStream != null) {
+                  // Can be null if result stream is cancelled while
+                  // waiting for inner stream to cancel.
+                  listenToInnerStream(nextStream);
+                }
+              });
+              return;
+            }
+            listenToInnerStream(innerStream);
           },
           onError: controller.addError,
           onDone: () {
@@ -94,6 +134,7 @@ extension SwitchLatest<T> on Stream<Stream<T>> {
           // Handle opt-out nulls
           ..removeWhere((Object? f) => f == null);
         if (cancels.isEmpty) return null;
+        pendingStream = null;
         return Future.wait(cancels).then((_) => null);
       };
     };
