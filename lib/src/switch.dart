@@ -47,11 +47,12 @@ extension Switch<T> on Stream<T> {
 extension SwitchLatest<T> on Stream<Stream<T>> {
   /// Emits values from the most recently emitted Stream.
   ///
-  /// When the source emits a stream the output will switch to emitting events
+  /// When the source emits a stream, the output will switch to emitting events
   /// from that stream.
   ///
-  /// If the source stream is a broadcast stream, the result stream will be as
-  /// well, regardless of the types of streams emitted.
+  /// Whether the source stream is a single-subscription stream or a
+  /// broadcast stream, the result stream will be the same kind of stream,
+  /// regardless of the types of streams emitted.
   Stream<T> switchLatest() {
     var controller = isBroadcast
         ? StreamController<T>.broadcast(sync: true)
@@ -61,20 +62,56 @@ extension SwitchLatest<T> on Stream<Stream<T>> {
       StreamSubscription<T>? innerSubscription;
       var outerStreamDone = false;
 
-      final outerSubscription = listen(
-          (innerStream) {
-            innerSubscription?.cancel();
-            innerSubscription = innerStream.listen(controller.add,
-                onError: controller.addError, onDone: () {
-              innerSubscription = null;
-              if (outerStreamDone) controller.close();
+      void listenToInnerStream(Stream<T> innerStream) {
+        assert(innerSubscription == null);
+        var subscription = innerStream
+            .listen(controller.add, onError: controller.addError, onDone: () {
+          innerSubscription = null;
+          if (outerStreamDone) controller.close();
+        });
+        // If a pause happens during an innerSubscription.cancel,
+        // we still listen to the next stream when the cancel is done.
+        // Then we immediately pause it again here.
+        if (controller.isPaused) subscription.pause();
+        innerSubscription = subscription;
+      }
+
+      var addError = controller.addError;
+      final outerSubscription = listen(null, onError: addError, onDone: () {
+        outerStreamDone = true;
+        if (innerSubscription == null) controller.close();
+      });
+      outerSubscription.onData((innerStream) {
+        var currentSubscription = innerSubscription;
+        if (currentSubscription != null) {
+          innerSubscription = null;
+          try {
+            currentSubscription.cancel().catchError(addError).whenComplete(() {
+              if (!isBroadcast && !controller.hasListener) {
+                // Result single-subscription stream subscription was cancelled
+                // while waiting for previous innerStream cancel.
+                //
+                // Ensure that the last received stream is also listened to and
+                // cancelled, then do nothing further.
+                // TODO(lrn): When SDK 2.14 is available, use `.ignore()`.
+                innerStream
+                    .listen(null)
+                    .cancel()
+                    .then(_ignore, onError: _ignore);
+                return;
+              }
+              outerSubscription.resume();
+              listenToInnerStream(innerStream);
             });
-          },
-          onError: controller.addError,
-          onDone: () {
-            outerStreamDone = true;
-            if (innerSubscription == null) controller.close();
-          });
+            outerSubscription.pause();
+            return;
+          } catch (error, stack) {
+            // The cancel call threw synchronously.
+            controller.addError(error, stack);
+          }
+        }
+        listenToInnerStream(innerStream);
+      });
       if (!isBroadcast) {
         controller
           ..onPause = () {
@@ -87,16 +124,20 @@ extension SwitchLatest<T> on Stream<Stream<T>> {
           };
       }
       controller.onCancel = () {
+        var _innerSubscription = innerSubscription;
         var cancels = [
           if (!outerStreamDone) outerSubscription.cancel(),
-          if (innerSubscription != null) innerSubscription!.cancel(),
+          if (_innerSubscription != null) _innerSubscription.cancel(),
         ]
           // Handle opt-out nulls
           ..removeWhere((Object? f) => f == null);
         if (cancels.isEmpty) return null;
-        return Future.wait(cancels).then((_) => null);
+        return Future.wait(cancels).then(_ignore);
       };
     };
     return controller.stream;
   }
 }
+
+/// Helper function to ignore future callback
+void _ignore(_, [__]) {}

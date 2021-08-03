@@ -1,10 +1,10 @@
 name: stream_transform
 description: A collection of utilities to transform and manipulate streams.
 repository: https://github.com/dart-lang/stream_transform
-version: 2.0.0
+version: 2.0.1-dev
 
 environment:
-  sdk: ">=2.12.0-0 <3.0.0"
+  sdk: ">=2.12.0 <3.0.0"
 
 dev_dependencies:
   async: ^2.5.0

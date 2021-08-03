@@ -15,6 +15,7 @@ void main() {
       group('Outer type: [$outerType], Inner type: [$innerType]', () {
         late StreamController<int> first;
         late StreamController<int> second;
+        late StreamController<int> third;
         late StreamController<Stream<int>> outer;
 
         late List<int> emittedValues;
@@ -36,6 +37,7 @@ void main() {
               firstCanceled = true;
             };
           second = createController(innerType);
+          third = createController(innerType);
           emittedValues = [];
           errors = [];
           isDone = false;
@@ -112,6 +114,69 @@ void main() {
           await Future(() {});
           expect(firstCanceled, true);
         });
+
+        if (innerType != 'broadcast') {
+          test('waits for cancel before listening to subsequent stream',
+              () async {
+            var cancelWork = Completer<void>();
+            first.onCancel = () => cancelWork.future;
+            outer.add(first.stream);
+            await Future(() {});
+
+            var cancelDone = false;
+            second.onListen = expectAsync0(() {
+              expect(cancelDone, true);
+            });
+            outer.add(second.stream);
+            await Future(() {});
+            cancelWork.complete();
+            cancelDone = true;
+          });
+
+          test('all streams are listened to, even while cancelling', () async {
+            var cancelWork = Completer<void>();
+            first.onCancel = () => cancelWork.future;
+            outer.add(first.stream);
+            await Future(() {});
+
+            var cancelDone = false;
+            second.onListen = expectAsync0(() {
+              expect(cancelDone, true);
+            });
+            third.onListen = expectAsync0(() {
+              expect(cancelDone, true);
+            });
+            outer
+              ..add(second.stream)
+              ..add(third.stream);
+            await Future(() {});
+            cancelWork.complete();
+            cancelDone = true;
+          });
+        }
+
+        if (outerType != 'broadcast' && innerType != 'broadcast') {
+          test('pausing while cancelling an inner stream is respected',
+              () async {
+            var cancelWork = Completer<void>();
+            first.onCancel = () => cancelWork.future;
+            outer.add(first.stream);
+            await Future(() {});
+
+            var cancelDone = false;
+            second.onListen = expectAsync0(() {
+              expect(cancelDone, true);
+            });
+            outer.add(second.stream);
+            await Future(() {});
+            subscription.pause();
+            cancelWork.complete();
+            cancelDone = true;
+            await Future(() {});
+            expect(second.isPaused, true);
+            subscription.resume();
+          });
+        }
 
         test('cancels listener on current and outer stream on cancel',
             () async {

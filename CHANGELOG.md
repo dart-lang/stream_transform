@@ -1,3 +1,8 @@
+## 2.0.1-dev
+
+- Wait for the future returned from `StreamSubscription.cancel()` before
+  listening to the subsequent stream in `switchLatest` and `switchMap`.
+
 ## 2.0.0
 
 - Migrate to null safety.
