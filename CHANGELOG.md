@@ -1,5 +1,6 @@
 ## 2.0.1-dev
 
+- Require Dart 2.14 or greater.
 - Wait for the future returned from `StreamSubscription.cancel()` before
   listening to the subsequent stream in `switchLatest` and `switchMap`.
 
