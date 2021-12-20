@@ -81,36 +81,31 @@ extension SwitchLatest<T> on Stream<Stream<T>> {
         outerStreamDone = true;
         if (innerSubscription == null) controller.close();
       });
-      outerSubscription.onData((innerStream) {
+      outerSubscription.onData((innerStream) async {
         var currentSubscription = innerSubscription;
-        if (currentSubscription != null) {
-          innerSubscription = null;
-          try {
-            currentSubscription.cancel().catchError(addError).whenComplete(() {
-              if (!isBroadcast && !controller.hasListener) {
-                // Result single-subscription stream subscription was cancelled
-                // while waiting for previous innerStream cancel.
-                //
-                // Ensure that the last received stream is also listened to and
-                // cancelled, then do nothing further.
-                // TODO(lrn): When SDK 2.14 is available, use `.ignore()`.
-                innerStream
-                    .listen(null)
-                    .cancel()
-                    .then(_ignore, onError: _ignore);
-                return;
-              }
-              outerSubscription.resume();
-              listenToInnerStream(innerStream);
-            });
-            outerSubscription.pause();
-            return;
-          } catch (error, stack) {
-            // The cancel call threw synchronously.
-            controller.addError(error, stack);
+        if (currentSubscription == null) {
+          listenToInnerStream(innerStream);
+          return;
+        }
+        innerSubscription = null;
+        outerSubscription.pause();
+        try {
+          await currentSubscription.cancel();
+        } catch (error, stack) {
+          controller.addError(error, stack);
+        } finally {
+          if (!isBroadcast && !controller.hasListener) {
+            // Result single-subscription stream subscription was cancelled
+            // while waiting for previous innerStream cancel.
+            //
+            // Ensure that the last received stream is also listened to and
+            // cancelled, then do nothing further.
+            innerStream.listen(null).cancel().ignore();
+          } else {
+            outerSubscription.resume();
+            listenToInnerStream(innerStream);
           }
         }
-        listenToInnerStream(innerStream);
       });
       if (!isBroadcast) {
         controller
