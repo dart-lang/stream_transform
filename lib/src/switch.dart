@@ -4,7 +4,7 @@
 
 import 'dart:async';
 
-import 'package:stream_transform/src/merge.dart';
+import 'async_expand.dart';
 
 /// A utility to take events from the most recent sub stream returned by a
 /// callback.
