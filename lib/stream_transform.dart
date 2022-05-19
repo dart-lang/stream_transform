@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+export 'src/async_expand.dart';
 export 'src/async_map.dart';
 export 'src/combine_latest.dart';
 export 'src/concatenate.dart';
