@@ -124,12 +124,6 @@ No equivalent?            |                                                     
 [debounceBuffer]:https://pub.dev/documentation/stream_transform/latest/stream_transform/RateLimit/debounceBuffer.html
 [debounce]:https://pub.dev/documentation/stream_transform/latest/stream_transform/RateLimit/debounce.html
 [throttle]:https://pub.dev/documentation/stream_transform/latest/stream_transform/RateLimit/throttle.html
-[^1]: `stream_transform` `buffer` is closest to
-    [`buffer(bufferClosingSelector)`][rx_buffer], except where the trigger
-    emits while no events are buffered. ReactiveX will immediately emit and
-    empty list, while `stream_transform` will wait and emit a single element
-    list when the next event occurs. You can think of it like
-    `stream_transform` implemeting the "long polling" version of `buffer`.
 
 # Getting a `StreamTransformer` instance
 
