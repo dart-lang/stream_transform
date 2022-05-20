@@ -5,41 +5,54 @@
 import 'dart:async';
 
 extension AggregateSample<T> on Stream<T> {
-  /// Aggregates values and emits when it sees a value on [trigger].
+  /// Aggregates values and polls the result when there is an event emitted by
+  /// [trigger].
   ///
-  /// If there are no pending values when [trigger] emits, the next value on the
-  /// source Stream will be passed to [aggregate] and emitted on the result
-  /// stream immediately. Otherwise, the pending values are released when
-  /// [trigger] emits.
+  /// If [longPoll] is `false`, then an event on [trigger] when there is no
+  /// pending aggregated result will immediately invoke [onEmpty] with a sink
+  /// for the result stream.
+  /// If [longPoll] is `true` (the default), then an event on [trigger] when
+  /// there are is no pending aggregated result will cause the next source event
+  /// to immediately flow to the result stream as the aggregate conversion of
+  /// the single element. If [longPoll] is `true` [onEmpty] is never used.
+  ///
+  /// The result stream will close as soon as there is a guarantee it will not
+  /// emit any more events. There will not be any more events emitted if:
+  /// - [trigger] is closed and there is no waiting long poll.
+  /// - Or, the source stream is closed and there are no buffered events.
   ///
   /// Errors from the source stream or the trigger are immediately forwarded to
   /// the output.
   Stream<S> aggregateSample<S>(
-      Stream<void> trigger, S Function(T, S?) aggregate) {
+      {required Stream<void> trigger,
+      required S Function(T, S?) aggregate,
+      required bool longPoll,
+      required void Function(Sink<S>) onEmpty}) {
     var controller = isBroadcast
         ? StreamController<S>.broadcast(sync: true)
         : StreamController<S>(sync: true);
 
     S? currentResults;
     var hasCurrentResults = false;
-    var waitingForTrigger = true;
+    var activeLongPoll = false;
     var isTriggerDone = false;
     var isValueDone = false;
     StreamSubscription<T>? valueSub;
     StreamSubscription<void>? triggerSub;
 
-    void emit() {
-      controller.add(currentResults as S);
+    void emit(S results) {
+      controller.add(results);
       currentResults = null;
       hasCurrentResults = false;
-      waitingForTrigger = true;
+      activeLongPoll = false;
     }
 
     void onValue(T value) {
       currentResults = aggregate(value, currentResults);
       hasCurrentResults = true;
+      if (!longPoll) return;
 
-      if (!waitingForTrigger) emit();
+      if (activeLongPoll) emit(currentResults as S);
 
       if (isTriggerDone) {
         valueSub!.cancel();
@@ -56,9 +69,13 @@ extension AggregateSample<T> on Stream<T> {
     }
 
     void onTrigger(_) {
-      waitingForTrigger = false;
-
-      if (hasCurrentResults) emit();
+      if (hasCurrentResults) {
+        emit(currentResults as S);
+      } else if (longPoll) {
+        activeLongPoll = true;
+      } else {
+        onEmpty(controller);
+      }
 
       if (isValueDone) {
         triggerSub!.cancel();
@@ -68,7 +85,7 @@ extension AggregateSample<T> on Stream<T> {
 
     void onTriggerDone() {
       isTriggerDone = true;
-      if (waitingForTrigger) {
+      if (!activeLongPoll) {
         valueSub?.cancel();
         controller.close();
       }
