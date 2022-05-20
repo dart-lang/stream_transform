@@ -79,6 +79,56 @@ Blocks events for a duration after an event is successfully emitted.
 
 Like `Iterable.whereType` for a stream.
 
+### Comparison to Rx Operators
+
+The semantics and naming in this package have some overlap, and some conflict,
+with the [ReactiveX](https://reactivex.io/) suite of libraries. Some of the
+conflict is intentional - Dart `Stream` predates `Observable` and coherence with
+the Dart ecosystem semantics and naming is a strictly higher priority than
+consistency with ReactiveX.
+
+Rx Operator Category      | variation                                              | `stream_transform`
+------------------------- | ------------------------------------------------------ | ------------------
+[`sample`][rx_sample]     | `sample/throttleLast(Duration)`                        | No equivalent
+&#x200B;                  | `throttleFirst(Duration)`                              | [`throttle`][throttle]
+&#x200B;                  | `sample(Observable)`                                   | No equivalent
+[`debounce`][rx_debounce] | `debounce/throttleWithTimeout(Duration)`               | [`debounce`][debounce]
+&#x200B;                  | `debounce(Observable)`                                 | No equivalent
+[`buffer`][rx_buffer]     | `buffer(boundary)`, `bufferWithTime`,`bufferWithCount` | No equivalent
+&#x200B;                  | `buffer(boundaryClosingSelector)`                      | No equivalent[^1]
+RxJs extensions           | [`audit(callback)`][rxjs_audit]                        | No equivalent
+&#x200B;                  | [`auditTime(Duration)`][rxjs_auditTime]                | [`audit`][audit]
+&#x200B;                  | [`exhaustMap`][rxjs_exhaustMap]                        | No equivalent
+&#x200B;                  | [`throttleTime(trailing: true)`][rxjs_throttleTime]    | `throttle(trailing: true)`
+&#x200B;                  | `throttleTime(leading: false, trailing: true)`         | No equivalent
+No equivalent?            |                                                        | [`asyncMapBuffer`][asyncMapBuffer]
+&#x200B;                  |                                                        | [`asyncMapSample`][asyncMapSample]
+&#x200B;                  |                                                        | [`buffer`][buffer][^1]
+&#x200B;                  |                                                        | [`debounceBuffer`][debounceBuffer]
+&#x200B;                  |                                                        | `debounce(leading: true, trailing: false)`
+&#x200B;                  |                                                        | `debounce(leading: true, trailing: true)`
+
+[rx_sample]:https://reactivex.io/documentation/operators/sample.html
+[rx_debounce]:https://reactivex.io/documentation/operators/debounce.html
+[rx_buffer]:https://reactivex.io/documentation/operators/buffer.html
+[rxjs_audit]:https://rxjs.dev/api/operators/audit
+[rxjs_auditTime]:https://rxjs.dev/api/operators/auditTime
+[rxjs_throttleTime]:https://rxjs.dev/api/operators/throttleTime
+[rxjs_exhaustMap]:https://rxjs.dev/api/operators/exhaustMap
+[asyncMapBuffer]:https://pub.dev/documentation/stream_transform/latest/stream_transform/AsyncMap/asyncMapBuffer.html
+[asyncMapSample]:https://pub.dev/documentation/stream_transform/latest/stream_transform/AsyncMap/asyncMapSample.html
+[audit]:https://pub.dev/documentation/stream_transform/latest/stream_transform/RateLimit/audit.html
+[buffer]:https://pub.dev/documentation/stream_transform/latest/stream_transform/RateLimit/buffer.html
+[debounceBuffer]:https://pub.dev/documentation/stream_transform/latest/stream_transform/RateLimit/debounceBuffer.html
+[debounce]:https://pub.dev/documentation/stream_transform/latest/stream_transform/RateLimit/debounce.html
+[throttle]:https://pub.dev/documentation/stream_transform/latest/stream_transform/RateLimit/throttle.html
+[^1]: `stream_transform` `buffer` is closest to
+    [`buffer(bufferClosingSelector)`][rx_buffer], except where the trigger
+    emits while no events are buffered. ReactiveX will immediately emit and
+    empty list, while `stream_transform` will wait and emit a single element
+    list when the next event occurs. You can think of it like
+    `stream_transform` implemeting the "long polling" version of `buffer`.
+
 # Getting a `StreamTransformer` instance
 
 It may be useful to pass an instance of `StreamTransformer` so that it can be
