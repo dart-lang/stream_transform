@@ -89,7 +89,7 @@ consistency with ReactiveX.
 
 Rx Operator Category      | variation                                              | `stream_transform`
 ------------------------- | ------------------------------------------------------ | ------------------
-[`sample`][rx_sample]     | `sample/throttleLast(Duration)`                        | No equivalent `sample(Stream.periodic(Duration))`
+[`sample`][rx_sample]     | `sample/throttleLast(Duration)`                        | `sample(Stream.periodic(Duration), longPoll: false)`
 &#x200B;                  | `throttleFirst(Duration)`                              | [`throttle`][throttle]
 &#x200B;                  | `sample(Observable)`                                   | `sample(trigger, longPoll: false)`
 [`debounce`][rx_debounce] | `debounce/throttleWithTimeout(Duration)`               | [`debounce`][debounce]
