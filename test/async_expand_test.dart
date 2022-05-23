@@ -146,7 +146,7 @@ void main() {
         });
 
         if (outerType == 'broadcast') {
-          test('multiple listerns all get values', () async {
+          test('multiple listeners all get values', () async {
             var otherValues = <String>[];
             transformed.listen(otherValues.add);
             outerController.add(1);
@@ -180,13 +180,15 @@ void main() {
             await subscription.cancel();
             innerControllers[0].add('Ignored');
             await Future(() {});
+
             subscription = transformed.listen(emittedValues.add);
-            innerControllers[0].add('Also ignored');
+            innerControllers[0].add('From prior stream');
             outerController.add(3);
             await Future(() {});
-            innerControllers[2].add('More');
+            innerControllers[2].add('From new stream');
             await Future(() {});
-            expect(emittedValues, ['First', 'Second', 'More']);
+            expect(emittedValues,
+                ['First', 'Second', 'From prior stream', 'From new stream']);
           });
         }
       });

@@ -3,6 +3,9 @@
 - Require Dart 2.14 or greater.
 - Wait for the future returned from `StreamSubscription.cancel()` before
   listening to the subsequent stream in `switchLatest` and `switchMap`.
+- Continue to forward events from ongoing streams in `concurrentAsyncExpand`
+  even if the result stream had no listeners for any period since the inner
+  stream started.
 
 ## 2.0.0
 

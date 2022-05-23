@@ -32,9 +32,8 @@ extension AsyncExpand<T> on Stream<T> {
   /// -  If [convert] returns a single subscription stream it may be listened to
   /// and never canceled.
   /// -  For any period of time where there are no listeners on the result
-  /// stream, any sub streams from previously emitted events will be ignored,
-  /// regardless of whether they emit further events after a listener is added
-  /// back.
+  /// stream, any event on the source stream is ignored and will not be passed
+  /// to [convert].
   ///
   /// See also:
   ///
@@ -45,41 +44,52 @@ extension AsyncExpand<T> on Stream<T> {
         ? StreamController<S>.broadcast(sync: true)
         : StreamController<S>(sync: true);
 
+    var outerStreamDone = false;
+    final subscriptions = <Stream<S>, StreamSubscription<S>>{};
+    void listen(Stream<S> stream) {
+      subscriptions[stream] =
+          stream.listen(controller.add, onError: controller.addError)
+            ..onDone(() {
+              subscriptions.remove(stream);
+              if (outerStreamDone && subscriptions.isEmpty) controller.close();
+            });
+    }
+
     controller.onListen = () {
-      final subscriptions = <StreamSubscription<dynamic>>[];
-      final outerSubscription = map(convert).listen((inner) {
-        if (isBroadcast && !inner.isBroadcast) {
-          inner = inner.asBroadcastStream();
+      assert(isBroadcast || subscriptions.isEmpty);
+      for (final stream in subscriptions.keys) {
+        if (stream.isBroadcast) {
+          listen(stream);
         }
-        final subscription =
-            inner.listen(controller.add, onError: controller.addError);
-        subscription.onDone(() {
-          subscriptions.remove(subscription);
-          if (subscriptions.isEmpty) controller.close();
-        });
-        subscriptions.add(subscription);
-      }, onError: controller.addError);
-      outerSubscription.onDone(() {
-        subscriptions.remove(outerSubscription);
+      }
+      final outerSubscription =
+          map(convert).listen(listen, onError: controller.addError, onDone: () {
+        outerStreamDone = true;
         if (subscriptions.isEmpty) controller.close();
       });
-      subscriptions.add(outerSubscription);
       if (!isBroadcast) {
         controller
           ..onPause = () {
-            for (final subscription in subscriptions) {
+            outerSubscription.pause();
+            for (final subscription in subscriptions.values) {
               subscription.pause();
             }
           }
           ..onResume = () {
-            for (final subscription in subscriptions) {
+            outerSubscription.resume();
+            for (final subscription in subscriptions.values) {
               subscription.resume();
             }
           };
       }
       controller.onCancel = () {
-        if (subscriptions.isEmpty) return null;
-        var cancels = [for (var s in subscriptions) s.cancel()]
+        final toCancel = {
+          if (!outerStreamDone) outerSubscription,
+          for (var entry in subscriptions.entries)
+            if (!isBroadcast || entry.key.isBroadcast) entry.value
+        };
+        if (toCancel.isEmpty) return null;
+        var cancels = [for (var s in toCancel) s.cancel()]
           // Handle opt-out nulls
           ..removeWhere((Object? f) => f == null);
         return Future.wait(cancels).then((_) => null);
