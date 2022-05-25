@@ -5,22 +5,33 @@
 import 'dart:async';
 
 extension AggregateSample<T> on Stream<T> {
-  /// Aggregates values and polls the result when there is an event emitted by
-  /// [trigger].
+  /// Computes a value based on sequences of events, then emits that value when
+  /// [trigger] emits an event.
   ///
-  /// If [longPoll] is `false`, then an event on [trigger] when there is no
-  /// pending aggregated result will immediately invoke [onEmpty] with a sink
-  /// for the result stream.
-  /// If [longPoll] is `true` (the default), then an event on [trigger] when
-  /// there are is no pending aggregated result will cause the next source event
-  /// to immediately flow to the result stream as the aggregate conversion of
-  /// the single element. If [longPoll] is `true` [onEmpty] is never used.
+  /// Every time this stream emits an event, an intermediate value is created
+  /// by combining the new event with the previous intermediate value, or with
+  /// `null` if there is no previous value, using the [aggregate] function.
+  ///
+  /// When [trigger] emits value, the returned stream emits the current
+  /// intermediate value and clears it.
+  ///
+  /// If [longPoll] is `false`, if there is no intermediate value when [trigger]
+  /// emits an event, the [onEmpty] function is called with a [Sink] which can
+  /// add events to the returned stream.
+  ///
+  /// If [longPoll] is `true`, and there is no intermediate value when [trigger]
+  /// emits one or more events, then the *next* event from this stream is
+  /// immediately put through [aggregate] and emitted on the returned stream.
+  /// Subsequent events on [trigger] while there have been no events on this
+  /// stream are ignored.
+  /// In that case, [onEmpty] is never used.
   ///
   /// The result stream will close as soon as there is a guarantee it will not
   /// emit any more events. There will not be any more events emitted if:
   /// - [trigger] is closed and there is no waiting long poll.
   /// - Or, the source stream is closed and there are no buffered events.
   ///
+  /// If the source stream is a broadcast stream, the result will be as well.
   /// Errors from the source stream or the trigger are immediately forwarded to
   /// the output.
   Stream<S> aggregateSample<S>(
@@ -41,10 +52,9 @@ extension AggregateSample<T> on Stream<T> {
     StreamSubscription<void>? triggerSub;
 
     void emit(S results) {
-      controller.add(results);
       currentResults = null;
       hasCurrentResults = false;
-      activeLongPoll = false;
+      controller.add(results);
     }
 
     void onValue(T value) {
@@ -52,7 +62,10 @@ extension AggregateSample<T> on Stream<T> {
       hasCurrentResults = true;
       if (!longPoll) return;
 
-      if (activeLongPoll) emit(currentResults as S);
+      if (activeLongPoll) {
+        activeLongPoll = false;
+        emit(currentResults as S);
+      }
 
       if (isTriggerDone) {
         valueSub!.cancel();

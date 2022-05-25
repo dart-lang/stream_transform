@@ -221,14 +221,17 @@ extension RateLimit<T> on Stream<T> {
     });
   }
 
-  /// Returns a Stream  which collects values and emits when it sees a value on
-  /// [trigger].
+  /// Buffers the values emitted on this stream and emits them when [trigger]
+  /// emits an event.
   ///
-  /// If [longPoll] is `false`, then an event on [trigger] when there are no
-  /// buffered source events will immediately emit an empty list.
-  /// If [longPoll] is `true` (the default), then an event on [trigger] when
-  /// there are no buffereds source events will cause the next source event to
-  /// immediately flow to the result stream as a single element list.
+  /// If [longPoll] is `false`, if there are no buffered values when [trigger]
+  /// emits an empty list is immediately emitted.
+  ///
+  /// If [longPoll] is `true`, and there are no buffered values when [trigger]
+  /// emits one or more events, then the *next* value from this stream is
+  /// immediately emitted on the returned stream as a single element list.
+  /// Subsequent events on [trigger] while there have been no events on this
+  /// stream are ignored.
   ///
   /// The result stream will close as soon as there is a guarantee it will not
   /// emit any more events. There will not be any more events emitted if:
@@ -250,20 +253,29 @@ extension RateLimit<T> on Stream<T> {
           longPoll: longPoll,
           onEmpty: _empty);
 
-  /// Returns a Stream which emits the most recent new value from the source
+  /// Creates a stream which emits the most recent new value from the source
   /// stream when it sees a value on [trigger].
   ///
   /// If [longPoll] is `false`, then an event on [trigger] when there is no
-  /// pending recent source event will be ignored.
+  /// pending source event will be ignored.
   /// If [longPoll] is `true` (the default), then an event on [trigger] when
-  /// there is no pending recent source event will cause the next source event
+  /// there is no pending source event will cause the next source event
   /// to immediately flow to the result stream.
+  ///
+  /// If [longPoll] is `false`, if there is no pending source event when
+  /// [trigger] emits, then the trigger event will be ignored.
+  ///
+  /// If [longPoll] is `true`, and there are no buffered values when [trigger]
+  /// emits one or more events, then the *next* value from this stream is
+  /// immediately emitted on the returned stream as a single element list.
+  /// Subsequent events on [trigger] while there have been no events on this
+  /// stream are ignored.
   ///
   /// The result stream will close as soon as there is a guarantee it will not
   /// emit any more events. There will not be any more events emitted if:
   /// - [trigger] is closed and there is no waiting long poll.
-  /// - Or, the source stream is closed and any pending recent source event has
-  /// been delivered.
+  /// - Or, the source stream is closed and any pending source event has been
+  /// delivered.
   ///
   /// If the source stream is a broadcast stream, the result will be as well.
   /// Errors from the source stream or the trigger are immediately forwarded to
