@@ -6,13 +6,16 @@ import 'dart:async';
 
 /// A utility similar to [fold] which emits intermediate accumulations.
 extension Scan<T> on Stream<T> {
-  /// Like [fold], but instead of producing a single value it yields each
-  /// intermediate accumulation.
+  /// Emits a sequence of the accumulated values from repeatedly applying
+  /// [combine].
   ///
-  /// If [combine] returns a Future it will not be called again for subsequent
+  /// Like [fold], but instead of producing a single value it yields each
+  /// intermediate result.
+  ///
+  /// If [combine] returns a future it will not be called again for subsequent
   /// events from the source until it completes, therefore [combine] is always
   /// called for elements in order, and the result stream always maintains the
-  /// same order as the original.
+  /// same order as this stream.
   Stream<S> scan<S>(
       S initialValue, FutureOr<S> Function(S soFar, T element) combine) {
     var accumulated = initialValue;

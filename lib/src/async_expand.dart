@@ -18,7 +18,7 @@ extension AsyncExpand<T> on Stream<T> {
   /// before the [Stream] emitted by the previous element has closed.
   ///
   /// Events on the result stream will be emitted in the order they are emitted
-  /// by the sub streams, which may not match the order of the original stream.
+  /// by the sub streams, which may not match the order of this stream.
   ///
   /// Errors from [convert], the source stream, or any of the sub streams are
   /// forwarded to the result stream.
@@ -37,9 +37,8 @@ extension AsyncExpand<T> on Stream<T> {
   /// back.
   ///
   /// See also:
-  ///
-  ///  * [switchMap], which cancels subscriptions to the previous sub
-  ///    stream instead of concurrently emitting events from all sub streams.
+  /// - [switchMap], which cancels subscriptions to the previous sub stream
+  /// instead of concurrently emitting events from all sub streams.
   Stream<S> concurrentAsyncExpand<S>(Stream<S> Function(T) convert) {
     final controller = isBroadcast
         ? StreamController<S>.broadcast(sync: true)

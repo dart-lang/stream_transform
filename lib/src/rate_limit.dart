@@ -17,8 +17,7 @@ import 'from_handlers.dart';
 /// - [audit] - emit the _last_ event at the _end_ of the period.
 /// - [buffer] - emit _all_ events on a _trigger_.
 extension RateLimit<T> on Stream<T> {
-  /// Returns a Stream which suppresses events with less inter-event spacing
-  /// than [duration].
+  /// Suppresses events with less inter-event spacing than [duration].
   ///
   /// Events which are emitted with less than [duration] elapsed between them
   /// are considered to be part of the same "series". If [leading] is `true`,
@@ -28,13 +27,13 @@ extension RateLimit<T> on Stream<T> {
   /// must be specified with `leading: true, trailing: false` to emit only
   /// leading events.
   ///
-  /// If the source stream is a broadcast stream, the result will be as well.
+  /// If this stream is a broadcast stream, the result will be as well.
   /// Errors are forwarded immediately.
   ///
   /// If there is a trailing event waiting during the debounce period when the
   /// source stream closes the returned stream will wait to emit it following
   /// the debounce period before closing. If there is no pending debounced event
-  /// when the source stream closes the returned stream will close immediately.
+  /// when this stream closes the returned stream will close immediately.
   ///
   /// For example:
   ///
@@ -59,47 +58,49 @@ extension RateLimit<T> on Stream<T> {
       _debounceAggregate(duration, _dropPrevious,
           leading: leading, trailing: trailing);
 
-  /// Returns a Stream which collects values until the source stream does not
-  /// emit for [duration] then emits the collected values.
+  /// Buffers values until this stream does not emit for [duration] then emits
+  /// the collected values.
   ///
   /// Values will always be delayed by at least [duration], and values which
   /// come within this time will be aggregated into the same list.
   ///
-  /// If the source stream is a broadcast stream, the result will be as well.
+  /// If this stream is a broadcast stream, the result will be as well.
   /// Errors are forwarded immediately.
   ///
-  /// If there are events waiting during the debounce period when the source
-  /// stream closes the returned stream will wait to emit them following the
-  /// debounce period before closing. If there are no pending debounced events
-  /// when the source stream closes the returned stream will close immediately.
+  /// If there are events waiting during the debounce period when this stream
+  /// closes the returned stream will wait to emit them following the debounce
+  /// period before closing. If there are no pending debounced events when this
+  /// stream closes the returned stream will close immediately.
   ///
   /// To keep only the most recent event during the debounce period see
   /// [debounce].
   Stream<List<T>> debounceBuffer(Duration duration) =>
       _debounceAggregate(duration, _collect, leading: false, trailing: true);
 
-  /// Returns a stream which only emits once per [duration], at the beginning of
-  /// the period.
+  /// Reduces the rate that events are emitted to at most once per [duration].
   ///
   /// No events will ever be emitted within [duration] of another event on the
   /// result stream.
-  /// If the source stream is a broadcast stream, the result will be as well.
+  /// If this stream is a broadcast stream, the result will be as well.
   /// Errors are forwarded immediately.
   ///
   /// If [trailing] is `false`, source events emitted during the [duration]
-  /// period following a result event are discarded. The result stream will not
-  /// emit an event until the source stream emits an event following the
-  /// throttled period. If the source stream is consistently emitting events
-  /// with less than [duration] between events, the time between events on the
-  /// result stream may still be more than [duration]. The result stream will
-  /// close immediately when the source stream closes.
+  /// period following a result event are discarded.
+  /// The result stream will not emit an event until this stream emits an event
+  /// following the throttled period.
+  /// If this stream is consistently emitting events with less than
+  /// [duration] between events, the time between events on the result stream
+  /// may still be more than [duration].
+  /// The result stream will close immediately when this stream closes.
   ///
   /// If [trailing] is `true`, the latest source event emitted during the
   /// [duration] period following an result event is held and emitted following
-  /// the period. If the source stream is consistently emitting events with less
-  /// than [duration] between events, the time between events on the result
-  /// stream will be [duration]. If the source stream closes the result stream
-  /// will wait to emit a pending event before closing.
+  /// the period.
+  /// If this stream is consistently emitting events with less than [duration]
+  /// between events, the time between events on the result stream will be
+  /// [duration].
+  /// If this stream closes the result stream will wait to emit a pending event
+  /// before closing.
   ///
   /// For example:
   ///
@@ -117,6 +118,14 @@ extension RateLimit<T> on Stream<T> {
   ///
   ///     source: 1-2-----------3|
   ///     result: 1-----2-------3|
+  ///
+  /// See also:
+  /// - [audit], which emits the most recent event at the end of the period.
+  /// Compared to `audit`, `throttle` will not introduce delay to forwarded
+  /// elements, except for the [trailing] events.
+  /// - [debounce], which uses inter-event spacing instead of a fixed period
+  /// from the first event in a window. Compared to `debouce`, `throttle` cannot
+  /// be starved by having events emitted continuously within [duration].
   Stream<T> throttle(Duration duration, {bool trailing = false}) =>
       trailing ? _throttleTrailing(duration) : _throttle(duration);
 
@@ -171,26 +180,25 @@ extension RateLimit<T> on Stream<T> {
     });
   }
 
-  /// Returns a Stream which only emits once per [duration], at the end of the
-  /// period.
+  /// Audit a single event from each [duration] length period where there are
+  /// events on this stream.
   ///
-  /// If the source stream is a broadcast stream, the result will be as well.
+  /// No events will ever be emitted within [duration] of another event on the
+  /// result stream.
+  /// If this stream is a broadcast stream, the result will be as well.
   /// Errors are forwarded immediately.
   ///
-  /// If there is no pending event when the source stream closes the output
+  /// The first event will begin the audit period. At the end of the audit
+  /// period the most recent event is emitted, and the next event restarts the
+  /// audit period.
+  ///
+  /// If the event that started the period is the one that is emitted it will be
+  /// delayed by [duration]. If a later event comes in within the period it's
+  /// delay will be shorter by the difference in arrival times.
+  ///
+  /// If there is no pending event when this stream closes the output
   /// stream will close immediately. If there is a pending event the output
   /// stream will wait to emit it before closing.
-  ///
-  /// Differs from `throttle` in that it always emits the most recently received
-  /// event rather than the first in the period. The events that are emitted are
-  /// always delayed by some amount. If the event that started the period is the
-  /// one that is emitted it will be delayed by [duration]. If a later event
-  /// comes in within the period it's delay will be shorter by the difference in
-  /// arrival times.
-  ///
-  /// Differs from `debounce` in that a value will always be emitted after
-  /// [duration], the output will not be starved by values coming in repeatedly
-  /// within [duration].
   ///
   /// For example:
   ///
@@ -198,6 +206,14 @@ extension RateLimit<T> on Stream<T> {
   ///
   ///     source: a------b--c----d--|
   ///     output: -----a------c--------d|
+  ///
+  /// See also:
+  /// - [throttle], which emits the _first_ event during the window, instead of
+  /// the last event in the window. Compared to `throttle`, `audit` will
+  /// introduce delay to forwarded events.
+  /// - [debounce], which only emits after the stream has not emitted for some
+  /// period. Compared to `debouce`, `audit` cannot be starved by having events
+  /// emitted continuously within [duration].
   Stream<T> audit(Duration duration) {
     Timer? timer;
     var shouldClose = false;
@@ -236,12 +252,12 @@ extension RateLimit<T> on Stream<T> {
   /// The result stream will close as soon as there is a guarantee it will not
   /// emit any more events. There will not be any more events emitted if:
   /// - [trigger] is closed and there is no waiting long poll.
-  /// - Or, the source stream is closed and previously buffered events have been
+  /// - Or, this stream is closed and previously buffered events have been
   /// delivered.
   ///
-  /// If the source stream is a broadcast stream, the result will be as well.
-  /// Errors from the source stream or the trigger are immediately forwarded to
-  /// the output.
+  /// If this stream is a broadcast stream, the result will be as well.
+  /// Errors from this stream or the trigger are immediately forwarded to the
+  /// output.
   ///
   /// See also:
   /// - [sample] which use a [trigger] stream in the same way, but keeps only
@@ -253,8 +269,8 @@ extension RateLimit<T> on Stream<T> {
           longPoll: longPoll,
           onEmpty: _empty);
 
-  /// Creates a stream which emits the most recent new value from the source
-  /// stream when it sees a value on [trigger].
+  /// Emits the most recent new value from this stream when [trigger] emits an
+  /// event.
   ///
   /// If [longPoll] is `false`, then an event on [trigger] when there is no
   /// pending source event will be ignored.
@@ -274,11 +290,11 @@ extension RateLimit<T> on Stream<T> {
   /// The result stream will close as soon as there is a guarantee it will not
   /// emit any more events. There will not be any more events emitted if:
   /// - [trigger] is closed and there is no waiting long poll.
-  /// - Or, the source stream is closed and any pending source event has been
+  /// - Or, this source stream is closed and any pending source event has been
   /// delivered.
   ///
-  /// If the source stream is a broadcast stream, the result will be as well.
-  /// Errors from the source stream or the trigger are immediately forwarded to
+  /// If this source stream is a broadcast stream, the result will be as well.
+  /// Errors from this source stream or the trigger are immediately forwarded to
   /// the output.
   ///
   /// See also:
@@ -291,7 +307,7 @@ extension RateLimit<T> on Stream<T> {
           longPoll: longPoll,
           onEmpty: _ignore);
 
-  /// Aggregates values until the source stream does not emit for [duration],
+  /// Aggregates values until this source stream does not emit for [duration],
   /// then emits the aggregated values.
   Stream<S> _debounceAggregate<S>(
       Duration duration, S Function(T element, S? soFar) collect,

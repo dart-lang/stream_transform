@@ -8,15 +8,15 @@ extension Tap<T> on Stream<T> {
   /// Taps into this stream to allow additional handling on a single-subscriber
   /// stream without first wrapping as a broadcast stream.
   ///
-  /// The [onValue] callback will be called with every value from the source
-  /// stream before it is forwarded to listeners on the resulting stream. May be
-  /// null if only [onError] or [onDone] callbacks are needed.
+  /// The [onValue] callback will be called with every value from this stream
+  /// before it is forwarded to listeners on the resulting stream.
+  /// May be null if only [onError] or [onDone] callbacks are needed.
   ///
-  /// The [onError] callback will be called with every error from the source
-  /// stream before it is forwarded to listeners on the resulting stream.
+  /// The [onError] callback will be called with every error from this stream
+  /// before it is forwarded to listeners on the resulting stream.
   ///
-  /// The [onDone] callback will be called after the source stream closes and
-  /// before the resulting stream is closed.
+  /// The [onDone] callback will be called after this stream closes and before
+  /// the resulting stream is closed.
   ///
   /// Errors from any of the callbacks are caught and ignored.
   ///

@@ -35,8 +35,7 @@ extension Switch<T> on Stream<T> {
   /// and never canceled.
   ///
   /// See also:
-  ///
-  /// * [concurrentAsyncExpand], which emits events from all sub streams
+  /// - [concurrentAsyncExpand], which emits events from all sub streams
   ///   concurrently instead of cancelling subscriptions to previous subs streams.
   Stream<S> switchMap<S>(Stream<S> Function(T) convert) {
     return map(convert).switchLatest();
