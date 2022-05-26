@@ -221,18 +221,75 @@ extension RateLimit<T> on Stream<T> {
     });
   }
 
-  /// Returns a Stream  which collects values and emits when it sees a value on
-  /// [trigger].
+  /// Buffers the values emitted on this stream and emits them when [trigger]
+  /// emits an event.
   ///
-  /// If there are no pending values when [trigger] emits, the next value on the
-  /// source Stream will immediately flow through. Otherwise, the pending values
-  /// are released when [trigger] emits.
+  /// If [longPoll] is `false`, if there are no buffered values when [trigger]
+  /// emits an empty list is immediately emitted.
+  ///
+  /// If [longPoll] is `true`, and there are no buffered values when [trigger]
+  /// emits one or more events, then the *next* value from this stream is
+  /// immediately emitted on the returned stream as a single element list.
+  /// Subsequent events on [trigger] while there have been no events on this
+  /// stream are ignored.
+  ///
+  /// The result stream will close as soon as there is a guarantee it will not
+  /// emit any more events. There will not be any more events emitted if:
+  /// - [trigger] is closed and there is no waiting long poll.
+  /// - Or, the source stream is closed and previously buffered events have been
+  /// delivered.
   ///
   /// If the source stream is a broadcast stream, the result will be as well.
   /// Errors from the source stream or the trigger are immediately forwarded to
   /// the output.
-  Stream<List<T>> buffer(Stream<void> trigger) =>
-      aggregateSample<List<T>>(trigger, _collect);
+  ///
+  /// See also:
+  /// - [sample] which use a [trigger] stream in the same way, but keeps only
+  /// the most recent source event.
+  Stream<List<T>> buffer(Stream<void> trigger, {bool longPoll = true}) =>
+      aggregateSample(
+          trigger: trigger,
+          aggregate: _collect,
+          longPoll: longPoll,
+          onEmpty: _empty);
+
+  /// Creates a stream which emits the most recent new value from the source
+  /// stream when it sees a value on [trigger].
+  ///
+  /// If [longPoll] is `false`, then an event on [trigger] when there is no
+  /// pending source event will be ignored.
+  /// If [longPoll] is `true` (the default), then an event on [trigger] when
+  /// there is no pending source event will cause the next source event
+  /// to immediately flow to the result stream.
+  ///
+  /// If [longPoll] is `false`, if there is no pending source event when
+  /// [trigger] emits, then the trigger event will be ignored.
+  ///
+  /// If [longPoll] is `true`, and there are no buffered values when [trigger]
+  /// emits one or more events, then the *next* value from this stream is
+  /// immediately emitted on the returned stream as a single element list.
+  /// Subsequent events on [trigger] while there have been no events on this
+  /// stream are ignored.
+  ///
+  /// The result stream will close as soon as there is a guarantee it will not
+  /// emit any more events. There will not be any more events emitted if:
+  /// - [trigger] is closed and there is no waiting long poll.
+  /// - Or, the source stream is closed and any pending source event has been
+  /// delivered.
+  ///
+  /// If the source stream is a broadcast stream, the result will be as well.
+  /// Errors from the source stream or the trigger are immediately forwarded to
+  /// the output.
+  ///
+  /// See also:
+  /// - [buffer] which use [trigger] stream in the same way, but keeps a list of
+  /// pending source events.
+  Stream<T> sample(Stream<void> trigger, {bool longPoll = true}) =>
+      aggregateSample(
+          trigger: trigger,
+          aggregate: _dropPrevious,
+          longPoll: longPoll,
+          onEmpty: _ignore);
 
   /// Aggregates values until the source stream does not emit for [duration],
   /// then emits the aggregated values.
@@ -279,3 +336,5 @@ extension RateLimit<T> on Stream<T> {
 
 T _dropPrevious<T>(T element, _) => element;
 List<T> _collect<T>(T event, List<T>? soFar) => (soFar ?? <T>[])..add(event);
+void _empty<T>(Sink<List<T>> sink) => sink.add([]);
+void _ignore<T>(Sink<T> sink) {}

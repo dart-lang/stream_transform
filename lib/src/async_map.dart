@@ -67,7 +67,11 @@ extension AsyncMap<T> on Stream<T> {
     var workFinished = StreamController<void>()
       // Let the first event through.
       ..add(null);
-    return aggregateSample(workFinished.stream, _dropPrevious)
+    return aggregateSample(
+            trigger: workFinished.stream,
+            aggregate: _dropPrevious,
+            longPoll: true,
+            onEmpty: _ignore)
         ._asyncMapThen(convert, workFinished.add);
   }
 
@@ -128,3 +132,4 @@ extension AsyncMap<T> on Stream<T> {
 }
 
 T _dropPrevious<T>(T event, _) => event;
+void _ignore<T>(Sink<T> sink) {}

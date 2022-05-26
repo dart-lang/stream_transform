@@ -89,13 +89,13 @@ consistency with ReactiveX.
 
 Rx Operator Category      | variation                                              | `stream_transform`
 ------------------------- | ------------------------------------------------------ | ------------------
-[`sample`][rx_sample]     | `sample/throttleLast(Duration)`                        | No equivalent
+[`sample`][rx_sample]     | `sample/throttleLast(Duration)`                        | `sample(Stream.periodic(Duration), longPoll: false)`
 &#x200B;                  | `throttleFirst(Duration)`                              | [`throttle`][throttle]
-&#x200B;                  | `sample(Observable)`                                   | No equivalent
+&#x200B;                  | `sample(Observable)`                                   | `sample(trigger, longPoll: false)`
 [`debounce`][rx_debounce] | `debounce/throttleWithTimeout(Duration)`               | [`debounce`][debounce]
 &#x200B;                  | `debounce(Observable)`                                 | No equivalent
 [`buffer`][rx_buffer]     | `buffer(boundary)`, `bufferWithTime`,`bufferWithCount` | No equivalent
-&#x200B;                  | `buffer(boundaryClosingSelector)`                      | No equivalent[^1]
+&#x200B;                  | `buffer(boundaryClosingSelector)`                      | `buffer(trigger, longPoll: false)`
 RxJs extensions           | [`audit(callback)`][rxjs_audit]                        | No equivalent
 &#x200B;                  | [`auditTime(Duration)`][rxjs_auditTime]                | [`audit`][audit]
 &#x200B;                  | [`exhaustMap`][rxjs_exhaustMap]                        | No equivalent
@@ -103,7 +103,8 @@ RxJs extensions           | [`audit(callback)`][rxjs_audit]                     
 &#x200B;                  | `throttleTime(leading: false, trailing: true)`         | No equivalent
 No equivalent?            |                                                        | [`asyncMapBuffer`][asyncMapBuffer]
 &#x200B;                  |                                                        | [`asyncMapSample`][asyncMapSample]
-&#x200B;                  |                                                        | [`buffer`][buffer][^1]
+&#x200B;                  |                                                        | [`buffer`][buffer]
+&#x200B;                  |                                                        | [`sample`][sample]
 &#x200B;                  |                                                        | [`debounceBuffer`][debounceBuffer]
 &#x200B;                  |                                                        | `debounce(leading: true, trailing: false)`
 &#x200B;                  |                                                        | `debounce(leading: true, trailing: true)`
@@ -119,15 +120,10 @@ No equivalent?            |                                                     
 [asyncMapSample]:https://pub.dev/documentation/stream_transform/latest/stream_transform/AsyncMap/asyncMapSample.html
 [audit]:https://pub.dev/documentation/stream_transform/latest/stream_transform/RateLimit/audit.html
 [buffer]:https://pub.dev/documentation/stream_transform/latest/stream_transform/RateLimit/buffer.html
+[sample]:https://pub.dev/documentation/stream_transform/latest/stream_transform/RateLimit/sample.html
 [debounceBuffer]:https://pub.dev/documentation/stream_transform/latest/stream_transform/RateLimit/debounceBuffer.html
 [debounce]:https://pub.dev/documentation/stream_transform/latest/stream_transform/RateLimit/debounce.html
 [throttle]:https://pub.dev/documentation/stream_transform/latest/stream_transform/RateLimit/throttle.html
-[^1]: `stream_transform` `buffer` is closest to
-    [`buffer(bufferClosingSelector)`][rx_buffer], except where the trigger
-    emits while no events are buffered. ReactiveX will immediately emit and
-    empty list, while `stream_transform` will wait and emit a single element
-    list when the next event occurs. You can think of it like
-    `stream_transform` implemeting the "long polling" version of `buffer`.
 
 # Getting a `StreamTransformer` instance
 
