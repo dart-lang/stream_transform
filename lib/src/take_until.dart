@@ -6,8 +6,8 @@ import 'dart:async';
 
 /// A utility to end a stream based on an external trigger.
 extension TakeUntil<T> on Stream<T> {
-  /// Returns a stream which emits values from the source stream until [trigger]
-  /// fires.
+  /// Takes values from this stream which are emitted before [trigger]
+  /// completes.
   ///
   /// Completing [trigger] differs from canceling a subscription in that values
   /// which are emitted before the trigger, but have further asynchronous delays

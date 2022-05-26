@@ -6,21 +6,21 @@ import 'dart:async';
 
 /// Utilities to append or prepend to a stream.
 extension Concatenate<T> on Stream<T> {
-  /// Returns a stream which emits values and errors from [next] after the
-  /// original stream is complete.
+  /// Emits all values and errors from [next] following all values and errors
+  /// from this stream.
   ///
-  /// If the source stream never finishes, the [next] stream will never be
-  /// listened to.
+  /// If this stream never finishes, the [next] stream will never get a
+  /// listener.
   ///
-  /// If the source stream is a broadcast stream, the result will be as well.
+  /// If this stream is a broadcast stream, the result will be as well.
   /// If a single-subscription follows a broadcast stream it may be listened
   /// to and never canceled since there may be broadcast listeners added later.
   ///
   /// If a broadcast stream follows any other stream it will miss any events or
-  /// errors which occur before the original stream is done. If a broadcast
-  /// stream follows a single-subscription stream, pausing the stream while it
-  /// is listening to the second stream will cause events to be dropped rather
-  /// than buffered.
+  /// errors which occur before this stream is done.
+  /// If a broadcast stream follows a single-subscription stream, pausing the
+  /// stream while it is listening to the second stream will cause events to be
+  /// dropped rather than buffered.
   Stream<T> followedBy(Stream<T> next) {
     var controller = isBroadcast
         ? StreamController<T>.broadcast(sync: true)
@@ -79,28 +79,27 @@ extension Concatenate<T> on Stream<T> {
     return controller.stream;
   }
 
-  /// Returns a stream which emits [initial] before any values from the original
-  /// stream.
+  /// Emits [initial] before any values or errors from the this stream.
   ///
-  /// If the original stream is a broadcast stream the result will be as well.
+  /// If this stream is a broadcast stream the result will be as well.
   Stream<T> startWith(T initial) =>
       startWithStream(Future.value(initial).asStream());
 
-  /// Returns a stream which emits all values in [initial] before any values
-  /// from the original stream.
+  /// Emits all values in [initial] before any values or errors from this
+  /// stream.
   ///
-  /// If the original stream is a broadcast stream the result will be as well.
-  /// If the original stream is a broadcast stream it will miss any events which
+  /// If this stream is a broadcast stream the result will be as well.
+  /// If this stream is a broadcast stream it will miss any events which
   /// occur before the initial values are all emitted.
   Stream<T> startWithMany(Iterable<T> initial) =>
       startWithStream(Stream.fromIterable(initial));
 
-  /// Returns a stream which emits all values in [initial] before any values
-  /// from the original stream.
+  /// Emits all values and errors in [initial] before any values or errors from
+  /// this stream.
   ///
-  /// If the original stream is a broadcast stream the result will be as well. If
-  /// the original stream is a broadcast stream it will miss any events which
-  /// occur before [initial] closes.
+  /// If this stream is a broadcast stream the result will be as well.
+  /// If this stream is a broadcast stream it will miss any events which occur
+  /// before [initial] closes.
   Stream<T> startWithStream(Stream<T> initial) {
     if (isBroadcast && !initial.isBroadcast) {
       initial = initial.asBroadcastStream();
