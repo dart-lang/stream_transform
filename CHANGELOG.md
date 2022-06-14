@@ -3,7 +3,7 @@
 - Require Dart 2.18 or greater
 - Continue to forward events from ongoing streams in `concurrentAsyncExpand`
   even if the result stream had no listeners for any period since the inner
-  stream started.
+  stream started. This can change observable behavior and so it may be breaking.
 
 ## 2.1.0
 

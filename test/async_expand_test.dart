@@ -24,15 +24,20 @@ void main() {
   for (var outerType in streamTypes) {
     for (var innerType in streamTypes) {
       group('concurrentAsyncExpand $outerType to $innerType', () {
-        late StreamController<int> outerController;
+        late StreamController<StreamController<String>> outerController;
         late bool outerCanceled;
-        late List<StreamController<String>> innerControllers;
-        late List<bool> innerCanceled;
         late List<String> emittedValues;
         late bool isDone;
         late List<String> errors;
         late Stream<String> transformed;
         late StreamSubscription<String> subscription;
+
+        void listen() {
+          subscription = transformed
+              .listen(emittedValues.add, onError: errors.add, onDone: () {
+            isDone = true;
+          });
+        }
 
         setUp(() {
           outerController = createController(outerType)
@@ -40,106 +45,128 @@ void main() {
               outerCanceled = true;
             };
           outerCanceled = false;
-          innerControllers = [];
-          innerCanceled = [];
           emittedValues = [];
           errors = [];
           isDone = false;
-          transformed = outerController.stream.concurrentAsyncExpand((i) {
-            var index = innerControllers.length;
-            innerCanceled.add(false);
-            innerControllers.add(createController<String>(innerType)
-              ..onCancel = () {
-                innerCanceled[index] = true;
-              });
-            return innerControllers.last.stream;
-          });
-          subscription = transformed
-              .listen(emittedValues.add, onError: errors.add, onDone: () {
-            isDone = true;
-          });
+          transformed = outerController.stream
+              .concurrentAsyncExpand((controller) => controller.stream);
         });
 
         test('interleaves events from sub streams', () async {
+          listen();
+          final first = createController<String>(innerType);
+          final second = createController<String>(innerType);
           outerController
-            ..add(1)
-            ..add(2);
+            ..add(first)
+            ..add(second);
           await Future<void>(() {});
           expect(emittedValues, isEmpty);
-          expect(innerControllers, hasLength(2));
-          innerControllers[0].add('First');
-          innerControllers[1].add('Second');
-          innerControllers[0].add('First again');
+          first.add('First');
+          second.add('Second');
+          first.add('First again');
           await Future<void>(() {});
           expect(emittedValues, ['First', 'Second', 'First again']);
         });
 
         test('forwards errors from outer stream', () async {
+          listen();
           outerController.addError('Error');
           await Future<void>(() {});
           expect(errors, ['Error']);
         });
 
         test('forwards errors from inner streams', () async {
+          listen();
+          final first = createController<String>(innerType);
+          final second = createController<String>(innerType);
           outerController
-            ..add(1)
-            ..add(2);
+            ..add(first)
+            ..add(second);
           await Future<void>(() {});
-          innerControllers[0].addError('Error 1');
-          innerControllers[1].addError('Error 2');
+          first.addError('Error 1');
+          second.addError('Error 2');
           await Future<void>(() {});
           expect(errors, ['Error 1', 'Error 2']);
         });
 
         test('can continue handling events after an error in outer stream',
             () async {
+          listen();
+          final controller = createController<String>(innerType);
           outerController
             ..addError('Error')
-            ..add(1);
+            ..add(controller);
           await Future<void>(() {});
-          innerControllers[0].add('First');
+          controller.add('First');
           await Future<void>(() {});
           expect(emittedValues, ['First']);
           expect(errors, ['Error']);
         });
 
-        test('cancels outer subscription if output canceled', () async {
-          await subscription.cancel();
-          expect(outerCanceled, true);
-        });
+        if (outerType != 'broadcast') {
+          test('cancels outer subscription if output canceled', () async {
+            listen();
+            await subscription.cancel();
+            expect(outerCanceled, true);
+          });
+        } else {
+          test('does not cancel outer subscription', () async {
+            listen();
+            await subscription.cancel();
+            expect(outerCanceled, false);
+          });
+        }
 
         if (outerType != 'broadcast' || innerType != 'single subscription') {
           // A single subscription inner stream in a broadcast outer stream is
           // not canceled.
           test('cancels inner subscriptions if output canceled', () async {
+            listen();
+            var firstCanceled = false;
+            var secondCanceled = false;
+            final first = createController<String>(innerType)
+              ..onCancel = () {
+                firstCanceled = true;
+              };
+            final second = createController<String>(innerType)
+              ..onCancel = () {
+                secondCanceled = true;
+              };
             outerController
-              ..add(1)
-              ..add(2);
+              ..add(first)
+              ..add(second);
             await Future<void>(() {});
             await subscription.cancel();
-            expect(innerCanceled, [true, true]);
+            expect(firstCanceled, true);
+            expect(secondCanceled, true);
           });
         }
 
         test('stays open if any inner stream is still open', () async {
-          outerController.add(1);
+          listen();
+          final controller = createController<String>(innerType);
+          outerController.add(controller);
           await outerController.close();
           await Future<void>(() {});
           expect(isDone, false);
         });
 
         test('stays open if outer stream is still open', () async {
-          outerController.add(1);
+          listen();
+          final controller = createController<String>(innerType);
+          outerController.add(controller);
           await Future<void>(() {});
-          await innerControllers[0].close();
+          await controller.close();
           await Future<void>(() {});
           expect(isDone, false);
         });
 
         test('closes after all inner streams and outer stream close', () async {
-          outerController.add(1);
+          listen();
+          final controller = createController<String>(innerType);
+          outerController.add(controller);
           await Future<void>(() {});
-          await innerControllers[0].close();
+          await controller.close();
           await outerController.close();
           await Future<void>(() {});
           expect(isDone, true);
@@ -147,22 +174,26 @@ void main() {
 
         if (outerType == 'broadcast') {
           test('multiple listeners all get values', () async {
+            listen();
             var otherValues = <String>[];
             transformed.listen(otherValues.add);
-            outerController.add(1);
+            final controller = createController<String>(innerType);
+            outerController.add(controller);
             await Future<void>(() {});
-            innerControllers[0].add('First');
+            controller.add('First');
             await Future<void>(() {});
             expect(emittedValues, ['First']);
             expect(otherValues, ['First']);
           });
 
           test('multiple listeners get closed', () async {
+            listen();
             var otherDone = false;
             transformed.listen(null, onDone: () => otherDone = true);
-            outerController.add(1);
+            final controller = createController<String>(innerType);
+            outerController.add(controller);
             await Future<void>(() {});
-            await innerControllers[0].close();
+            await controller.close();
             await outerController.close();
             await Future<void>(() {});
             expect(isDone, true);
@@ -170,25 +201,84 @@ void main() {
           });
 
           test('can cancel and relisten', () async {
+            listen();
+            final first = createController<String>(innerType);
+            final second = createController<String>(innerType);
             outerController
-              ..add(1)
-              ..add(2);
+              ..add(first)
+              ..add(second);
             await Future(() {});
-            innerControllers[0].add('First');
-            innerControllers[1].add('Second');
+            first.add('First');
+            second.add('Second');
             await Future(() {});
             await subscription.cancel();
-            innerControllers[0].add('Ignored');
+            first.add('Ignored');
             await Future(() {});
 
             subscription = transformed.listen(emittedValues.add);
-            innerControllers[0].add('From prior stream');
-            outerController.add(3);
+            first.add('From prior stream');
+            final third = createController<String>(innerType);
+            outerController.add(third);
             await Future(() {});
-            innerControllers[2].add('From new stream');
+            third.add('From new stream');
             await Future(() {});
             expect(emittedValues,
                 ['First', 'Second', 'From prior stream', 'From new stream']);
+          });
+
+          test('eagerly listens to the source stream', () async {
+            final first = createController<String>(innerType);
+            outerController.add(first);
+            first.add('Sent before listen');
+            await Future<void>(() {});
+
+            listen();
+            await Future<void>(() {});
+            expect(emittedValues, isEmpty);
+
+            final second = createController<String>(innerType);
+            outerController.add(second);
+            await Future<void>(() {});
+            first.add('First');
+            second.add('Second');
+            await Future<void>(() {});
+
+            expect(emittedValues, ['First', 'Second']);
+          });
+
+          test(
+              'continues to listen to the source stream while there are no '
+              'listeners on the result stream', () async {
+            listen();
+            final first = createController<String>(innerType);
+            outerController.add(first);
+            await Future<void>(() {});
+            first.add('First');
+            await Future<void>(() {});
+            await subscription.cancel();
+
+            final second = createController<String>(innerType);
+            outerController.add(second);
+            await Future<void>(() {});
+
+            first.add('First during no listener');
+            second.add('Second during no listener');
+            await Future<void>(() {});
+
+            final laterEmittedValues = <String>[];
+            transformed.listen(laterEmittedValues.add);
+
+            first.add('First again');
+            second.add('Second');
+
+            final third = createController<String>(innerType);
+            outerController.add(third);
+            await Future<void>(() {});
+            third.add('Third');
+            await Future<void>(() {});
+
+            expect(emittedValues, ['First']);
+            expect(laterEmittedValues, ['First again', 'Second', 'Third']);
           });
         }
       });

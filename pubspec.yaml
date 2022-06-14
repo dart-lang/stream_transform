@@ -1,5 +1,5 @@
 name: stream_transform
-version: 2.1.1-dev
+version: 2.2.0-dev
 description: A collection of utilities to transform and manipulate streams.
 repository: https://github.com/dart-lang/stream_transform
 
