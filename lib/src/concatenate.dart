@@ -82,8 +82,9 @@ extension Concatenate<T> on Stream<T> {
   /// Emits [initial] before any values or errors from the this stream.
   ///
   /// If this stream is a broadcast stream the result will be as well.
-  Stream<T> startWith(T initial) =>
-      startWithStream(Future.value(initial).asStream());
+  /// If this stream is a broadcast stream events which are emitted before
+  /// [initial] can be emitted asynchronously will be missed.
+  Stream<T> startWith(T initial) => startWithStream(Stream.value(initial));
 
   /// Emits all values in [initial] before any values or errors from this
   /// stream.
