@@ -17,7 +17,6 @@ linter:
     - cascade_invocations
     - comment_references
     - directives_ordering
-    - invariant_booleans
     - join_return_with_assignment
     - no_adjacent_strings_in_list
     - omit_local_variable_types
