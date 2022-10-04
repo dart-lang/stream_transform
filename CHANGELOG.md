@@ -1,4 +1,4 @@
-## 2.0.1-dev
+## 2.0.1
 
 - Require Dart 2.14 or greater.
 - Wait for the future returned from `StreamSubscription.cancel()` before
