@@ -1,3 +1,7 @@
+## 2.1.0
+
+- Add `whereNotNull`.
+
 ## 2.0.1
 
 - Require Dart 2.14 or greater.
