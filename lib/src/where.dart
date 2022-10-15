@@ -58,3 +58,14 @@ extension Where<T> on Stream<T> {
     });
   }
 }
+
+extension WhereNotNull<T extends Object> on Stream<T?> {
+  /// Discards `null` events from this stream.
+  ///
+  /// If the source stream is a broadcast stream the result will be as well.
+  ///
+  /// Errors from the source stream are forwarded directly to the result stream.
+  Stream<T> whereNotNull() => transformByHandlers(onData: (event, sink) {
+        if (event != null) sink.add(event);
+      });
+}
