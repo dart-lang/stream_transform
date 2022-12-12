@@ -47,6 +47,7 @@ jobs:
       matrix:
         # Add macos-latest and/or windows-latest if relevant for this package.
         os: [ubuntu-latest]
+        # Bump SDK for Legacy tets when changning min SDK.
         sdk: [2.14.0, dev]
     steps:
       - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
