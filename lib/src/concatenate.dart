@@ -85,7 +85,8 @@ extension Concatenate<T> on Stream<T> {
   /// If this stream is a broadcast stream, the returned stream will only
   /// contain events of this stream that are emitted after the [initial] value
   /// has been emitted on the returned stream.
-  Stream<T> startWith(T initial) => startWithStream(Stream.value(initial));
+  Stream<T> startWith(T initial) =>
+      startWithStream(Future.value(initial).asStream());
 
   /// Emits all values in [initial] before any values or errors from this
   /// stream.
