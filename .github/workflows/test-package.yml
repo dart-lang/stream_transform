@@ -48,7 +48,7 @@ jobs:
         # Add macos-latest and/or windows-latest if relevant for this package.
         os: [ubuntu-latest]
         # Bump SDK for Legacy tets when changning min SDK.
-        sdk: [2.14.0, dev]
+        sdk: [2.18.0, dev]
     steps:
       - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b
       - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
@@ -60,6 +60,3 @@ jobs:
       - name: Run tests
         run: dart test -p chrome,vm --test-randomize-ordering-seed=random
         if: always() && steps.install.outcome == 'success'
-      - name: Run Legacy tests
-        run: dart test -p chrome,vm --test-randomize-ordering-seed=random legacy_test
-        if: always() && matrix.sdk == '2.14.0' && steps.install.outcome == 'success'

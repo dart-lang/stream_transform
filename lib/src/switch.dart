@@ -118,10 +118,10 @@ extension SwitchLatest<T> on Stream<Stream<T>> {
           };
       }
       controller.onCancel = () {
-        var _innerSubscription = innerSubscription;
+        var sub = innerSubscription;
         var cancels = [
           if (!outerStreamDone) outerSubscription.cancel(),
-          if (_innerSubscription != null) _innerSubscription.cancel(),
+          if (sub != null) sub.cancel(),
         ]
           // Handle opt-out nulls
           ..removeWhere((Object? f) => f == null);
