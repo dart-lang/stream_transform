@@ -30,7 +30,7 @@ void main() {
           emittedValues = [];
           errors = [];
           isDone = false;
-          transformed = values.stream.audit(const Duration(milliseconds: 5));
+          transformed = values.stream.audit(const Duration(milliseconds: 6));
           subscription = transformed
               .listen(emittedValues.add, onError: errors.add, onDone: () {
             isDone = true;
@@ -80,11 +80,11 @@ void main() {
         test('does not starve output if many values come closer than duration',
             () async {
           values.add(1);
-          await Future.delayed(const Duration(milliseconds: 3));
+          await Future.delayed(const Duration(milliseconds: 4));
           values.add(2);
-          await Future.delayed(const Duration(milliseconds: 3));
+          await Future.delayed(const Duration(milliseconds: 4));
           values.add(3);
-          await waitForTimer(5);
+          await waitForTimer(6);
           expect(emittedValues, [2, 3]);
         });
 

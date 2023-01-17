@@ -1,9 +1,8 @@
 include: package:lints/recommended.yaml
 
 analyzer:
-  strong-mode:
-    implicit-casts: false
   language:
+    strict-casts: true
     strict-raw-types: true
 
 linter:
@@ -17,18 +16,15 @@ linter:
     - cascade_invocations
     - comment_references
     - directives_ordering
-    - invariant_booleans
     - join_return_with_assignment
     - no_adjacent_strings_in_list
     - omit_local_variable_types
     - only_throw_errors
     - prefer_const_constructors
-    - prefer_interpolation_to_compose_strings
     - prefer_single_quotes
     - test_types_in_equals
     - throw_in_finally
     - unawaited_futures
     - unnecessary_lambdas
-    - unnecessary_null_aware_assignments
     - unnecessary_parenthesis
     - unnecessary_statements

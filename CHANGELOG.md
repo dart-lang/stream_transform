@@ -1,4 +1,12 @@
-## 2.0.1-dev
+## 2.1.1-dev
+
+- Require Dart 2.18 or greater
+
+## 2.1.0
+
+- Add `whereNotNull`.
+
+## 2.0.1
 
 - Require Dart 2.14 or greater.
 - Wait for the future returned from `StreamSubscription.cancel()` before
