@@ -6,11 +6,11 @@ import 'dart:async';
 
 /// Utilities to interleave events from multiple streams.
 extension Merge<T> on Stream<T> {
-  /// Returns a stream which emits values and errors from the source stream and
-  /// [other] in any order as they arrive.
+  /// Merges values and errors from this stream and [other] in any order as they
+  /// arrive.
   ///
-  /// The result stream will not close until both the source stream and [other]
-  /// have closed.
+  /// The result stream will not close until both this stream and [other] have
+  /// closed.
   ///
   /// For example:
   ///
@@ -20,7 +20,7 @@ extension Merge<T> on Stream<T> {
   ///     other:   ------4-------5--|
   ///     result:  1--2--4--3----5--|
   ///
-  /// If the source stream is a broadcast stream, the result stream will be as
+  /// If this stream is a broadcast stream, the result stream will be as
   /// well, regardless of [other]'s type. If a single subscription stream is
   /// merged into a broadcast stream it may never be canceled since there may be
   /// broadcast listeners added later.
@@ -30,10 +30,10 @@ extension Merge<T> on Stream<T> {
   /// be discarded.
   Stream<T> merge(Stream<T> other) => mergeAll([other]);
 
-  /// Returns a stream which emits values and errors from the source stream and
-  /// any stream in [others] in any order as they arrive.
+  /// Merges values and errors from this stream and any stream in [others] in
+  /// any order as they arrive.
   ///
-  /// The result stream will not close until the source stream and all streams
+  /// The result stream will not close until this stream and all streams
   /// in [others] have closed.
   ///
   /// For example:
@@ -45,7 +45,7 @@ extension Merge<T> on Stream<T> {
   ///     third:   ------6---------------7--|
   ///     result:  1--2--6--4--3----5----7--|
   ///
-  /// If the source stream is a broadcast stream, the result stream will be as
+  /// If this stream is a broadcast stream, the result stream will be as
   /// well, regardless the types of streams in [others]. If a single
   /// subscription stream is merged into a broadcast stream it may never be
   /// canceled since there may be broadcast listeners added later.

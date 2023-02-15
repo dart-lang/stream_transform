@@ -197,7 +197,7 @@ void main() {
       var outer = StreamController<List<int>>();
 
       var values = [];
-      outer.stream.switchMap((l) => Stream.fromIterable(l)).listen(values.add);
+      outer.stream.switchMap(Stream.fromIterable).listen(values.add);
 
       outer.add([1, 2, 3]);
       await Future(() {});

@@ -35,8 +35,7 @@ extension Switch<T> on Stream<T> {
   /// and never canceled.
   ///
   /// See also:
-  ///
-  /// * [concurrentAsyncExpand], which emits events from all sub streams
+  /// - [concurrentAsyncExpand], which emits events from all sub streams
   ///   concurrently instead of cancelling subscriptions to previous subs streams.
   Stream<S> switchMap<S>(Stream<S> Function(T) convert) {
     return map(convert).switchLatest();
@@ -119,10 +118,10 @@ extension SwitchLatest<T> on Stream<Stream<T>> {
           };
       }
       controller.onCancel = () {
-        var _innerSubscription = innerSubscription;
+        var sub = innerSubscription;
         var cancels = [
           if (!outerStreamDone) outerSubscription.cancel(),
-          if (_innerSubscription != null) _innerSubscription.cancel(),
+          if (sub != null) sub.cancel(),
         ]
           // Handle opt-out nulls
           ..removeWhere((Object? f) => f == null);
