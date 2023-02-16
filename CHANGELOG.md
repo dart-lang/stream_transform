@@ -1,6 +1,9 @@
 ## 2.1.1-dev
 
 - Require Dart 2.18 or greater
+- Forward errors from the `trigger` future through to the result stream in
+  `takeUntil`. Previously an error would have not closed the stream, and instead
+  raised as an unhandled async error.
 
 ## 2.1.0
 
