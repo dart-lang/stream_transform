@@ -75,7 +75,8 @@ void main() {
         expect(isDone, true);
       });
 
-      test('ignores errors from the close trigger after stream closed', () async {
+      test('ignores errors from the close trigger after stream closed',
+          () async {
         await values.close();
         closeTrigger.completeError('sad');
         await Future(() {});
