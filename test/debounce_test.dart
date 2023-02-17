@@ -4,6 +4,7 @@
 
 import 'dart:async';
 
+import 'package:fake_async/fake_async.dart';
 import 'package:stream_transform/stream_transform.dart';
 import 'package:test/test.dart';
 
@@ -31,63 +32,83 @@ void main() {
           errors = [];
           isDone = false;
           transformed = values.stream.debounce(const Duration(milliseconds: 5));
+        });
+
+        void listen() {
           subscription = transformed
               .listen(emittedValues.add, onError: errors.add, onDone: () {
             isDone = true;
           });
-        });
+        }
 
         test('cancels values', () async {
+          listen();
           await subscription.cancel();
           expect(valuesCanceled, true);
         });
 
-        test('swallows values that come faster than duration', () async {
-          values
-            ..add(1)
-            ..add(2);
-          await values.close();
-          await waitForTimer(5);
-          expect(emittedValues, [2]);
+        test('swallows values that come faster than duration', () {
+          fakeAsync((async) {
+            listen();
+            values
+              ..add(1)
+              ..add(2)
+              ..close();
+            async.elapse(const Duration(milliseconds: 6));
+            expect(emittedValues, [2]);
+          });
         });
 
-        test('outputs multiple values spaced further than duration', () async {
-          values.add(1);
-          await waitForTimer(5);
-          values.add(2);
-          await waitForTimer(5);
-          expect(emittedValues, [1, 2]);
+        test('outputs multiple values spaced further than duration', () {
+          fakeAsync((async) {
+            listen();
+            values.add(1);
+            async.elapse(const Duration(milliseconds: 6));
+            values.add(2);
+            async.elapse(const Duration(milliseconds: 6));
+            expect(emittedValues, [1, 2]);
+          });
         });
 
-        test('waits for pending value to close', () async {
-          values.add(1);
-          await waitForTimer(5);
-          await values.close();
-          await Future(() {});
-          expect(isDone, true);
+        test('waits for pending value to close', () {
+          fakeAsync((async) {
+            listen();
+            values.add(1);
+            async.elapse(const Duration(milliseconds: 6));
+            values.close();
+            async.flushMicrotasks();
+            expect(isDone, true);
+          });
         });
 
-        test('closes output if there are no pending values', () async {
-          values.add(1);
-          await waitForTimer(5);
-          values.add(2);
-          await Future(() {});
-          await values.close();
-          expect(isDone, false);
-          await waitForTimer(5);
-          expect(isDone, true);
+        test('closes output if there are no pending values', () {
+          fakeAsync((async) {
+            listen();
+            values.add(1);
+            async.elapse(const Duration(milliseconds: 6));
+            values
+              ..add(2)
+              ..close();
+            async.flushMicrotasks();
+            expect(isDone, false);
+            async.elapse(const Duration(milliseconds: 6));
+            expect(isDone, true);
+          });
         });
 
         if (streamType == 'broadcast') {
-          test('multiple listeners all get values', () async {
-            var otherValues = [];
-            transformed.listen(otherValues.add);
-            values
-              ..add(1)
-              ..add(2);
-            await waitForTimer(5);
-            expect(emittedValues, [2]);
-            expect(otherValues, [2]);
+          test('multiple listeners all get values', () {
+            fakeAsync((async) {
+              listen();
+              var otherValues = [];
+              transformed.listen(otherValues.add);
+              values
+                ..add(1)
+                ..add(2);
+              async.elapse(const Duration(milliseconds: 6));
+              expect(emittedValues, [2]);
+              expect(otherValues, [2]);
+            });
           });
         }
       });
@@ -103,13 +124,17 @@ void main() {
           emittedValues = [];
           isDone = false;
           transformed = values.stream.debounce(const Duration(milliseconds: 5),
-              leading: true, trailing: false)
-            ..listen(emittedValues.add, onDone: () {
-              isDone = true;
-            });
+              leading: true, trailing: false);
         });
 
+        void listen() {
+          transformed.listen(emittedValues.add, onDone: () {
+            isDone = true;
+          });
+        }
+
         test('swallows values that come faster than duration', () async {
+          listen();
           values
             ..add(1)
             ..add(2);
@@ -117,29 +142,36 @@ void main() {
           expect(emittedValues, [1]);
         });
 
-        test('outputs multiple values spaced further than duration', () async {
-          values.add(1);
-          await waitForTimer(5);
-          values.add(2);
-          await waitForTimer(5);
-          expect(emittedValues, [1, 2]);
+        test('outputs multiple values spaced further than duration', () {
+          fakeAsync((async) {
+            listen();
+            values.add(1);
+            async.elapse(const Duration(milliseconds: 6));
+            values.add(2);
+            async.elapse(const Duration(milliseconds: 6));
+            expect(emittedValues, [1, 2]);
+          });
         });
 
         if (streamType == 'broadcast') {
-          test('multiple listeners all get values', () async {
-            var otherValues = [];
-            transformed.listen(otherValues.add);
-            values
-              ..add(1)
-              ..add(2);
-            await waitForTimer(5);
-            expect(emittedValues, [1]);
-            expect(otherValues, [1]);
+          test('multiple listeners all get values', () {
+            fakeAsync((async) {
+              listen();
+              var otherValues = [];
+              transformed.listen(otherValues.add);
+              values
+                ..add(1)
+                ..add(2);
+              async.elapse(const Duration(milliseconds: 6));
+              expect(emittedValues, [1]);
+              expect(otherValues, [1]);
+            });
           });
         }
 
         test('closes output immediately if not waiting for trailing value',
             () async {
+          listen();
           values.add(1);
           await values.close();
           expect(isDone, true);
@@ -155,38 +187,49 @@ void main() {
           values = createController(streamType);
           emittedValues = [];
           transformed = values.stream.debounce(const Duration(milliseconds: 5),
-              leading: true, trailing: true)
-            ..listen(emittedValues.add);
+              leading: true, trailing: true);
+        });
+        void listen() {
+          transformed.listen(emittedValues.add);
+        }
+
+        test('swallows values that come faster than duration', () {
+          fakeAsync((async) {
+            listen();
+            values
+              ..add(1)
+              ..add(2)
+              ..add(3)
+              ..close();
+            async.elapse(const Duration(milliseconds: 6));
+            expect(emittedValues, [1, 3]);
+          });
         });
 
-        test('swallows values that come faster than duration', () async {
-          values
-            ..add(1)
-            ..add(2)
-            ..add(3);
-          await values.close();
-          await waitForTimer(5);
-          expect(emittedValues, [1, 3]);
-        });
-
-        test('outputs multiple values spaced further than duration', () async {
-          values.add(1);
-          await waitForTimer(5);
-          values.add(2);
-          await waitForTimer(5);
-          expect(emittedValues, [1, 2]);
+        test('outputs multiple values spaced further than duration', () {
+          fakeAsync((async) {
+            listen();
+            values.add(1);
+            async.elapse(const Duration(milliseconds: 6));
+            values.add(2);
+            async.elapse(const Duration(milliseconds: 6));
+            expect(emittedValues, [1, 2]);
+          });
         });
 
         if (streamType == 'broadcast') {
-          test('multiple listeners all get values', () async {
-            var otherValues = [];
-            transformed.listen(otherValues.add);
-            values
-              ..add(1)
-              ..add(2);
-            await waitForTimer(5);
-            expect(emittedValues, [1, 2]);
-            expect(otherValues, [1, 2]);
+          test('multiple listeners all get values', () {
+            fakeAsync((async) {
+              listen();
+              var otherValues = [];
+              transformed.listen(otherValues.add);
+              values
+                ..add(1)
+                ..add(2);
+              async.elapse(const Duration(milliseconds: 6));
+              expect(emittedValues, [1, 2]);
+              expect(otherValues, [1, 2]);
+            });
           });
         }
       });
@@ -201,48 +244,59 @@ void main() {
           values = createController(streamType);
           emittedValues = [];
           errors = [];
-          transformed = values.stream
-              .debounceBuffer(const Duration(milliseconds: 5))
-            ..listen(emittedValues.add, onError: errors.add);
+          transformed =
+              values.stream.debounceBuffer(const Duration(milliseconds: 5));
         });
+        void listen() {
+          transformed.listen(emittedValues.add, onError: errors.add);
+        }
 
-        test('Emits all values as a list', () async {
-          values
-            ..add(1)
-            ..add(2);
-          await values.close();
-          await waitForTimer(5);
-          expect(emittedValues, [
-            [1, 2]
-          ]);
-        });
-
-        test('separate lists for multiple values spaced further than duration',
-            () async {
-          values.add(1);
-          await waitForTimer(5);
-          values.add(2);
-          await waitForTimer(5);
-          expect(emittedValues, [
-            [1],
-            [2]
-          ]);
-        });
-
-        if (streamType == 'broadcast') {
-          test('multiple listeners all get values', () async {
-            var otherValues = [];
-            transformed.listen(otherValues.add);
+        test('Emits all values as a list', () {
+          fakeAsync((async) {
+            listen();
             values
               ..add(1)
-              ..add(2);
-            await waitForTimer(5);
+              ..add(2)
+              ..close();
+            async.elapse(const Duration(milliseconds: 6));
             expect(emittedValues, [
               [1, 2]
             ]);
-            expect(otherValues, [
-              [1, 2]
+          });
+        });
+
+        test('separate lists for multiple values spaced further than duration',
+            () {
+          fakeAsync((async) {
+            listen();
+            values.add(1);
+            async.elapse(const Duration(milliseconds: 6));
+            values.add(2);
+            async.elapse(const Duration(milliseconds: 6));
+            expect(emittedValues, [
+              [1],
+              [2]
             ]);
+          });
+        });
+
+        if (streamType == 'broadcast') {
+          test('multiple listeners all get values', () {
+            fakeAsync((async) {
+              listen();
+              var otherValues = [];
+              transformed.listen(otherValues.add);
+              values
+                ..add(1)
+                ..add(2);
+              async.elapse(const Duration(milliseconds: 6));
+              expect(emittedValues, [
+                [1, 2]
+              ]);
+              expect(otherValues, [
+                [1, 2]
+              ]);
+            });
           });
         }
       });

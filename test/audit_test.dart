@@ -47,47 +47,57 @@ void main() {
           expect(valuesCanceled, true);
         });
 
-        test('swallows values that come faster than duration', () async {
-          listen();
-          values
-            ..add(1)
-            ..add(2);
-          await values.close();
-          await waitForTimer(5);
-          expect(emittedValues, [2]);
+        test('swallows values that come faster than duration', () {
+          fakeAsync((async) {
+            listen();
+            values
+              ..add(1)
+              ..add(2)
+              ..close();
+            async.elapse(const Duration(milliseconds: 6));
+            expect(emittedValues, [2]);
+          });
         });
 
-        test('outputs multiple values spaced further than duration', () async {
-          listen();
-          values.add(1);
-          await waitForTimer(5);
-          values.add(2);
-          await waitForTimer(5);
-          expect(emittedValues, [1, 2]);
+        test('outputs multiple values spaced further than duration', () {
+          fakeAsync((async) {
+            listen();
+            values.add(1);
+            async.elapse(const Duration(milliseconds: 6));
+            values.add(2);
+            async.elapse(const Duration(milliseconds: 6));
+            expect(emittedValues, [1, 2]);
+          });
         });
 
-        test('waits for pending value to close', () async {
-          listen();
-          values.add(1);
-          await values.close();
-          expect(isDone, false);
-          await waitForTimer(5);
-          expect(isDone, true);
+        test('waits for pending value to close', () {
+          fakeAsync((async) {
+            listen();
+            values
+              ..add(1)
+              ..close();
+            expect(isDone, false);
+            async.elapse(const Duration(milliseconds: 6));
+            expect(isDone, true);
+          });
         });
 
-        test('closes output if there are no pending values', () async {
-          listen();
-          values.add(1);
-          await waitForTimer(5);
-          values.add(2);
-          await values.close();
-          expect(isDone, false);
-          await waitForTimer(5);
-          expect(isDone, true);
+        test('closes output if there are no pending values', () {
+          fakeAsync((async) {
+            listen();
+            values.add(1);
+            async.elapse(const Duration(milliseconds: 6));
+            values
+              ..add(2)
+              ..close();
+            expect(isDone, false);
+            async.elapse(const Duration(milliseconds: 6));
+            expect(isDone, true);
+          });
         });
 
         test('does not starve output if many values come closer than duration',
-            () async {
+            () {
           fakeAsync((async) {
             listen();
             values.add(1);
@@ -101,16 +111,18 @@ void main() {
         });
 
         if (streamType == 'broadcast') {
-          test('multiple listeners all get values', () async {
-            listen();
-            var otherValues = [];
-            transformed.listen(otherValues.add);
-            values
-              ..add(1)
-              ..add(2);
-            await waitForTimer(5);
-            expect(emittedValues, [2]);
-            expect(otherValues, [2]);
+          test('multiple listeners all get values', () {
+            fakeAsync((async) {
+              listen();
+              var otherValues = [];
+              transformed.listen(otherValues.add);
+              values
+                ..add(1)
+                ..add(2);
+              async.elapse(const Duration(milliseconds: 6));
+              expect(emittedValues, [2]);
+              expect(otherValues, [2]);
+            });
           });
         }
       });
