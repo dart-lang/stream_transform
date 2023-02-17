@@ -86,7 +86,7 @@ void main() {
           values.add(3);
           await waitForTimer(6);
           expect(emittedValues, [2, 3]);
-        });
+        }, onPlatform: const {'browser': Skip('Timer timing is unreliable')});
 
         if (streamType == 'broadcast') {
           test('multiple listeners all get values', () async {
