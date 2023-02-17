@@ -55,7 +55,7 @@ extension AsyncExpand<T> on Stream<T> {
     var hasActiveListener = !isBroadcast;
     final subscriptions =
         LinkedHashMap<Stream<S>, StreamSubscription<S>?>.identity();
-    void listen(Stream<S> stream) {
+    void listenInner(Stream<S> stream) {
       if (!hasActiveListener && stream.isBroadcast) {
         // onListen will start the subscription when the result gets a listener
         subscriptions[stream] = null;
@@ -76,8 +76,8 @@ extension AsyncExpand<T> on Stream<T> {
 
     StreamSubscription<Stream<S>> listenOuter() {
       assert(outerSubscription == null);
-      return outerSubscription =
-          map(convert).listen(listen, onError: controller.addError, onDone: () {
+      return outerSubscription = map(convert)
+          .listen(listenInner, onError: controller.addError, onDone: () {
         outerSubscription = null;
         if (subscriptions.isEmpty) controller.close();
       });
@@ -88,11 +88,6 @@ extension AsyncExpand<T> on Stream<T> {
     controller.onListen = () {
       assert(isBroadcast || subscriptions.isEmpty);
       hasActiveListener = true;
-      for (final stream in subscriptions.keys) {
-        if (stream.isBroadcast) {
-          listen(stream);
-        }
-      }
       if (!isBroadcast) {
         final subscription = listenOuter();
         controller
@@ -108,6 +103,10 @@ extension AsyncExpand<T> on Stream<T> {
               subscription?.resume();
             }
           };
+      } else {
+        subscriptions.keys
+            .where((stream) => stream.isBroadcast)
+            .forEach(listenInner);
       }
       controller.onCancel = () {
         hasActiveListener = false;
