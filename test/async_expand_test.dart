@@ -103,20 +103,6 @@ void main() {
           expect(errors, ['Error']);
         });
 
-        if (outerType != 'broadcast') {
-          test('cancels outer subscription if output canceled', () async {
-            listen();
-            await subscription.cancel();
-            expect(outerCanceled, true);
-          });
-        } else {
-          test('does not cancel outer subscription', () async {
-            listen();
-            await subscription.cancel();
-            expect(outerCanceled, false);
-          });
-        }
-
         if (outerType != 'broadcast' || innerType != 'single subscription') {
           // A single subscription inner stream in a broadcast outer stream is
           // not canceled.
@@ -246,9 +232,15 @@ void main() {
             expect(emittedValues, ['First', 'Second']);
           });
 
+          test('never cancels outer subscription', () async {
+            listen();
+            await subscription.cancel();
+            expect(outerCanceled, false);
+          });
+
           test(
-              'continues to listen to the source stream while there are no '
-              'listeners on the result stream', () async {
+              'handles streams that arrive while the result stream has no '
+              'listeners', () async {
             listen();
             final first = createController<String>(innerType);
             outerController.add(first);
@@ -279,6 +271,12 @@ void main() {
 
             expect(emittedValues, ['First']);
             expect(laterEmittedValues, ['First again', 'Second', 'Third']);
+          });
+        } else {
+          test('cancels outer subscription if output canceled', () async {
+            listen();
+            await subscription.cancel();
+            expect(outerCanceled, true);
           });
         }
       });
