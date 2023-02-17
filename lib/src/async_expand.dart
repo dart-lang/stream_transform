@@ -118,8 +118,7 @@ extension AsyncExpand<T> on Stream<T> {
           if (!isBroadcast && outerSubscription != null)
             outerSubscription!.cancel(),
           for (var entry in subscriptions.entries)
-            if ((!isBroadcast || entry.key.isBroadcast) && entry.value != null)
-              entry.value!.cancel()
+            if (!isBroadcast || entry.key.isBroadcast) entry.value!.cancel()
         }
           // Handle opt-out nulls
           ..removeWhere((Object? f) => f == null);
