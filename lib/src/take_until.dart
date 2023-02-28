@@ -14,8 +14,8 @@ extension TakeUntil<T> on Stream<T> {
   /// in transformations following the takeUtil, will still go through.
   /// Cancelling a subscription immediately stops values.
   ///
-  /// If [trigger] completes as an error, the error will be forwared through the
-  /// result stream before the result stream closes.
+  /// If [trigger] completes as an error, the error will be forwarded through
+  /// the result stream before the result stream closes.
   ///
   /// If [trigger] completes as a value or as an error after this stream has
   /// already ended, the completion will be ignored.
