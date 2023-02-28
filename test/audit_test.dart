@@ -91,8 +91,10 @@ void main() {
               ..add(2)
               ..close();
             expect(isDone, false);
+            expect(emittedValues, [1]);
             async.elapse(const Duration(milliseconds: 6));
             expect(isDone, true);
+            expect(emittedValues, [1, 2]);
           });
         });
 
@@ -105,23 +107,30 @@ void main() {
             values.add(2);
             async.elapse(const Duration(milliseconds: 3));
             values.add(3);
-            async.elapse(const Duration(milliseconds: 7));
+            async.elapse(const Duration(milliseconds: 6));
             expect(emittedValues, [2, 3]);
           });
         });
 
         if (streamType == 'broadcast') {
-          test('multiple listeners all get values', () {
+          test('multiple listeners all get the values', () {
             fakeAsync((async) {
               listen();
+              values.add(1);
+              async.elapse(const Duration(milliseconds: 3));
+              values.add(2);
               var otherValues = [];
               transformed.listen(otherValues.add);
+              values.add(3);
+              async.elapse(const Duration(milliseconds: 3));
+              values.add(4);
+              async.elapse(const Duration(milliseconds: 3));
               values
-                ..add(1)
-                ..add(2);
+                ..add(5)
+                ..close();
               async.elapse(const Duration(milliseconds: 6));
-              expect(emittedValues, [2]);
-              expect(otherValues, [2]);
+              expect(emittedValues, [3, 5]);
+              expect(otherValues, [3, 5]);
             });
           });
         }
