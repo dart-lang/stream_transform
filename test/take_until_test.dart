@@ -68,6 +68,21 @@ void main() {
         expect(isDone, true);
       });
 
+      test('forwards errors from the close trigger', () async {
+        closeTrigger.completeError('sad');
+        await Future(() {});
+        expect(errors, ['sad']);
+        expect(isDone, true);
+      });
+
+      test('ignores errors from the close trigger after stream closed',
+          () async {
+        await values.close();
+        closeTrigger.completeError('sad');
+        await Future(() {});
+        expect(errors, []);
+      });
+
       test('cancels value subscription when trigger fires', () async {
         closeTrigger.complete();
         await Future(() {});

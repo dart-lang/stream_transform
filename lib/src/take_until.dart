@@ -13,6 +13,12 @@ extension TakeUntil<T> on Stream<T> {
   /// which are emitted before the trigger, but have further asynchronous delays
   /// in transformations following the takeUtil, will still go through.
   /// Cancelling a subscription immediately stops values.
+  ///
+  /// If [trigger] completes as an error, the error will be forwarded through
+  /// the result stream before the result stream closes.
+  ///
+  /// If [trigger] completes as a value or as an error after this stream has
+  /// already ended, the completion will be ignored.
   Stream<T> takeUntil(Future<void> trigger) {
     var controller = isBroadcast
         ? StreamController<T>.broadcast(sync: true)
@@ -25,6 +31,12 @@ extension TakeUntil<T> on Stream<T> {
       isDone = true;
       subscription?.cancel();
       controller.close();
+    }, onError: (Object error, StackTrace stackTrace) {
+      if (isDone) return;
+      isDone = true;
+      controller
+        ..addError(error, stackTrace)
+        ..close();
     });
 
     controller.onListen = () {
