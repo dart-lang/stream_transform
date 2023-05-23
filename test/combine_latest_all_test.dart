@@ -49,6 +49,44 @@ void main() {
       await first.close();
     });
 
+    test('emits latest values without waiting', () async {
+      final first = StreamController<String>();
+      final second = StreamController<String>();
+      final third = StreamController<String>();
+      final combined = first.stream.combineLatestAll(
+          [second.stream, third.stream], waitAll: false).map((data) => data.join());
+
+      // first:    a------b--------------------c--------d---|
+      // second:   ---1------------2-----------------|
+      // third:    -----------&----------%----|
+      // combined: a--a1--b1--b1&--b2&---b2%---c2%------d2%-|
+
+      expect(combined,
+          emitsInOrder(['a', 'a1', 'b1', 'b1&', 'b2&', 'b2%', 'c2%', 'd2%', emitsDone]));
+
+      first.add('a');
+      await tick();
+      second.add('1');
+      await tick();
+      first.add('b');
+      await tick();
+      third.add('&');
+      await tick();
+      second.add('2');
+      await tick();
+      third.add('%');
+      await tick();
+      await third.close();
+      await tick();
+      first.add('c');
+      await tick();
+      await second.close();
+      await tick();
+      first.add('d');
+      await tick();
+      await first.close();
+    });
+
     test('ends if a Stream closes without ever emitting a value', () async {
       final first = StreamController<String>();
       final second = StreamController<String>();
