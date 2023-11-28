@@ -9,7 +9,7 @@ import 'package:test/test.dart';
 
 void main() {
   test('calls function for values', () async {
-    var valuesSeen = [];
+    var valuesSeen = <int>[];
     var stream = Stream.fromIterable([1, 2, 3]);
     await stream.tap(valuesSeen.add).last;
     expect(valuesSeen, [1, 2, 3]);
@@ -23,7 +23,7 @@ void main() {
 
   test('calls function for errors', () async {
     dynamic error;
-    var source = StreamController();
+    var source = StreamController<int>();
     source.stream.tap((_) {}, onError: (e, st) {
       error = e;
     }).listen((_) {}, onError: (_) {});
@@ -34,8 +34,9 @@ void main() {
 
   test('forwards errors', () async {
     dynamic error;
-    var source = StreamController();
-    source.stream.tap((_) {}, onError: (e, st) {}).listen((_) {}, onError: (e) {
+    var source = StreamController<int>();
+    source.stream.tap((_) {}, onError: (e, st) {}).listen((_) {},
+        onError: (Object e) {
       error = e;
     });
     source.addError('error');
@@ -45,7 +46,7 @@ void main() {
 
   test('calls function on done', () async {
     var doneCalled = false;
-    var source = StreamController();
+    var source = StreamController<int>();
     source.stream.tap((_) {}, onDone: () {
       doneCalled = true;
     }).listen((_) {});
@@ -56,7 +57,7 @@ void main() {
   test('forwards only once with multiple listeners on a broadcast stream',
       () async {
     var dataCallCount = 0;
-    var source = StreamController.broadcast();
+    var source = StreamController<int>.broadcast();
     source.stream.tap((_) {
       dataCallCount++;
     })
@@ -71,7 +72,7 @@ void main() {
       'forwards errors only once with multiple listeners on a broadcast stream',
       () async {
     var errorCallCount = 0;
-    var source = StreamController.broadcast();
+    var source = StreamController<int>.broadcast();
     source.stream.tap((_) {}, onError: (_, __) {
       errorCallCount++;
     })
@@ -85,7 +86,7 @@ void main() {
   test('calls onDone only once with multiple listeners on a broadcast stream',
       () async {
     var doneCallCount = 0;
-    var source = StreamController.broadcast();
+    var source = StreamController<int>.broadcast();
     source.stream.tap((_) {}, onDone: () {
       doneCallCount++;
     })
@@ -96,9 +97,9 @@ void main() {
   });
 
   test('forwards values to multiple listeners', () async {
-    var source = StreamController.broadcast();
-    var emittedValues1 = [];
-    var emittedValues2 = [];
+    var source = StreamController<int>.broadcast();
+    var emittedValues1 = <int>[];
+    var emittedValues2 = <int>[];
     source.stream.tap((_) {})
       ..listen(emittedValues1.add)
       ..listen(emittedValues2.add);

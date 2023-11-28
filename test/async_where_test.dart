@@ -37,8 +37,8 @@ void main() {
   test('forwards values to multiple listeners', () async {
     var values = StreamController<int>.broadcast();
     var filtered = values.stream.asyncWhere((e) async => e > 2);
-    var firstValues = [];
-    var secondValues = [];
+    var firstValues = <int>[];
+    var secondValues = <int>[];
     filtered
       ..listen(firstValues.add)
       ..listen(secondValues.add);
@@ -53,7 +53,7 @@ void main() {
   });
 
   test('closes streams with multiple listeners', () async {
-    var values = StreamController.broadcast();
+    var values = StreamController<int>.broadcast();
     var predicate = Completer<bool>();
     var filtered = values.stream.asyncWhere((_) => predicate.future);
     var firstDone = false;
@@ -73,15 +73,15 @@ void main() {
   });
 
   test('forwards errors emitted by the test callback', () async {
-    var errors = [];
-    var emitted = [];
+    var errors = <Object>[];
+    var emitted = <Object>[];
     var values = Stream.fromIterable([1, 2, 3, 4]);
     var filtered = values.asyncWhere((e) async {
       await Future(() {});
       if (e.isEven) throw Exception('$e');
       return true;
     });
-    var done = Completer();
+    var done = Completer<Object?>();
     filtered.listen(emitted.add, onError: errors.add, onDone: done.complete);
     await done.future;
     expect(emitted, [1, 3]);

@@ -158,7 +158,7 @@ void main() {
 
       if (streamType == 'broadcast') {
         test('multiple listeners all get values', () async {
-          var otherValues = [];
+          var otherValues = <String>[];
           transformed.listen(otherValues.add);
           values.add(1);
           await Future(() {});

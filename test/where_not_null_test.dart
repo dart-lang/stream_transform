@@ -23,8 +23,8 @@ void main() {
   test('forwards values to multiple listeners', () async {
     var values = StreamController<Object?>.broadcast();
     var filtered = values.stream.whereNotNull();
-    var firstValues = [];
-    var secondValues = [];
+    var firstValues = <Object>[];
+    var secondValues = <Object>[];
     filtered
       ..listen(firstValues.add)
       ..listen(secondValues.add);

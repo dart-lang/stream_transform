@@ -19,7 +19,8 @@ extension Switch<T> on Stream<T> {
   ///
   /// This means that the source stream is not paused until a sub stream
   /// returned from the [convert] callback is done. Instead, the subscription
-  /// to the sub stream is canceled as soon as the source stream emits a new event.
+  /// to the sub stream is canceled as soon as the source stream emits a new
+  /// event.
   ///
   /// Errors from [convert], the source stream, or any of the sub streams are
   /// forwarded to the result stream.
@@ -36,7 +37,8 @@ extension Switch<T> on Stream<T> {
   ///
   /// See also:
   /// - [concurrentAsyncExpand], which emits events from all sub streams
-  ///   concurrently instead of cancelling subscriptions to previous subs streams.
+  ///   concurrently instead of cancelling subscriptions to previous subs
+  ///   streams.
   Stream<S> switchMap<S>(Stream<S> Function(T) convert) {
     return map(convert).switchLatest();
   }

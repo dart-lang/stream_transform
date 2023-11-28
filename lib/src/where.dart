@@ -28,10 +28,10 @@ extension Where<T> on Stream<T> {
   /// Events on the result stream will be emitted in the order that [test]
   /// completes which may not match the order of this stream.
   ///
-  /// If the source stream is a broadcast stream the result will be as well. When
-  /// used with a broadcast stream behavior also differs from [where] in that
-  /// the [test] function is only called once per event, rather than once per
-  /// listener per event.
+  /// If the source stream is a broadcast stream the result will be as well.
+  /// When used with a broadcast stream behavior also differs from [where] in
+  /// that the [test] function is only called once per event, rather than once
+  /// per listener per event.
   ///
   /// Errors from the source stream are forwarded directly to the result stream.
   /// Errors from [test] are also forwarded to the result stream.

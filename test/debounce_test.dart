@@ -100,7 +100,7 @@ void main() {
           test('multiple listeners all get values', () {
             fakeAsync((async) {
               listen();
-              var otherValues = [];
+              var otherValues = <int>[];
               transformed.listen(otherValues.add);
               values
                 ..add(1)
@@ -157,7 +157,7 @@ void main() {
           test('multiple listeners all get values', () {
             fakeAsync((async) {
               listen();
-              var otherValues = [];
+              var otherValues = <int>[];
               transformed.listen(otherValues.add);
               values
                 ..add(1)
@@ -221,7 +221,7 @@ void main() {
           test('multiple listeners all get values', () {
             fakeAsync((async) {
               listen();
-              var otherValues = [];
+              var otherValues = <int>[];
               transformed.listen(otherValues.add);
               values
                 ..add(1)
@@ -284,7 +284,7 @@ void main() {
           test('multiple listeners all get values', () {
             fakeAsync((async) {
               listen();
-              var otherValues = [];
+              var otherValues = <List<int>>[];
               transformed.listen(otherValues.add);
               values
                 ..add(1)

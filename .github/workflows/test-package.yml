@@ -47,8 +47,8 @@ jobs:
       matrix:
         # Add macos-latest and/or windows-latest if relevant for this package.
         os: [ubuntu-latest]
-        # Bump SDK for Legacy tets when changning min SDK.
-        sdk: [2.18.0, dev]
+        # Bump SDK for Legacy tests when changing min SDK.
+        sdk: [3.1, dev]
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
       - uses: dart-lang/setup-dart@b64355ae6ca0b5d484f0106a033dd1388965d06d

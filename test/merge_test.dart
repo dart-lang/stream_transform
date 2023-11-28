@@ -20,12 +20,12 @@ void main() {
 
     test('cancels both sources', () async {
       var firstCanceled = false;
-      var first = StreamController()
+      var first = StreamController<int>()
         ..onCancel = () {
           firstCanceled = true;
         };
       var secondCanceled = false;
-      var second = StreamController()
+      var second = StreamController<int>()
         ..onCancel = () {
           secondCanceled = true;
         };
@@ -36,8 +36,8 @@ void main() {
     });
 
     test('completes when both sources complete', () async {
-      var first = StreamController();
-      var second = StreamController();
+      var first = StreamController<int>();
+      var second = StreamController<int>();
       var isDone = false;
       first.stream.merge(second.stream).listen((_) {}, onDone: () {
         isDone = true;
@@ -49,9 +49,9 @@ void main() {
     });
 
     test('can cancel and relisten to broadcast stream', () async {
-      var first = StreamController.broadcast();
-      var second = StreamController();
-      var emittedValues = [];
+      var first = StreamController<int>.broadcast();
+      var second = StreamController<int>();
+      var emittedValues = <int>[];
       var transformed = first.stream.merge(second.stream);
       var subscription = transformed.listen(emittedValues.add);
       first.add(1);
@@ -84,17 +84,17 @@ void main() {
 
     test('handles mix of broadcast and single-subscription', () async {
       var firstCanceled = false;
-      var first = StreamController.broadcast()
+      var first = StreamController<int>.broadcast()
         ..onCancel = () {
           firstCanceled = true;
         };
       var secondBroadcastCanceled = false;
-      var secondBroadcast = StreamController.broadcast()
+      var secondBroadcast = StreamController<int>.broadcast()
         ..onCancel = () {
           secondBroadcastCanceled = true;
         };
       var secondSingleCanceled = false;
-      var secondSingle = StreamController()
+      var secondSingle = StreamController<int>()
         ..onCancel = () {
           secondSingleCanceled = true;
         };
@@ -102,8 +102,8 @@ void main() {
       var merged =
           first.stream.mergeAll([secondBroadcast.stream, secondSingle.stream]);
 
-      var firstListenerValues = [];
-      var secondListenerValues = [];
+      var firstListenerValues = <int>[];
+      var secondListenerValues = <int>[];
 
       var firstSubscription = merged.listen(firstListenerValues.add);
       var secondSubscription = merged.listen(secondListenerValues.add);

@@ -80,7 +80,7 @@ void main() {
         await values.close();
         closeTrigger.completeError('sad');
         await Future(() {});
-        expect(errors, []);
+        expect(errors, <Object>[]);
       });
 
       test('cancels value subscription when trigger fires', () async {
@@ -91,7 +91,7 @@ void main() {
 
       if (streamType == 'broadcast') {
         test('multiple listeners all get values', () async {
-          var otherValues = [];
+          var otherValues = <Object>[];
           transformed.listen(otherValues.add);
           values
             ..add(1)
