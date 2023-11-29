@@ -119,7 +119,7 @@ void main() {
               values.add(1);
               async.elapse(const Duration(milliseconds: 3));
               values.add(2);
-              var otherValues = [];
+              var otherValues = <int>[];
               transformed.listen(otherValues.add);
               values.add(3);
               async.elapse(const Duration(milliseconds: 3));

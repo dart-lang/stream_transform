@@ -18,7 +18,7 @@ void main() {
     });
 
     test('can create a broadcast stream', () {
-      var source = StreamController.broadcast();
+      var source = StreamController<int>.broadcast();
 
       var transformed = source.stream.scan(null, (_, __) {});
 
@@ -30,7 +30,7 @@ void main() {
 
       int sum(int x, int y) => x + y;
 
-      var errors = [];
+      var errors = <Object>[];
 
       source.stream.scan(0, sum).listen(null, onError: errors.add);
 
@@ -95,7 +95,7 @@ void main() {
 
         Future<int> combine(int x, int y) async => throw StateError('fail');
 
-        var errors = [];
+        var errors = <Object>[];
 
         source.stream.scan(0, combine).listen(null, onError: errors.add);
 

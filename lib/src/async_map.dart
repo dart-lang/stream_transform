@@ -59,8 +59,8 @@ extension AsyncMap<T> on Stream<T> {
   /// pending event.
   ///
   /// Errors from this stream are forwarded directly to the result stream.
-  /// Errors during the conversion are also forwarded to the result stream and are
-  /// considered completing work so the next values are let through.
+  /// Errors during the conversion are also forwarded to the result stream and
+  /// are considered completing work so the next values are let through.
   ///
   /// The result stream will not close until this stream closes and all pending
   /// conversions have finished.
@@ -72,7 +72,7 @@ extension AsyncMap<T> on Stream<T> {
             trigger: workFinished.stream,
             aggregate: _dropPrevious,
             longPoll: true,
-            onEmpty: _ignore)
+            onEmpty: _ignore<T>)
         ._asyncMapThen(convert, workFinished.add);
   }
 

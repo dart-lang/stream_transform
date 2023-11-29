@@ -152,11 +152,11 @@ extension CombineLatest<T> on Stream<T> {
   /// at least once, the result stream will emit any time any source stream
   /// emits.
   ///
-  /// The result stream will not close until all source streams have closed. When
-  /// a source stream closes, the result stream will continue to emit the last
-  /// value from the closed stream when the other source streams emit until the
-  /// result stream has closed. If a source stream closes without emitting any
-  /// value, the result stream will close as well.
+  /// The result stream will not close until all source streams have closed.
+  /// When a source stream closes, the result stream will continue to emit the
+  /// last value from the closed stream when the other source streams emit until
+  /// the result stream has closed. If a source stream closes without emitting
+  /// any value, the result stream will close as well.
   ///
   /// For example:
   ///

@@ -228,7 +228,7 @@ void main() {
           test('emits empty list before values', () async {
             trigger.add(null);
             await Future(() {});
-            expect(emittedValues, [[]]);
+            expect(emittedValues, [<int>[]]);
           });
 
           test('emits empty list after emitting values', () async {
@@ -242,7 +242,7 @@ void main() {
             await Future(() {});
             expect(emittedValues, [
               [1, 2],
-              []
+              <int>[]
             ]);
           });
         });

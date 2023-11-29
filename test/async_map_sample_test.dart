@@ -158,7 +158,7 @@ void main() {
 
       if (streamType == 'broadcast') {
         test('multiple listeners all get values', () async {
-          var otherValues = [];
+          var otherValues = <String>[];
           transformed.listen(otherValues.add);
           values.add(1);
           await Future(() {});
@@ -204,6 +204,6 @@ void main() {
 
   test('allows nulls', () async {
     var stream = Stream<int?>.value(null);
-    await stream.asyncMapSample(expectAsync1((_) async {})).drain();
+    await stream.asyncMapSample(expectAsync1((_) async {})).drain<void>();
   });
 }

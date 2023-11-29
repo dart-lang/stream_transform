@@ -196,7 +196,7 @@ void main() {
     test('uses map function', () async {
       var outer = StreamController<List<int>>();
 
-      var values = [];
+      var values = <int>[];
       outer.stream.switchMap(Stream.fromIterable).listen(values.add);
 
       outer.add([1, 2, 3]);
@@ -207,9 +207,10 @@ void main() {
     });
 
     test('can create a broadcast stream', () async {
-      var outer = StreamController.broadcast();
+      var outer = StreamController<int>.broadcast();
 
-      var transformed = outer.stream.switchMap((_) => const Stream.empty());
+      var transformed =
+          outer.stream.switchMap((_) => const Stream<int>.empty());
 
       expect(transformed.isBroadcast, true);
     });
@@ -217,7 +218,7 @@ void main() {
     test('forwards errors from the convert callback', () async {
       var errors = <String>[];
       var source = Stream.fromIterable([1, 2, 3]);
-      source.switchMap((i) {
+      source.switchMap<int>((i) {
         // ignore: only_throw_errors
         throw 'Error: $i';
       }).listen((_) {}, onError: errors.add);

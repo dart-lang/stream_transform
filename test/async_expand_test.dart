@@ -13,7 +13,7 @@ void main() {
   test('forwards errors from the convert callback', () async {
     var errors = <String>[];
     var source = Stream.fromIterable([1, 2, 3]);
-    source.concurrentAsyncExpand((i) {
+    source.concurrentAsyncExpand<void>((i) {
       // ignore: only_throw_errors
       throw 'Error: $i';
     }).listen((_) {}, onError: errors.add);

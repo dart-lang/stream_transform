@@ -138,13 +138,13 @@ void main() {
           });
 
           test('forwards values to multiple listeners', () async {
-            var otherValues = [];
+            var otherValues = <int>[];
             transformed.listen(otherValues.add);
             first.add(1);
             await first.close();
             second.add(2);
             await Future(() {});
-            var thirdValues = [];
+            var thirdValues = <int>[];
             transformed.listen(thirdValues.add);
             second.add(3);
             await Future(() {});

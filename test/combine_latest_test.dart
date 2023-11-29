@@ -127,7 +127,7 @@ void main() {
       var other = StreamController<int>();
       int sum(int a, int b) => throw _NumberedException(3);
 
-      var errors = [];
+      var errors = <Object>[];
       source.stream
           .combineLatest(other.stream, sum)
           .listen(null, onError: errors.add);
