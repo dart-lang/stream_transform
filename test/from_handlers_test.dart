@@ -36,7 +36,8 @@ void main() {
   group('default from_handlers', () {
     group('Single subscription stream', () {
       setUp(() {
-        setUpForController(StreamController(), (s) => s.transformByHandlers());
+        setUpForController(StreamController(),
+            (s) => s.transformByHandlers(onData: (e, sink) => sink.add(e)));
       });
 
       test('has correct stream type', () {
@@ -75,8 +76,8 @@ void main() {
       late StreamSubscription<int> subscription2;
 
       setUp(() {
-        setUpForController(
-            StreamController.broadcast(), (s) => s.transformByHandlers());
+        setUpForController(StreamController.broadcast(),
+            (s) => s.transformByHandlers(onData: (e, sink) => sink.add(e)));
         emittedValues2 = [];
         errors2 = [];
         isDone2 = false;
