@@ -11,10 +11,9 @@ extension TransformByHandlers<S> on Stream<S> {
   /// that the handlers are called once per event rather than called for the
   /// same event for each listener on a broadcast stream.
   Stream<T> transformByHandlers<T>(
-      {void Function(S, EventSink<T>)? onData,
+      {required void Function(S, EventSink<T>) onData,
       void Function(Object, StackTrace, EventSink<T>)? onError,
       void Function(EventSink<T>)? onDone}) {
-    final handleData = onData ?? _defaultHandleData;
     final handleError = onError ?? _defaultHandleError;
     final handleDone = onDone ?? _defaultHandleDone;
 
@@ -26,7 +25,7 @@ extension TransformByHandlers<S> on Stream<S> {
     controller.onListen = () {
       assert(subscription == null);
       var valuesDone = false;
-      subscription = listen((value) => handleData(value, controller),
+      subscription = listen((value) => onData(value, controller),
           onError: (Object error, StackTrace stackTrace) {
         handleError(error, stackTrace, controller);
       }, onDone: () {
@@ -46,10 +45,6 @@ extension TransformByHandlers<S> on Stream<S> {
       };
     };
     return controller.stream;
-  }
-
-  static void _defaultHandleData<S, T>(S value, EventSink<T> sink) {
-    sink.add(value as T);
   }
 
   static void _defaultHandleError<T>(
