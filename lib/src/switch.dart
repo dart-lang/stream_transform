@@ -128,7 +128,7 @@ extension SwitchLatest<T> on Stream<Stream<T>> {
           // Handle opt-out nulls
           ..removeWhere((Object? f) => f == null);
         if (cancels.isEmpty) return null;
-        return Future.wait(cancels).then(_ignore);
+        return cancels.wait.then(_ignore);
       };
     };
     return controller.stream;
