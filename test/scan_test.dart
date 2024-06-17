@@ -59,7 +59,7 @@ void main() {
           const TypeMatcher<Future<void>>(),
           const TypeMatcher<Future<void>>()
         ]);
-        expect(await Future.wait(result), [1, 3]);
+        expect(await result.wait, [1, 3]);
       });
 
       test('does not call for subsequent values while waiting', () async {

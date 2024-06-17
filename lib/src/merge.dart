@@ -94,7 +94,7 @@ extension Merge<T> on Stream<T> {
           // Handle opt-out nulls
           ..removeWhere((Object? f) => f == null);
         if (cancels.isEmpty) return null;
-        return Future.wait(cancels).then((_) => null);
+        return cancels.wait.then((_) => null);
       };
     };
     return controller.stream;
