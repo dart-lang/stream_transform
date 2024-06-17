@@ -4,6 +4,8 @@
 
 import 'dart:async';
 
+import 'common_callbacks.dart';
+
 /// Utilities to combine events from multiple streams through a callback or into
 /// a list.
 extension CombineLatest<T> on Stream<T> {
@@ -133,7 +135,7 @@ extension CombineLatest<T> on Stream<T> {
           ..removeWhere((Object? f) => f == null);
         sourceSubscription = null;
         otherSubscription = null;
-        return cancels.wait.then((_) => null);
+        return cancels.wait.then(ignoreArgument);
       };
     };
     return controller.stream;
@@ -234,7 +236,7 @@ extension CombineLatest<T> on Stream<T> {
           // Handle opt-out nulls
           ..removeWhere((Object? f) => f == null);
         if (cancels.isEmpty) return null;
-        return cancels.wait.then((_) => null);
+        return cancels.wait.then(ignoreArgument);
       };
     };
     return controller.stream;

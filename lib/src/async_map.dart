@@ -5,6 +5,7 @@
 import 'dart:async';
 
 import 'aggregate_sample.dart';
+import 'common_callbacks.dart';
 import 'from_handlers.dart';
 import 'rate_limit.dart';
 
@@ -72,7 +73,7 @@ extension AsyncMap<T> on Stream<T> {
             trigger: workFinished.stream,
             aggregate: _dropPrevious,
             longPoll: true,
-            onEmpty: _ignore<T>)
+            onEmpty: ignoreArgument)
         ._asyncMapThen(convert, workFinished.add);
   }
 
@@ -133,4 +134,3 @@ extension AsyncMap<T> on Stream<T> {
 }
 
 T _dropPrevious<T>(T event, _) => event;
-void _ignore<T>(Sink<T> sink) {}

@@ -4,6 +4,8 @@
 
 import 'dart:async';
 
+import 'common_callbacks.dart';
+
 /// Utilities to interleave events from multiple streams.
 extension Merge<T> on Stream<T> {
   /// Merges values and errors from this stream and [other] in any order as they
@@ -94,7 +96,7 @@ extension Merge<T> on Stream<T> {
           // Handle opt-out nulls
           ..removeWhere((Object? f) => f == null);
         if (cancels.isEmpty) return null;
-        return cancels.wait.then((_) => null);
+        return cancels.wait.then(ignoreArgument);
       };
     };
     return controller.stream;
