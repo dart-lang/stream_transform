@@ -136,7 +136,7 @@ extension AggregateSample<T> on Stream<T> {
           triggerSub!.pause();
         }
         if (cancels.isEmpty) return null;
-        return Future.wait(cancels).then((_) => null);
+        return cancels.wait.then((_) => null);
       };
     };
     return controller.stream;

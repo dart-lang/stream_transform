@@ -126,7 +126,7 @@ extension SwitchLatest<T> on Stream<Stream<T>> {
           if (sub != null) sub.cancel(),
         ];
         if (cancels.isEmpty) return null;
-        return Future.wait(cancels).then(_ignore);
+        return cancels.wait.then(_ignore);
       };
     };
     return controller.stream;
