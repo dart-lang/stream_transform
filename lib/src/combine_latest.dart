@@ -130,9 +130,7 @@ extension CombineLatest<T> on Stream<T> {
         var cancels = [
           sourceSubscription!.cancel(),
           otherSubscription!.cancel()
-        ]
-          // Handle opt-out nulls
-          ..removeWhere((Object? f) => f == null);
+        ];
         sourceSubscription = null;
         otherSubscription = null;
         return cancels.wait.then(ignoreArgument);
@@ -232,11 +230,9 @@ extension CombineLatest<T> on Stream<T> {
       }
       controller.onCancel = () {
         if (subscriptions.isEmpty) return null;
-        var cancels = [for (var s in subscriptions) s.cancel()]
-          // Handle opt-out nulls
-          ..removeWhere((Object? f) => f == null);
-        if (cancels.isEmpty) return null;
-        return cancels.wait.then(ignoreArgument);
+        return [for (var s in subscriptions) s.cancel()]
+            .wait
+            .then(ignoreArgument);
       };
     };
     return controller.stream;

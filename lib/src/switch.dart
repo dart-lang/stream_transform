@@ -125,9 +125,7 @@ extension SwitchLatest<T> on Stream<Stream<T>> {
         var cancels = [
           if (!outerStreamDone) outerSubscription.cancel(),
           if (sub != null) sub.cancel(),
-        ]
-          // Handle opt-out nulls
-          ..removeWhere((Object? f) => f == null);
+        ];
         if (cancels.isEmpty) return null;
         return cancels.wait.then(ignoreArgument);
       };
