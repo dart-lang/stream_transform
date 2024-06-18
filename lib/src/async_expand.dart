@@ -78,10 +78,7 @@ extension AsyncExpand<T> on Stream<T> {
       }
       controller.onCancel = () {
         if (subscriptions.isEmpty) return null;
-        var cancels = [for (var s in subscriptions) s.cancel()]
-          // Handle opt-out nulls
-          ..removeWhere((Object? f) => f == null);
-        return cancels.wait.then((_) => null);
+        return [for (var s in subscriptions) s.cancel()].wait.then((_) => null);
       };
     };
     return controller.stream;
