@@ -4,6 +4,8 @@
 
 import 'dart:async';
 
+import 'common_callbacks.dart';
+
 extension AggregateSample<T> on Stream<T> {
   /// Computes a value based on sequences of events, then emits that value when
   /// [trigger] emits an event.
@@ -136,7 +138,7 @@ extension AggregateSample<T> on Stream<T> {
           triggerSub!.pause();
         }
         if (cancels.isEmpty) return null;
-        return cancels.wait.then((_) => null);
+        return cancels.wait.then(ignoreArgument);
       };
     };
     return controller.stream;

@@ -5,6 +5,7 @@
 import 'dart:async';
 
 import 'async_expand.dart';
+import 'common_callbacks.dart';
 
 /// A utility to take events from the most recent sub stream returned by a
 /// callback.
@@ -126,12 +127,9 @@ extension SwitchLatest<T> on Stream<Stream<T>> {
           if (sub != null) sub.cancel(),
         ];
         if (cancels.isEmpty) return null;
-        return cancels.wait.then(_ignore);
+        return cancels.wait.then(ignoreArgument);
       };
     };
     return controller.stream;
   }
 }
-
-/// Helper function to ignore future callback
-void _ignore(_, [__]) {}

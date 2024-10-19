@@ -5,6 +5,7 @@
 import 'dart:async';
 
 import 'aggregate_sample.dart';
+import 'common_callbacks.dart';
 import 'from_handlers.dart';
 
 /// Utilities to rate limit events.
@@ -305,7 +306,7 @@ extension RateLimit<T> on Stream<T> {
           trigger: trigger,
           aggregate: _dropPrevious,
           longPoll: longPoll,
-          onEmpty: _ignore);
+          onEmpty: ignoreArgument);
 
   /// Aggregates values until this source stream does not emit for [duration],
   /// then emits the aggregated values.
@@ -353,4 +354,3 @@ extension RateLimit<T> on Stream<T> {
 T _dropPrevious<T>(T element, _) => element;
 List<T> _collect<T>(T event, List<T>? soFar) => (soFar ?? <T>[])..add(event);
 void _empty<T>(Sink<List<T>> sink) => sink.add([]);
-void _ignore<T>(Sink<T> sink) {}

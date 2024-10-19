@@ -4,6 +4,8 @@
 
 import 'dart:async';
 
+import 'common_callbacks.dart';
+
 /// Utilities to interleave events from multiple streams.
 extension Merge<T> on Stream<T> {
   /// Merges values and errors from this stream and [other] in any order as they
@@ -90,7 +92,9 @@ extension Merge<T> on Stream<T> {
       }
       controller.onCancel = () {
         if (subscriptions.isEmpty) return null;
-        return [for (var s in subscriptions) s.cancel()].wait.then((_) => null);
+        return [for (var s in subscriptions) s.cancel()]
+            .wait
+            .then(ignoreArgument);
       };
     };
     return controller.stream;

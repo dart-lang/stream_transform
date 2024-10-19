@@ -4,6 +4,7 @@
 
 import 'dart:async';
 
+import 'common_callbacks.dart';
 import 'switch.dart';
 
 /// Alternatives to [asyncExpand].
@@ -78,7 +79,9 @@ extension AsyncExpand<T> on Stream<T> {
       }
       controller.onCancel = () {
         if (subscriptions.isEmpty) return null;
-        return [for (var s in subscriptions) s.cancel()].wait.then((_) => null);
+        return [for (var s in subscriptions) s.cancel()]
+            .wait
+            .then(ignoreArgument);
       };
     };
     return controller.stream;
