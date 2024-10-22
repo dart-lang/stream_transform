@@ -105,7 +105,7 @@ extension RateLimit<T> on Stream<T> {
   ///
   /// For example:
   ///
-  ///     source.throtte(Duration(seconds: 6));
+  ///     source.throttle(Duration(seconds: 6));
   ///
   ///     source: 1-2-3---4-5-6---7-8-|
   ///     result: 1-------4-------7---|
