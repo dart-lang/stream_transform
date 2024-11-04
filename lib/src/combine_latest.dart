@@ -174,7 +174,7 @@ extension CombineLatest<T> on Stream<T> {
   /// If the source stream is a broadcast stream, the result stream will be as
   /// well, regardless of the types of [others]. If a single subscription stream
   /// is combined with a broadcast source stream, it may never be canceled.
-  Stream<List<T>> combineLatestAll(Iterable<Stream<T>> others) {
+  Stream<List<T>> combineLatestAll(Iterable<Stream<T>> others, {bool waitAll = true}) {
     final controller = isBroadcast
         ? StreamController<List<T>>.broadcast(sync: true)
         : StreamController<List<T>>(sync: true);
@@ -193,8 +193,8 @@ extension CombineLatest<T> on Stream<T> {
       void handleData(int index, T data) {
         latestData[index] = data;
         hasEmitted.add(index);
-        if (hasEmitted.length == allStreams.length) {
-          controller.add(List.from(latestData));
+        if (hasEmitted.length == allStreams.length || !waitAll) {
+          controller.add(List.from(latestData.where((data) => data != null)));
         }
       }
 
